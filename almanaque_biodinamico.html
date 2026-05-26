@@ -217,10 +217,12 @@ body {
   justify-content:center; padding:0 16px; flex-wrap:wrap;
 }
 
-/* IG SCREENSHOT MODE — ?ig=1 */
+/* ══════════════════════════════════════════════════
+   IG SCREENSHOT MODE — ?ig=1  (1000×1250 → 1080×1350)
+   ══════════════════════════════════════════════════ */
 body.ig-mode {
   padding:0 !important;
-  background:#ffffff !important;
+  background:#1a1a1a !important;
   min-height:100vh;
   justify-content:flex-start;
 }
@@ -230,10 +232,61 @@ body.ig-mode #card {
   min-height:100vh !important;
   box-shadow:none !important;
   border:none !important;
+  display:flex; flex-direction:column;
   justify-content:space-between;
 }
 body.ig-mode .controls { display:none !important; }
 body.ig-mode .cal-wrap  { display:none !important; }
+
+/* — HEADER — */
+body.ig-mode .hdr        { padding:28px 48px; }
+body.ig-mode .hdr-name   { font-size:26px; letter-spacing:5px; }
+body.ig-mode .hdr-sub    { font-size:16px; margin-top:4px; }
+body.ig-mode .hdr-season { font-size:18px; line-height:1.5; }
+body.ig-mode .hdr-icon   { font-size:34px; }
+
+/* — MONTH NAV — */
+body.ig-mode .month-nav  { padding:16px 48px; }
+body.ig-mode .mnav-label { font-size:24px; letter-spacing:5px; }
+body.ig-mode .mnav-btn   { font-size:26px; opacity:0; pointer-events:none; }
+
+/* — DATE — */
+body.ig-mode .date-wrap  { padding:30px 48px 10px; }
+body.ig-mode .day-name   { font-size:20px; letter-spacing:10px; }
+body.ig-mode .date-num   { font-size:170px; line-height:.88; }
+
+/* — BIO TYPE (DÍA DE RAÍCES) — */
+body.ig-mode .bio-wrap   { padding:10px 48px 16px; gap:18px; }
+body.ig-mode .bio-icon   { font-size:52px; }
+body.ig-mode .bio-lbl    { font-size:30px; letter-spacing:4px; }
+
+/* — MOON — */
+body.ig-mode .moon-wrap  { margin:0 40px; padding:18px 24px; }
+body.ig-mode .moon-em    { font-size:42px; }
+body.ig-mode .moon-txt   { font-size:20px; line-height:1.7; }
+body.ig-mode .moon-sign  { font-size:22px; }
+
+/* — PERÍODO FAVORABLE — */
+body.ig-mode .win-wrap   { padding:14px 48px; }
+body.ig-mode .win-lbl    { font-size:14px; letter-spacing:3px; margin-bottom:6px; }
+body.ig-mode .win-val    { font-size:24px; }
+
+/* — SEMBRAR / COSECHAR — */
+body.ig-mode .crops-wrap { padding:12px 48px; }
+body.ig-mode .crop-row   { margin-bottom:12px; gap:14px; }
+body.ig-mode .crop-em    { font-size:26px; }
+body.ig-mode .crop-lbl   { font-size:16px; min-width:110px; letter-spacing:2px; }
+body.ig-mode .crop-val   { font-size:20px; line-height:1.5; }
+
+/* — TIP DEL DÍA — */
+body.ig-mode .tip-wrap   { padding:12px 48px 16px; }
+body.ig-mode .tip-ttl    { font-size:14px; letter-spacing:3px; margin-bottom:8px; }
+body.ig-mode .tip-body   { font-size:20px; line-height:1.7; }
+
+/* — FOOTER — */
+body.ig-mode .ftr        { padding:24px 48px; }
+body.ig-mode .ftr-main   { font-size:18px; letter-spacing:2px; }
+body.ig-mode .ftr-src    { font-size:13px; line-height:1.6; }
 .btn {
   padding:11px 22px; border:none; border-radius:24px;
   font-size:13px; font-weight:bold; cursor:pointer; letter-spacing:.4px;
