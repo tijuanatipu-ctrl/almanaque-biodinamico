@@ -218,7 +218,20 @@ body {
 }
 
 /* IG SCREENSHOT MODE — ?ig=1 */
-body.ig-mode { padding:0 !important; background:#ffffff !important; }
+body.ig-mode {
+  padding:0 !important;
+  background:#ffffff !important;
+  min-height:100vh;
+  justify-content:flex-start;
+}
+body.ig-mode #card {
+  width:100vw !important;
+  max-width:100vw !important;
+  min-height:100vh !important;
+  box-shadow:none !important;
+  border:none !important;
+  justify-content:space-between;
+}
 body.ig-mode .controls { display:none !important; }
 body.ig-mode .cal-wrap  { display:none !important; }
 .btn {
