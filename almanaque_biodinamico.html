@@ -101,12 +101,12 @@ body {
   flex-shrink:0; margin-top:3px;
   transition:background .3s;
 }
-.hdr-name   { color:#fff; font-size:12px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; }
-.hdr-sub    { color:rgba(255,255,255,.38); font-size:8.5px; letter-spacing:.8px; margin-top:2px; }
+.hdr-name   { color:#fff; font-size:clamp(10px,2.9vw,12px); font-weight:bold; letter-spacing:2px; text-transform:uppercase; }
+.hdr-sub    { color:rgba(255,255,255,.38); font-size:clamp(7px,2vw,8.5px); letter-spacing:.8px; margin-top:2px; }
 .hdr-right  { display:flex; align-items:center; gap:8px; }
-.hdr-icon   { font-size:24px; }
-.hdr-season { color:#fff; font-size:11px; letter-spacing:.5px; text-align:right; line-height:1.5; }
-.hdr-season span { color:rgba(255,255,255,.4); font-size:8px; }
+.hdr-icon   { font-size:clamp(18px,5.5vw,24px); }
+.hdr-season { color:#fff; font-size:clamp(9px,2.6vw,11px); letter-spacing:.5px; text-align:right; line-height:1.5; }
+.hdr-season span { color:rgba(255,255,255,.4); font-size:clamp(6px,1.9vw,8px); }
 
 /* MONTH NAV */
 .month-nav {
@@ -120,12 +120,12 @@ body {
   -webkit-tap-highlight-color:transparent;
 }
 .mnav-btn:active { opacity:.5; }
-.mnav-label { color:#fff; font-size:13px; font-weight:bold; letter-spacing:3px; text-transform:uppercase; }
+.mnav-label { color:#fff; font-size:clamp(10px,3.1vw,13px); font-weight:bold; letter-spacing:3px; text-transform:uppercase; }
 
 /* DATE */
 .date-wrap { text-align:center; padding:14px 18px 4px; flex-shrink:0; }
-.day-name { font-size:11px; font-weight:bold; color:var(--c-muted); letter-spacing:5px; text-transform:uppercase; }
-.date-num { font-size:96px; font-weight:900; color:var(--c-accent); line-height:.88; font-family:'Arial Black','Arial',sans-serif; }
+.day-name { font-size:clamp(9px,2.6vw,11px); font-weight:bold; color:var(--c-muted); letter-spacing:5px; text-transform:uppercase; }
+.date-num { font-size:clamp(64px,22vw,96px); font-weight:900; color:var(--c-accent); line-height:.88; font-family:'Arial Black','Arial',sans-serif; }
 
 /* DIVIDERS */
 .div-line {
@@ -139,8 +139,8 @@ body {
   display:flex; align-items:center; justify-content:center;
   gap:10px; padding:8px 18px 4px; flex-shrink:0;
 }
-.bio-icon { font-size:30px; line-height:1; }
-.bio-lbl  { font-size:16px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); }
+.bio-icon { font-size:clamp(22px,7vw,30px); line-height:1; }
+.bio-lbl  { font-size:clamp(12px,3.8vw,16px); font-weight:bold; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); }
 
 /* MOON */
 .moon-wrap {
@@ -262,54 +262,54 @@ body.ig-mode .hdr-name,
 body.ig-mode .mnav-label { font-family:'Cormorant Garamond', serif !important; }
 
 /* — HEADER — */
-body.ig-mode .hdr        { padding:28px 48px; }
-body.ig-mode .hdr-name   { font-size:30px; letter-spacing:3px; font-weight:600; }
-body.ig-mode .hdr-sub    { font-size:16px; margin-top:4px; }
-body.ig-mode .hdr-season { font-size:18px; line-height:1.5; font-family:'Josefin Sans',sans-serif; font-weight:300; letter-spacing:2px; }
-body.ig-mode .hdr-icon   { font-size:34px; }
+body.ig-mode .hdr        { padding:2.8vw 5vw; }
+body.ig-mode .hdr-name   { font-size:3vw; letter-spacing:.3vw; font-weight:600; }
+body.ig-mode .hdr-sub    { font-size:1.6vw; margin-top:.4vw; }
+body.ig-mode .hdr-season { font-size:1.8vw; line-height:1.5; font-family:'Josefin Sans',sans-serif; font-weight:300; letter-spacing:.2vw; }
+body.ig-mode .hdr-icon   { font-size:3.4vw; }
 
 /* — MONTH NAV — */
-body.ig-mode .month-nav  { padding:16px 48px; }
-body.ig-mode .mnav-label { font-size:26px; letter-spacing:6px; font-weight:400; }
-body.ig-mode .mnav-btn   { font-size:26px; opacity:0; pointer-events:none; }
+body.ig-mode .month-nav  { padding:1.6vw 5vw; }
+body.ig-mode .mnav-label { font-size:2.6vw; letter-spacing:.6vw; font-weight:400; }
+body.ig-mode .mnav-btn   { font-size:2.6vw; opacity:0; pointer-events:none; }
 
 /* — DATE — */
-body.ig-mode .date-wrap  { padding:20px 48px 0; }
-body.ig-mode .day-name   { font-size:18px; letter-spacing:12px; font-weight:300; }
-body.ig-mode .date-num   { font-size:190px; line-height:.85; font-weight:300; }
+body.ig-mode .date-wrap  { padding:2vw 5vw 0; }
+body.ig-mode .day-name   { font-size:1.8vw; letter-spacing:1.2vw; font-weight:300; }
+body.ig-mode .date-num   { font-size:19vw; line-height:.85; font-weight:300; }
 
 /* — BIO TYPE (DÍA DE RAÍCES) — */
-body.ig-mode .bio-wrap   { padding:14px 48px 14px; gap:18px; }
-body.ig-mode .bio-icon   { font-size:50px; }
-body.ig-mode .bio-lbl    { font-size:32px; letter-spacing:5px; font-weight:600; font-style:italic; }
+body.ig-mode .bio-wrap   { padding:1.4vw 5vw; gap:1.8vw; }
+body.ig-mode .bio-icon   { font-size:5vw; }
+body.ig-mode .bio-lbl    { font-size:3.2vw; letter-spacing:.5vw; font-weight:600; font-style:italic; }
 
 /* — MOON — */
-body.ig-mode .moon-wrap  { margin:0 40px; padding:20px 28px; }
-body.ig-mode .moon-em    { font-size:40px; }
-body.ig-mode .moon-txt   { font-size:19px; line-height:1.7; font-weight:300; }
-body.ig-mode .moon-sign  { font-size:21px; font-family:'Cormorant Garamond',serif; font-style:italic; }
+body.ig-mode .moon-wrap  { margin:0 4vw; padding:2vw 2.8vw; }
+body.ig-mode .moon-em    { font-size:4vw; }
+body.ig-mode .moon-txt   { font-size:1.9vw; line-height:1.7; font-weight:300; }
+body.ig-mode .moon-sign  { font-size:2.1vw; font-family:'Cormorant Garamond',serif; font-style:italic; }
 
 /* — PERÍODO FAVORABLE — */
-body.ig-mode .win-wrap   { padding:10px 48px; }
-body.ig-mode .win-lbl    { font-size:12px; letter-spacing:4px; margin-bottom:4px; font-weight:300; }
-body.ig-mode .win-val    { font-size:22px; font-family:'Cormorant Garamond',serif; }
+body.ig-mode .win-wrap   { padding:1vw 5vw; }
+body.ig-mode .win-lbl    { font-size:1.2vw; letter-spacing:.4vw; margin-bottom:.4vw; font-weight:300; }
+body.ig-mode .win-val    { font-size:2.2vw; font-family:'Cormorant Garamond',serif; }
 
 /* — SEMBRAR / COSECHAR — */
-body.ig-mode .crops-wrap { padding:10px 48px; }
-body.ig-mode .crop-row   { margin-bottom:10px; gap:14px; }
-body.ig-mode .crop-em    { font-size:24px; }
-body.ig-mode .crop-lbl   { font-size:13px; min-width:110px; letter-spacing:3px; font-weight:300; }
-body.ig-mode .crop-val   { font-size:19px; line-height:1.5; font-family:'Cormorant Garamond',serif; font-style:italic; }
+body.ig-mode .crops-wrap { padding:1vw 5vw; }
+body.ig-mode .crop-row   { margin-bottom:1vw; gap:1.4vw; }
+body.ig-mode .crop-em    { font-size:2.4vw; }
+body.ig-mode .crop-lbl   { font-size:1.3vw; min-width:11vw; letter-spacing:.3vw; font-weight:300; }
+body.ig-mode .crop-val   { font-size:1.9vw; line-height:1.5; font-family:'Cormorant Garamond',serif; font-style:italic; }
 
 /* — TIP DEL DÍA — */
-body.ig-mode .tip-wrap   { padding:10px 48px 14px; }
-body.ig-mode .tip-ttl    { font-size:12px; letter-spacing:4px; margin-bottom:6px; font-weight:300; }
-body.ig-mode .tip-body   { font-size:19px; line-height:1.75; font-family:'Cormorant Garamond',serif; font-style:italic; }
+body.ig-mode .tip-wrap   { padding:1vw 5vw 1.4vw; }
+body.ig-mode .tip-ttl    { font-size:1.2vw; letter-spacing:.4vw; margin-bottom:.6vw; font-weight:300; }
+body.ig-mode .tip-body   { font-size:1.9vw; line-height:1.75; font-family:'Cormorant Garamond',serif; font-style:italic; }
 
 /* — FOOTER — */
-body.ig-mode .ftr        { padding:22px 48px; }
-body.ig-mode .ftr-main   { font-size:14px; letter-spacing:3px; font-weight:300; }
-body.ig-mode .ftr-src    { font-size:12px; line-height:1.6; }
+body.ig-mode .ftr        { padding:2.2vw 5vw; }
+body.ig-mode .ftr-main   { font-size:1.4vw; letter-spacing:.3vw; font-weight:300; }
+body.ig-mode .ftr-src    { font-size:1.2vw; line-height:1.6; }
 .btn {
   padding:11px 22px; border:none; border-radius:24px;
   font-size:13px; font-weight:bold; cursor:pointer; letter-spacing:.4px;
