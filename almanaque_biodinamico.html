@@ -216,6 +216,11 @@ body {
   display:flex; gap:10px; margin-top:18px;
   justify-content:center; padding:0 16px; flex-wrap:wrap;
 }
+
+/* IG SCREENSHOT MODE — ?ig=1 */
+body.ig-mode { padding:0 !important; background:#ffffff !important; }
+body.ig-mode .controls { display:none !important; }
+body.ig-mode .cal-wrap  { display:none !important; }
 .btn {
   padding:11px 22px; border:none; border-radius:24px;
   font-size:13px; font-weight:bold; cursor:pointer; letter-spacing:.4px;
@@ -1567,7 +1572,9 @@ function toggleTheme(){
   localStorage.setItem('theme',dark?'dark':'light');
 }
 (function(){
-  if(localStorage.getItem('theme')==='dark'){
+  if(new URLSearchParams(location.search).get('ig')==='1'){
+    document.body.classList.add('ig-mode');
+  } else if(localStorage.getItem('theme')==='dark'){
     document.body.classList.add('dark');
     const b=document.getElementById('themeBtn');
     if(b) b.textContent='☀️';
