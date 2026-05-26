@@ -2,115 +2,151 @@
 <html>
 <head>
 <meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,700;1,400&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#fafafa;font-family:'Josefin Sans',sans-serif;width:420px;}
+
 .profile{background:#fff;padding:14px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #dbdbdb;}
 .avatar-ring{width:62px;height:62px;border-radius:50%;background:conic-gradient(#ec008c 0%,#f9a825 40%,#e91e63 70%,#ec008c 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.avatar-inner{width:56px;height:56px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;}
-.avatar-icon{font-size:18px;}
-.profile-info .uname{font-size:12px;font-weight:600;letter-spacing:.3px;color:#1a1a1a;}
-.profile-info .bio{font-size:10px;color:#555;margin-top:3px;line-height:1.5;}
+.avatar-inner{width:56px;height:56px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.uname{font-size:12px;font-weight:600;letter-spacing:.3px;color:#1a1a1a;}
+.bio{font-size:10px;color:#555;margin-top:3px;line-height:1.5;}
+
 .tabs{background:#fff;display:flex;border-bottom:1px solid #dbdbdb;margin-bottom:3px;}
-.tab{flex:1;text-align:center;padding:9px;font-size:16px;color:#aaa;}
+.tab{flex:1;text-align:center;padding:9px;font-size:16px;color:#bbb;}
 .tab.on{color:#1a1a1a;border-bottom:1.5px solid #1a1a1a;}
+
 .feed{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
-.post{aspect-ratio:1;display:flex;flex-direction:column;justify-content:space-between;padding:9px 8px 7px;position:relative;overflow:hidden;}
-.post.dark{background:#1a1a1a;}
-.post.light{background:#fff;box-shadow:inset 0 0 0 1px #f0f0f0;}
+
+.post{aspect-ratio:1;display:flex;flex-direction:column;justify-content:space-between;padding:8px 7px 6px;position:relative;overflow:hidden;}
 .post-top{display:flex;justify-content:space-between;align-items:flex-start;}
-.post-day{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#ec008c;line-height:1;}
-.post-moon{font-size:13px;opacity:.75;}
+.post-day{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:#ec008c;line-height:1;}
+.post-moon{font-size:12px;opacity:.7;}
 .post-bottom{display:flex;flex-direction:column;gap:1px;}
-.post-dow{font-size:5.5px;letter-spacing:1.8px;text-transform:uppercase;font-weight:300;opacity:.45;}
-.post-tipo{font-size:6px;letter-spacing:1.2px;text-transform:uppercase;font-weight:400;opacity:.6;}
-.post.dark .post-dow,.post.dark .post-tipo{color:#f0f0f0;}
-.post.light .post-dow,.post.light .post-tipo{color:#1a1a1a;}
-.post-accent{position:absolute;bottom:0;left:0;right:0;height:2px;background:#ec008c;opacity:.55;}
-.carousel-dot{position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;opacity:.5;}
-.post.dark .carousel-dot{background:#fff;}
-.post.light .carousel-dot{background:#1a1a1a;}
-.legend{background:#fff;padding:10px 16px 12px;border-top:1px solid #dbdbdb;margin-top:3px;}
-.legend-title{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#aaa;margin-bottom:7px;}
-.legend-items{display:flex;gap:20px;}
-.legend-item{display:flex;align-items:center;gap:7px;font-size:9px;color:#666;letter-spacing:.4px;}
-.legend-sq{width:14px;height:14px;border-radius:2px;flex-shrink:0;}
-.phase-bar{background:#fff;padding:6px 16px;border-top:1px solid #f0f0f0;}
-.phase-row{display:grid;grid-template-columns:repeat(27,1fr);gap:1px;height:10px;border-radius:4px;overflow:hidden;}
-.phase-cell{height:100%;}
-.phase-cell.wax{background:#ec008c;}
-.phase-cell.wan{background:#1a1a1a;}
-.phase-label{display:flex;justify-content:space-between;font-size:8px;color:#aaa;letter-spacing:.5px;margin-top:4px;}
+.post-dow{font-size:5px;letter-spacing:1.5px;text-transform:uppercase;font-weight:300;opacity:.4;}
+.post-tipo{font-size:5.5px;letter-spacing:1px;text-transform:uppercase;font-weight:400;opacity:.55;}
+.post-accent{position:absolute;bottom:0;left:0;right:0;height:2px;background:#ec008c;opacity:.5;}
+.post-illum{position:absolute;top:5px;right:5px;font-size:5px;letter-spacing:.5px;opacity:.35;font-weight:300;}
+
+/* luna cycle bar */
+.cycle-wrap{background:#fff;padding:10px 16px 14px;border-top:1px solid #dbdbdb;margin-top:3px;}
+.cycle-title{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#aaa;margin-bottom:8px;}
+.cycle-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:1px;}
+.cycle-cell{flex:1;height:100%;border-radius:1px;}
+.cycle-labels{display:flex;justify-content:space-between;margin-top:4px;font-size:7px;color:#bbb;letter-spacing:.3px;}
+.legend{display:flex;gap:14px;margin-top:10px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:8.5px;color:#666;letter-spacing:.3px;}
+.legend-sq{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
+
+/* month labels */
+.month-label{grid-column:1/-1;background:#fafafa;padding:5px 8px 3px;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:#bbb;font-weight:400;}
 </style>
 </head>
 <body>
+
 <div class="profile">
-  <div class="avatar-ring"><div class="avatar-inner"><div class="avatar-icon">🌙</div></div></div>
-  <div class="profile-info">
+  <div class="avatar-ring"><div class="avatar-inner">🌙</div></div>
+  <div>
     <div class="uname">calendariobiodinamicoargentino</div>
-    <div class="bio">Calendario Biodinámico Argentino<br>Hemisferio Sur · App by @tijuanatipu</div>
+    <div class="bio">Calendario Biodinámico Argentino · Hemisferio Sur<br>App by @tijuanatipu</div>
   </div>
 </div>
+
 <div class="tabs">
   <div class="tab on">⊞</div>
   <div class="tab">☰</div>
   <div class="tab">🏷</div>
 </div>
+
 <div class="feed" id="feed"></div>
-<div class="legend">
-  <div class="legend-title">Composición del feed · 27 días</div>
-  <div class="legend-items">
-    <div class="legend-item"><div class="legend-sq" style="background:#1a1a1a;"></div>Oscuro · Luna decreciente (primer slide)</div>
-    <div class="legend-item"><div class="legend-sq" style="background:#fff;border:1px solid #ddd;"></div>Claro · Luna creciente (primer slide)</div>
+
+<div class="cycle-wrap">
+  <div class="cycle-title">Ciclo lunar · 60 días</div>
+  <div class="cycle-bar" id="cycleBar"></div>
+  <div class="cycle-labels"><span>← hoy</span><span>hace 60 días →</span></div>
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-sq" style="background:#111;"></div>Luna nueva (oscuro)
+    </div>
+    <div class="legend-item">
+      <div class="legend-sq" style="background:#888;"></div>Cuartos (gris)
+    </div>
+    <div class="legend-item">
+      <div class="legend-sq" style="background:#f0f0f0;border:1px solid #ddd;"></div>Luna llena (claro)
+    </div>
   </div>
 </div>
-<div class="phase-bar">
-  <div class="phase-row" id="phaseRow"></div>
-  <div class="phase-label"><span>← hoy</span><span>hace 27 días →</span></div>
-</div>
+
 <script>
 const DAYS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const TIPOS={fruto:'🍎 Frutos',raiz:'🥕 Raíces',flor:'🌼 Flores',hoja:'🌿 Hojas'};
-const MOONS=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
 const REF=new Date('2000-01-06T18:14:00Z').getTime();
 const CYC=29.530589*86400000;
 
-function frac(d){return(((d.getTime()-REF)%CYC)+CYC)%CYC/CYC;}
+function moonFrac(d){return(((d.getTime()-REF)%CYC)+CYC)%CYC/CYC;}
+function moonIllum(frac){return(1-Math.cos(2*Math.PI*frac))/2;}
 function moonEm(f){return f<.03||f>.97?'🌑':f<.22?'🌒':f<.28?'🌓':f<.47?'🌔':f<.53?'🌕':f<.72?'🌖':f<.78?'🌗':'🌘';}
-function moonSign(d){const J=new Date('2000-01-01T12:00:00Z').getTime();const days=(d.getTime()-J)/86400000;const L=((218.316+13.176396*days)%360+360)%360;const t=['fruto','raiz','flor','hoja','fruto','raiz','flor','hoja','fruto','raiz','flor','hoja'];return t[Math.floor(L/30)%12];}
+function moonSign(d){
+  const J=new Date('2000-01-01T12:00:00Z').getTime();
+  const days=(d.getTime()-J)/86400000;
+  const L=((218.316+13.176396*days)%360+360)%360;
+  const t=['fruto','raiz','flor','hoja','fruto','raiz','flor','hoja','fruto','raiz','flor','hoja'];
+  return t[Math.floor(L/30)%12];
+}
+function illumToBg(illum){
+  const v=Math.round(17+illum*228);
+  return{bg:`rgb(${v},${v},${v})`,text:illum>0.5?'#1a1a1a':'#f0f0f0',isLight:illum>0.5};
+}
 
-const today=new Date();today.setHours(0,0,0,0);
+const today=new Date(); today.setHours(0,0,0,0);
 const feed=document.getElementById('feed');
-const phaseRow=document.getElementById('phaseRow');
+const cycleBar=document.getElementById('cycleBar');
 
-for(let i=0;i<27;i++){
+let lastMonth=-1;
+for(let i=0;i<60;i++){
   const d=new Date(today.getTime()-i*86400000);
-  const f=frac(d);
-  const wax=f<0.5;
+  const frac=moonFrac(d);
+  const illum=moonIllum(frac);
+  const {bg,text,isLight}=illumToBg(illum);
   const tipo=moonSign(d);
-  const em=moonEm(f);
+  const em=moonEm(frac);
   const day=d.getDate();
+  const mon=d.getMonth();
   const dow=DAYS[d.getDay()];
+  const pct=Math.round(illum*100);
+
+  // month separator (only on first day of month)
+  if(mon!==lastMonth){
+    const lbl=document.createElement('div');
+    lbl.className='month-label';
+    lbl.textContent=MESES[mon]+' '+d.getFullYear();
+    feed.appendChild(lbl);
+    lastMonth=mon;
+  }
 
   const div=document.createElement('div');
-  div.className='post '+(wax?'light':'dark');
+  div.style.background=bg;
+  div.className='post';
   div.innerHTML=`
     <div class="post-top">
-      <div class="post-day">${day}</div>
-      <div class="post-moon">${em}</div>
+      <div class="post-day" style="color:#ec008c">${day}</div>
+      <div class="post-moon" style="color:${text}">${em}</div>
     </div>
     <div class="post-bottom">
-      <div class="post-dow">${dow}</div>
-      <div class="post-tipo">${TIPOS[tipo]}</div>
+      <div class="post-dow" style="color:${text}">${dow}</div>
+      <div class="post-tipo" style="color:${text}">${TIPOS[tipo]}</div>
     </div>
     <div class="post-accent"></div>
-    <div class="carousel-dot"></div>`;
+    <div class="post-illum" style="color:${text}">${pct}%</div>`;
   feed.appendChild(div);
 
+  // cycle bar cell
   const cell=document.createElement('div');
-  cell.className='phase-cell '+(wax?'wax':'wan');
-  phaseRow.appendChild(cell);
+  cell.className='cycle-cell';
+  cell.style.background=bg;
+  cycleBar.appendChild(cell);
 }
 </script>
 </body>
