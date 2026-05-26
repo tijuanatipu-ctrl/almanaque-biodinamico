@@ -1360,10 +1360,19 @@ const TC_COL={fruto:'#cc0000',raiz:'#555',flor:'#888',hoja:'#333'};
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio',
              'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-const ESTACIONES={3:'Otoño 🍂',4:'Otoño 🍂',5:'Otoño 🍂',
-                  6:'Invierno ❄️',7:'Invierno ❄️',8:'Invierno ❄️',
-                  9:'Primavera 🌸',10:'Primavera 🌸',11:'Primavera 🌸',
-                  0:'Verano ☀️',1:'Verano ☀️',2:'Verano ☀️'};
+function getEstacion(date) {
+  const y = date.getFullYear();
+  const T = (y - 2000) / 1000;
+  function jd(jd0, a, b, c) { return new Date((jd0 + a*T + b*T*T + c*T*T*T - 2440587.5) * 86400000); }
+  const mar = jd(2451623.80984, 365242.37404,  0.05169, -0.00411);
+  const jun = jd(2451716.56767, 365241.62603,  0.00325,  0.00888);
+  const sep = jd(2451810.21715, 365242.01767, -0.11575,  0.00337);
+  const dec = jd(2451900.05952, 365242.74049, -0.06223, -0.00823);
+  if (date >= mar && date < jun) return 'Otoño 🍂';
+  if (date >= jun && date < sep) return 'Invierno ❄️';
+  if (date >= sep && date < dec) return 'Primavera 🌸';
+  return 'Verano ☀️';
+}
 
 // ── MOON PHASE ───────────────────────────────────────────────────────────────
 function moonPhase(date) {
@@ -1580,7 +1589,7 @@ function render(date){
 
   const tc=TC[tipo];
   const mp=moonPhase(date);
-  const est=ESTACIONES[mon]||'';
+  const est=getEstacion(date);
 
   document.getElementById('card').innerHTML=`
     <div class="hdr">
@@ -1589,7 +1598,7 @@ function render(date){
         <div class="hdr-sub">Almanaque Biodinámico</div>
       </div>
       <div class="hdr-right">
-        <div class="hdr-season">${est}<br><span>General Pinto, BA</span></div>
+        <div class="hdr-season">Estamos en ${est}<br><span>General Pinto, BA</span></div>
       </div>
     </div>
 
