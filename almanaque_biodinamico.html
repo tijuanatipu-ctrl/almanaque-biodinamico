@@ -225,7 +225,7 @@ body {
    ══════════════════════════════════════════════════ */
 body.ig-mode {
   padding:0 !important;
-  background:#1a1a1a !important;
+  background:var(--ig-bg,#1a1a1a) !important;
   min-height:100vh;
   justify-content:flex-start;
   --c-accent:    #ec008c;
@@ -311,23 +311,23 @@ body.ig-mode .ftr        { padding:1vw 6vw; background:#1a1a1a !important; borde
 body.ig-mode .ftr-main   { font-size:1.8vw; letter-spacing:.3vw; font-weight:300; color:rgba(255,255,255,.6); }
 body.ig-mode .ftr-src    { font-size:2vw; letter-spacing:.15vw; font-weight:700; color:var(--c-accent); text-align:right; display:block !important; }
 
-/* ── IG LIGHT MODE — ?ig=1&light=1 ── */
+/* ── IG LIGHT MODE — illum > 0.5 ── */
 body.ig-mode.ig-light {
-  background:#f0f0f0 !important;
+  background:var(--ig-bg,#f0f0f0) !important;
   --c-accent:    #ec008c;
   --c-primary:   #1a1a1a;
   --c-secondary: #444444;
   --c-muted:     #888888;
   --bg-nav:      #ec008c;
   --bg-hdr:      #1a1a1a;
-  --bg-card:     #ffffff;
-  --bg-moon:     #f4f4f4;
+  --bg-card:     var(--ig-bg,#ffffff);
+  --bg-moon:     var(--ig-moon,#f4f4f4);
   --bd-moon:     rgba(236,0,140,.15);
   --c-tip:       #666666;
   --c-tipline:   #dddddd;
 }
-body.ig-mode.ig-light #card   { background:#ffffff; }
-body.ig-mode.ig-light .moon-wrap { background:#f4f4f4; border-color:rgba(236,0,140,.15); }
+body.ig-mode.ig-light #card   { background:var(--ig-bg,#ffffff); }
+body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-color:rgba(236,0,140,.15); }
 .btn {
   padding:11px 22px; border:none; border-radius:24px;
   font-size:13px; font-weight:bold; cursor:pointer; letter-spacing:.4px;
@@ -1687,11 +1687,15 @@ function toggleTheme(){
   localStorage.setItem('theme',dark?'dark':'light');
 }
 (function(){
-  if(new URLSearchParams(location.search).get('ig')==='1'){
+  const p=new URLSearchParams(location.search);
+  if(p.get('ig')==='1'){
     document.body.classList.add('ig-mode');
-    if(new URLSearchParams(location.search).get('light')==='1'){
-      document.body.classList.add('ig-light');
-    }
+    const illum=parseFloat(p.get('illum')||'0');
+    const v =Math.round(17 +illum*228); // #111111 → #f5f5f5
+    const mv=Math.round(37 +illum*198); // card luna: ligeramente offset
+    document.documentElement.style.setProperty('--ig-bg',  `rgb(${v},${v},${v})`);
+    document.documentElement.style.setProperty('--ig-moon',`rgb(${mv},${mv},${mv})`);
+    if(illum>0.5) document.body.classList.add('ig-light');
   } else if(localStorage.getItem('theme')==='dark'){
     document.body.classList.add('dark');
     const b=document.getElementById('themeBtn');
