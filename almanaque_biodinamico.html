@@ -310,6 +310,25 @@ body.ig-mode .tip-body   { font-size:4.2vw; line-height:1.65; font-family:'Cormo
 body.ig-mode .ftr        { padding:2vw 6vw; background:#0d0d0d; }
 body.ig-mode .ftr-main   { font-size:2.5vw; letter-spacing:.3vw; font-weight:300; color:rgba(255,255,255,.6); }
 body.ig-mode .ftr-src    { font-size:3vw; letter-spacing:.15vw; font-weight:400; color:var(--c-accent); text-align:right; display:block !important; }
+
+/* ── IG LIGHT MODE — ?ig=1&light=1 ── */
+body.ig-mode.ig-light {
+  background:#f0f0f0 !important;
+  --c-accent:    #ec008c;
+  --c-primary:   #1a1a1a;
+  --c-secondary: #444444;
+  --c-muted:     #888888;
+  --bg-nav:      #ec008c;
+  --bg-hdr:      #1a1a1a;
+  --bg-card:     #ffffff;
+  --bg-moon:     #f4f4f4;
+  --bd-moon:     rgba(236,0,140,.15);
+  --c-tip:       #666666;
+  --c-tipline:   #dddddd;
+}
+body.ig-mode.ig-light #card   { background:#ffffff; }
+body.ig-mode.ig-light .ftr    { background:#1a1a1a; }
+body.ig-mode.ig-light .moon-wrap { background:#f4f4f4; border-color:rgba(236,0,140,.15); }
 .btn {
   padding:11px 22px; border:none; border-radius:24px;
   font-size:13px; font-weight:bold; cursor:pointer; letter-spacing:.4px;
@@ -1663,6 +1682,9 @@ function toggleTheme(){
 (function(){
   if(new URLSearchParams(location.search).get('ig')==='1'){
     document.body.classList.add('ig-mode');
+    if(new URLSearchParams(location.search).get('light')==='1'){
+      document.body.classList.add('ig-light');
+    }
   } else if(localStorage.getItem('theme')==='dark'){
     document.body.classList.add('dark');
     const b=document.getElementById('themeBtn');
