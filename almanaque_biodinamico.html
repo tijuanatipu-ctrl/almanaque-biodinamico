@@ -307,9 +307,9 @@ body.ig-mode .tip-ttl    { font-size:1.6vw; letter-spacing:.5vw; margin-bottom:.
 body.ig-mode .tip-body   { font-size:2.8vw; line-height:1.7; font-family:'Cormorant Garamond',serif; font-style:italic; }
 
 /* — FOOTER — */
-body.ig-mode .ftr        { padding:2.5vw 6vw; }
-body.ig-mode .ftr-main   { font-size:1.8vw; letter-spacing:.4vw; font-weight:300; }
-body.ig-mode .ftr-src    { font-size:1.4vw; line-height:1.6; }
+body.ig-mode .ftr        { padding:1.6vw 6vw; background:#0d0d0d; }
+body.ig-mode .ftr-main   { font-size:1.6vw; letter-spacing:.4vw; font-weight:300; color:rgba(255,255,255,.6); }
+body.ig-mode .ftr-src    { font-size:2vw; letter-spacing:.2vw; font-weight:400; color:var(--c-accent); text-align:right; display:block !important; }
 .btn {
   padding:11px 22px; border:none; border-radius:24px;
   font-size:13px; font-weight:bold; cursor:pointer; letter-spacing:.4px;
@@ -1682,7 +1682,7 @@ if(document.body.classList.contains('ig-mode')){
   const fm=document.querySelector('.ftr-main');
   if(fm) fm.textContent='Fuente: AABDA · Agricultura Biodinámica Argentina';
   const fs=document.querySelector('.ftr-src');
-  if(fs) fs.style.display='none';
+  if(fs){ fs.style.display='block'; fs.textContent='@tijuanatipu'; }
 }
 
 // ── SERVICE WORKER ────────────────────────────────────────────────────────────
