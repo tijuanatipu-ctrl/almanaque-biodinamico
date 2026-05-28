@@ -153,6 +153,7 @@ body {
 .moon-em  { font-size:24px; }
 .moon-txt { font-size:12px; color:var(--c-secondary); line-height:1.65; }
 .moon-sign{ font-weight:bold; color:var(--c-primary); }
+.moon-asc { font-size:11px; letter-spacing:.5px; opacity:.75; font-weight:600; }
 
 /* WINDOW */
 .win-wrap { text-align:center; padding:5px 18px 2px; flex-shrink:0; }
@@ -230,8 +231,8 @@ body.ig-mode {
   justify-content:flex-start;
   --c-accent:    #ec008c;
   --c-primary:   #f0f0f0;
-  --c-secondary: #cccccc;
-  --c-muted:     #888888;
+  --c-secondary: #e0e0e0;
+  --c-muted:     #bbbbbb;
   --bg-nav:      #ec008c;
   --bg-hdr:      #0d0d0d;
   --bg-card:     #1a1a1a;
@@ -239,8 +240,8 @@ body.ig-mode {
   --bg-moon:     #252525;
   --bd-moon:     rgba(236,0,140,.2);
   --c-divider:   rgba(255,255,255,.1);
-  --c-tip:       #aaaaaa;
-  --c-tipline:   #333333;
+  --c-tip:       #e0e0e0;
+  --c-tipline:   #444444;
 }
 body.ig-mode #card {
   width:100vw !important;
@@ -286,8 +287,9 @@ body.ig-mode .bio-lbl    { font-size:4.2vw; letter-spacing:.2vw; font-weight:700
 /* — MOON — */
 body.ig-mode .moon-wrap  { margin:0 5vw; padding:1.8vw 4vw; }
 body.ig-mode .moon-em    { font-size:4.2vw; }
-body.ig-mode .moon-txt   { font-size:2.8vw; line-height:1.5; font-weight:300; }
-body.ig-mode .moon-sign  { font-size:3.5vw; font-family:'Playfair Display',serif; font-style:italic; font-weight:700; }
+body.ig-mode .moon-txt   { font-size:2.8vw; line-height:1.5; font-weight:300; color:var(--c-secondary); }
+body.ig-mode .moon-sign  { font-size:3.5vw; font-family:'Playfair Display',serif; font-style:italic; font-weight:700; color:var(--c-primary); }
+body.ig-mode .moon-asc   { font-size:2.4vw; letter-spacing:.4vw; font-weight:600; color:var(--c-secondary); }
 
 /* — PERÍODO FAVORABLE — */
 body.ig-mode .win-wrap   { padding:1vw 6vw; }
@@ -304,7 +306,7 @@ body.ig-mode .crop-val   { font-size:3.2vw; line-height:1.4; font-family:'Cormor
 /* — TIP DEL DÍA — */
 body.ig-mode .tip-wrap   { padding:1vw 6vw 1vw; }
 body.ig-mode .tip-ttl    { font-size:2vw; letter-spacing:.5vw; margin-bottom:.5vw; font-weight:300; }
-body.ig-mode .tip-body   { font-size:3vw; line-height:1.55; font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600; }
+body.ig-mode .tip-body   { font-size:3vw; line-height:1.55; font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600; color:var(--c-tip); }
 
 /* — FOOTER — */
 body.ig-mode .ftr        { padding:1vw 6vw; background:#1a1a1a !important; border-top:1px solid rgba(255,255,255,.06); }
@@ -315,16 +317,16 @@ body.ig-mode .ftr-src    { font-size:2vw; letter-spacing:.15vw; font-weight:700;
 body.ig-mode.ig-light {
   background:var(--ig-bg,#f0f0f0) !important;
   --c-accent:    #ec008c;
-  --c-primary:   #1a1a1a;
-  --c-secondary: #444444;
-  --c-muted:     #888888;
+  --c-primary:   #0a0a0a;
+  --c-secondary: #1a1a1a;
+  --c-muted:     #333333;
   --bg-nav:      #ec008c;
   --bg-hdr:      #1a1a1a;
   --bg-card:     var(--ig-bg,#ffffff);
   --bg-moon:     var(--ig-moon,#f4f4f4);
   --bd-moon:     rgba(236,0,140,.15);
-  --c-tip:       #666666;
-  --c-tipline:   #dddddd;
+  --c-tip:       #111111;
+  --c-tipline:   #cccccc;
 }
 body.ig-mode.ig-light #card   { background:var(--ig-bg,#ffffff); }
 body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-color:rgba(236,0,140,.15); }
@@ -1390,6 +1392,15 @@ function moonPhase(date) {
   return {ph,em,ill,day:Math.round(c)};
 }
 
+// ── MOON ASCENDING / DESCENDING ──────────────────────────────────────────────
+function moonAscending(date){
+  const d=(date-new Date('2000-01-01T12:00:00Z'))/86400000;
+  const L=(((218.316+13.176396*d)%360)+360)%360;
+  // Ascending: Capricornio→Géminis (L>270° or L<90°)
+  // Descending: Cáncer→Sagitario (90°≤L≤270°)
+  return L>270||L<90;
+}
+
 // ── SIGN ALGORITHM (fallback) ────────────────────────────────────────────────
 function moonSign(date){
   const d=(date-new Date('2000-01-01T12:00:00Z'))/86400000;
@@ -1589,6 +1600,7 @@ function render(date){
   const tc=TC[tipo];
   const mp=moonPhase(date);
   const est=getEstacion(date);
+  const asc=moonAscending(date);
 
   document.getElementById('card').innerHTML=`
     <div class="hdr">
@@ -1623,7 +1635,8 @@ function render(date){
       <span class="moon-em">${mp.em}</span>
       <div class="moon-txt">
         <span class="moon-sign">Luna en ${signo}</span><br>
-        <span>${mp.ph} · ${mp.ill}% iluminada · Día ${mp.day}</span>
+        <span>${mp.ph} · ${mp.ill}% iluminada · Día ${mp.day}</span><br>
+        <span class="moon-asc">${asc?'↑ Ascendente':'↓ Descendente'}</span>
       </div>
     </div>
 
@@ -1703,6 +1716,8 @@ function toggleTheme(){
   }
 })();
 
+const _igDate = new URLSearchParams(location.search).get('date');
+if (_igDate) pickedDate = new Date(_igDate + 'T12:00:00');
 render(pickedDate);
 
 if(document.body.classList.contains('ig-mode')){
