@@ -439,8 +439,8 @@ body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-col
 <div id="card"></div>
 
 <div class="controls">
-  <button class="btn btn-jpg" onclick="exportJPG()">📸 JPG</button>
-  <button class="btn btn-pdf" onclick="exportPDF()">📄 PDF</button>
+  <button class="btn btn-jpg" onclick="exportJPG(this)">📸 JPG</button>
+  <button class="btn btn-pdf" onclick="exportPDF(this)">📄 PDF</button>
   <button class="btn btn-jpg" onclick="goToday()" style="background:#555">📅 Hoy</button>
   <button class="btn btn-theme" id="themeBtn" onclick="toggleTheme()">🌙</button>
 </div>
@@ -1854,23 +1854,65 @@ function render(date){
 }
 
 // ── EXPORT ───────────────────────────────────────────────────────────────────
-async function exportJPG(){
-  const c=await html2canvas(document.getElementById('card'),
-    {scale:2.67,useCORS:true,logging:false,backgroundColor:'#f8f3e8'});
-  const a=document.createElement('a');
-  const d=pickedDate.toISOString().slice(0,10);
-  a.download=`almanaque-${d}.jpg`;
-  a.href=c.toDataURL('image/jpeg',.93);
-  a.click();
+const _isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
+const _isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+function _btnBusy(btn,busy,label){
+  if(!btn) return;
+  btn.disabled=busy;
+  btn.textContent=busy?'⏳':label;
 }
-async function exportPDF(){
-  const c=await html2canvas(document.getElementById('card'),
-    {scale:2.67,useCORS:true,logging:false,backgroundColor:'#f8f3e8'});
-  const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:[108,192]});
-  pdf.addImage(c.toDataURL('image/jpeg',.93),'JPEG',0,0,108,192);
-  const d=pickedDate.toISOString().slice(0,10);
-  pdf.save(`almanaque-${d}.pdf`);
+
+async function exportJPG(btn){
+  _btnBusy(btn,true,'📸 JPG');
+  try{
+    const scale=_isMobile?2:2.67;
+    const c=await html2canvas(document.getElementById('card'),
+      {scale,useCORS:true,logging:false,backgroundColor:null});
+    const d=pickedDate.toISOString().slice(0,10);
+    const dataUrl=c.toDataURL('image/jpeg',.92);
+    if(_isIOS){
+      // iOS no soporta a.download — abrir en nueva pestaña para guardar/compartir
+      const w=window.open('','_blank');
+      if(w) w.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Almanaque ${d}</title></head><body style="margin:0;background:#111;display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px"><p style="color:#ccc;font-family:sans-serif;font-size:13px;text-align:center;margin:0">Mantené presionada la imagen → <b>Guardar en Fotos</b></p><img src="${dataUrl}" style="max-width:100%;border-radius:8px"></body></html>`);
+    } else {
+      // Android + Desktop: blob URL download
+      const res=await fetch(dataUrl);
+      const blob=await res.blob();
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=`almanaque-${d}.jpg`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),3000);
+    }
+  } catch(e){ alert('Error al exportar imagen: '+e.message); }
+  finally{ _btnBusy(btn,false,'📸 JPG'); }
+}
+
+async function exportPDF(btn){
+  _btnBusy(btn,true,'📄 PDF');
+  try{
+    const scale=_isMobile?2:2.67;
+    const c=await html2canvas(document.getElementById('card'),
+      {scale,useCORS:true,logging:false,backgroundColor:null});
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:[108,192]});
+    pdf.addImage(c.toDataURL('image/jpeg',.92),'JPEG',0,0,108,192);
+    const d=pickedDate.toISOString().slice(0,10);
+    const blob=pdf.output('blob');
+    const url=URL.createObjectURL(blob);
+    if(_isIOS){
+      // iOS: abrir en nueva pestaña (Safari muestra el PDF con opción de compartir)
+      window.open(url,'_blank');
+      setTimeout(()=>URL.revokeObjectURL(url),30000);
+    } else {
+      const a=document.createElement('a');
+      a.href=url; a.download=`almanaque-${d}.pdf`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),3000);
+    }
+  } catch(e){ alert('Error al exportar PDF: '+e.message); }
+  finally{ _btnBusy(btn,false,'📄 PDF'); }
 }
 
 // ── THEME ────────────────────────────────────────────────────────────────────
