@@ -1,5 +1,5 @@
 {
-  "name": "Almanaque Biodinámico · El Huerto de Lucas",
+  "name": "Almanaque Biodinámico Hemisferio Sur",
   "short_name": "Almanaque",
   "description": "Calendario biodinámico para el huerto — General Pinto, Buenos Aires",
   "start_url": "./almanaque_biodinamico.html",
@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1a1a1a",
-  "theme_color": "#cc0000",
+  "theme_color": "#ec008c",
   "lang": "es",
   "icons": [
     {

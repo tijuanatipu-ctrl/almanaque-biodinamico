@@ -28,6 +28,8 @@ body{background:#fafafa;font-family:'Josefin Sans',sans-serif;width:420px;}
 .post-tipo{font-size:5.5px;letter-spacing:1px;text-transform:uppercase;font-weight:400;opacity:.55;}
 .post-accent{position:absolute;bottom:0;left:0;right:0;height:2px;background:#ec008c;opacity:.5;}
 .post-illum{position:absolute;top:5px;right:5px;font-size:5px;letter-spacing:.5px;opacity:.35;font-weight:300;}
+.post-type-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;opacity:.72;line-height:1;}
+.post-lunar-info{position:absolute;bottom:7px;right:6px;font-size:8px;opacity:.55;text-align:right;line-height:1.5;letter-spacing:.2px;}
 
 /* luna cycle bar */
 .cycle-wrap{background:#fff;padding:10px 16px 14px;border-top:1px solid #dbdbdb;margin-top:3px;}
@@ -81,20 +83,27 @@ body{background:#fafafa;font-family:'Josefin Sans',sans-serif;width:420px;}
 <script>
 const DAYS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const TIPOS={fruto:'🍎 Frutos',raiz:'🥕 Raíces',flor:'🌼 Flores',hoja:'🌿 Hojas'};
+const TIPOS={fruto:'Frutos',raiz:'Raíces',flor:'Flores',hoja:'Hojas'};
+const ICONS={fruto:'🍎',raiz:'🥕',flor:'🌼',hoja:'🌿'};
+const ZODIAC=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
 const REF=new Date('2000-01-06T18:14:00Z').getTime();
 const CYC=29.530589*86400000;
 
 function moonFrac(d){return(((d.getTime()-REF)%CYC)+CYC)%CYC/CYC;}
 function moonIllum(frac){return(1-Math.cos(2*Math.PI*frac))/2;}
 function moonEm(f){return f<.03||f>.97?'🌑':f<.22?'🌒':f<.28?'🌓':f<.47?'🌔':f<.53?'🌕':f<.72?'🌖':f<.78?'🌗':'🌘';}
-function moonSign(d){
+function moonLon(d){
   const J=new Date('2000-01-01T12:00:00Z').getTime();
   const days=(d.getTime()-J)/86400000;
-  const L=((218.316+13.176396*days)%360+360)%360;
+  return((218.316+13.176396*days)%360+360)%360;
+}
+function moonSign(L){
   const t=['fruto','raiz','flor','hoja','fruto','raiz','flor','hoja','fruto','raiz','flor','hoja'];
   return t[Math.floor(L/30)%12];
 }
+// Luna ascendente: Sagitario→Capricornio→Acuario→Piscis→Aries→Tauro (240°–60°)
+// Luna descendente: Géminis→Cáncer→Leo→Virgo→Libra→Escorpio (60°–240°)
+function moonAsc(L){return L>=240||L<60;}
 function illumToBg(illum){
   const v=Math.round(17+illum*228);
   return{bg:`rgb(${v},${v},${v})`,text:illum>0.5?'#1a1a1a':'#f0f0f0',isLight:illum>0.5};
@@ -110,7 +119,10 @@ for(let i=0;i<60;i++){
   const frac=moonFrac(d);
   const illum=moonIllum(frac);
   const {bg,text,isLight}=illumToBg(illum);
-  const tipo=moonSign(d);
+  const L=moonLon(d);
+  const tipo=moonSign(L);
+  const zodIdx=Math.floor(L/30)%12;
+  const asc=moonAsc(L);
   const em=moonEm(frac);
   const day=d.getDate();
   const mon=d.getMonth();
@@ -139,7 +151,9 @@ for(let i=0;i<60;i++){
       <div class="post-tipo" style="color:${text}">${TIPOS[tipo]}</div>
     </div>
     <div class="post-accent"></div>
-    <div class="post-illum" style="color:${text}">${pct}%</div>`;
+    <div class="post-illum" style="color:${text}">${pct}%</div>
+    <div class="post-type-icon">${ICONS[tipo]}</div>
+    <div class="post-lunar-info" style="color:${text}">${ZODIAC[zodIdx]}<br>${asc?'↑':'↓'}</div>`;
   feed.appendChild(div);
 
   // cycle bar cell

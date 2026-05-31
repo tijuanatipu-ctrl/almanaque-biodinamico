@@ -7,60 +7,60 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Almanaque">
-<meta name="theme-color" content="#cc0000">
+<meta name="theme-color" content="#ec008c">
 <meta name="tiktok-developers-site-verification" content="ymnbaMOmHqwUH8JIBtoi44bPbmJoJzAM">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
-<title>Almanaque Biodinámico · El Huerto de Lucas</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<title>Almanaque Biodinámico Hemisferio Sur</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 
 /* ── VARIABLES CLARO / OSCURO ── */
 :root {
-  --bg-page:    #e8e8e8;
+  --bg-page:    #ebebeb;
   --bg-card:    #ffffff;
   --bd-card:    #1a1a1a;
   --bg-hdr:     #1a1a1a;
-  --bg-nav:     #cc0000;
-  --bg-moon:    #f4f4f4;
-  --bd-moon:    rgba(0,0,0,.07);
-  --bg-cal:     #f9f9f9;
-  --bd-cal:     rgba(0,0,0,.1);
+  --bg-nav:     #ec008c;
+  --bg-moon:    #faf5f8;
+  --bd-moon:    rgba(236,0,140,.12);
+  --bg-cal:     #faf5f8;
+  --bd-cal:     rgba(236,0,140,.1);
   --bg-ftr:     #1a1a1a;
   --c-primary:  #1a1a1a;
   --c-secondary:#444444;
   --c-muted:    #999999;
   --c-dim:      #cccccc;
-  --c-accent:   #cc0000;
-  --c-divider:  rgba(0,0,0,.15);
-  --c-tip:      #333333;
-  --c-tipline:  #e0e0e0;
+  --c-accent:   #ec008c;
+  --c-divider:  rgba(0,0,0,.12);
+  --c-tip:      #2a2a2a;
+  --c-tipline:  #e8e0e5;
   --c-picked-bg:#1a1a1a;
   --c-picked-fg:#ffffff;
-  --shadow:     0 8px 40px rgba(0,0,0,.2);
+  --shadow:     0 8px 48px rgba(0,0,0,.18);
 }
 body.dark {
   --bg-page:    #111111;
   --bg-card:    #1c1c1e;
   --bd-card:    #3a3a3a;
   --bg-hdr:     #0d0d0d;
-  --bg-nav:     #8b0000;
-  --bg-moon:    #272729;
-  --bd-moon:    rgba(255,255,255,.07);
-  --bg-cal:     #222224;
+  --bg-nav:     #970060;
+  --bg-moon:    #26202a;
+  --bd-moon:    rgba(236,0,140,.15);
+  --bg-cal:     #211e24;
   --bd-cal:     rgba(255,255,255,.08);
   --bg-ftr:     #0d0d0d;
   --c-primary:  #e8e8e8;
   --c-secondary:#aaaaaa;
   --c-muted:    #555555;
   --c-dim:      #3a3a3a;
-  --c-accent:   #e03030;
+  --c-accent:   #ec008c;
   --c-divider:  rgba(255,255,255,.1);
-  --c-tip:      #9a9a9a;
-  --c-tipline:  #2a2a2a;
+  --c-tip:      #c0b0ba;
+  --c-tipline:  #2e222a;
   --c-picked-bg:#e8e8e8;
   --c-picked-fg:#1a1a1a;
   --shadow:     0 8px 40px rgba(0,0,0,.6);
@@ -71,7 +71,7 @@ body {
   background:var(--bg-page);
   display:flex; flex-direction:column; align-items:center;
   padding:20px 0 36px;
-  font-family:'Georgia','Times New Roman',serif;
+  font-family:'Josefin Sans', 'Georgia', sans-serif;
   user-select:none;
   transition:background .3s;
 }
@@ -102,8 +102,8 @@ body {
   flex-shrink:0; margin-top:3px;
   transition:background .3s;
 }
-.hdr-name   { color:#fff; font-size:clamp(10px,2.9vw,12px); font-weight:bold; letter-spacing:2px; text-transform:uppercase; }
-.hdr-sub    { color:rgba(255,255,255,.38); font-size:clamp(7px,2vw,8.5px); letter-spacing:.8px; margin-top:2px; }
+.hdr-name   { color:#fff; font-size:clamp(10px,2.9vw,12px); font-weight:400; letter-spacing:3px; text-transform:uppercase; font-family:'Oswald', sans-serif; }
+.hdr-sub    { color:rgba(255,255,255,.38); font-size:clamp(7px,2vw,8.5px); letter-spacing:2px; margin-top:2px; font-family:'Josefin Sans', sans-serif; font-weight:300; }
 .hdr-right  { display:flex; align-items:center; gap:8px; }
 .hdr-icon   { font-size:clamp(18px,5.5vw,24px); }
 .hdr-season { color:#fff; font-size:clamp(9px,2.6vw,11px); letter-spacing:.5px; text-align:right; line-height:1.5; }
@@ -112,27 +112,38 @@ body {
 /* MONTH NAV */
 .month-nav {
   display:flex; align-items:center; justify-content:space-between;
-  padding:7px 14px; background:var(--bg-nav); flex-shrink:0;
+  padding:5px 14px; background:var(--bg-nav); flex-shrink:0;
   transition:background .3s;
 }
 .mnav-btn {
   background:none; border:none; color:#fff; font-size:22px;
-  cursor:pointer; padding:0 10px; opacity:.85; line-height:1;
+  cursor:pointer; padding:0 8px; opacity:.85; line-height:1;
   -webkit-tap-highlight-color:transparent;
 }
 .mnav-btn:active { opacity:.5; }
-.mnav-label { color:#fff; font-size:clamp(10px,3.1vw,13px); font-weight:bold; letter-spacing:3px; text-transform:uppercase; }
+.mnav-center { text-align:center; }
+.mnav-label { display:block; color:#fff; font-size:clamp(11px,3.1vw,14px); font-weight:700; letter-spacing:3px; text-transform:uppercase; font-family:'Oswald', sans-serif; line-height:1.2; }
+.mnav-day   { display:block; color:rgba(255,255,255,.65); font-size:clamp(8px,2.2vw,10px); font-weight:300; letter-spacing:3px; text-transform:uppercase; font-family:'Josefin Sans', sans-serif; margin-top:1px; }
 
 /* DATE */
-.date-wrap { text-align:center; padding:14px 18px 4px; flex-shrink:0; }
-.day-name { font-size:clamp(9px,2.6vw,11px); font-weight:bold; color:var(--c-muted); letter-spacing:5px; text-transform:uppercase; }
-.date-num { font-size:clamp(64px,22vw,96px); font-weight:900; color:var(--c-accent); line-height:.88; font-family:'Arial Black','Arial',sans-serif; }
+.date-wrap { text-align:center; padding:6px 18px 2px; flex-shrink:0; }
+.date-num { font-size:clamp(72px,24vw,108px); font-weight:700; color:var(--c-accent); line-height:.9; font-family:'Oswald', 'Arial Black', sans-serif; font-style:normal; letter-spacing:-2px; }
+
+/* HOY BADGE */
+.mnav-hoy {
+  display:inline-block; background:rgba(255,255,255,.18); border:none;
+  color:#fff; font-size:8px; font-family:'Josefin Sans',sans-serif; font-weight:600;
+  letter-spacing:1.5px; text-transform:uppercase; padding:2px 7px; border-radius:20px;
+  cursor:pointer; margin-top:2px; -webkit-tap-highlight-color:transparent;
+  transition:background .2s;
+}
+.mnav-hoy:active { background:rgba(255,255,255,.35); }
 
 /* DIVIDERS */
 .div-line {
   height:1px;
   background:linear-gradient(to right,transparent,var(--c-divider),transparent);
-  margin:8px 22px; flex-shrink:0;
+  margin:5px 22px; flex-shrink:0;
 }
 
 /* BIO TYPE */
@@ -141,7 +152,10 @@ body {
   gap:10px; padding:8px 18px 4px; flex-shrink:0;
 }
 .bio-icon { font-size:clamp(22px,7vw,30px); line-height:1; }
-.bio-lbl  { font-size:clamp(12px,3.8vw,16px); font-weight:bold; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); }
+.bio-lbl  { font-size:clamp(14px,4vw,18px); font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); font-family:'Oswald', sans-serif; font-style:normal; }
+.bio-arrow { font-size:clamp(16px,5vw,22px); color:var(--c-muted); font-weight:400; line-height:1; display:flex; flex-direction:column; align-items:center; gap:2px; font-family:'Oswald', sans-serif; }
+.bio-trans-hora { font-size:clamp(8px,2.4vw,10px); color:var(--c-muted); font-weight:300; letter-spacing:.5px; line-height:1; font-family:'Josefin Sans', sans-serif; }
+.bio-trans-lbl { text-align:center; font-size:clamp(11px,3vw,14px); font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); padding:0 18px 4px; font-family:'Oswald', sans-serif; font-style:normal; }
 
 /* MOON */
 .moon-wrap {
@@ -152,59 +166,76 @@ body {
   transition:background .3s, border-color .3s;
 }
 .moon-em  { font-size:24px; }
-.moon-txt { font-size:12px; color:var(--c-secondary); line-height:1.65; }
-.moon-sign{ font-weight:bold; color:var(--c-primary); }
-.moon-asc { font-size:11px; letter-spacing:.5px; opacity:.75; font-weight:600; }
+.moon-txt { font-size:12.5px; color:var(--c-secondary); line-height:1.7; font-family:'Josefin Sans', sans-serif; font-weight:400; }
+.moon-sign{ font-weight:700; color:var(--c-primary); font-family:'Oswald', sans-serif; font-style:normal; font-size:14px; letter-spacing:.5px; }
+.moon-bar { display:inline-block; width:36px; height:3px; border-radius:2px; background:var(--c-dim); vertical-align:middle; position:relative; margin:0 4px 1px; }
+.moon-bar::after { content:''; position:absolute; left:0; top:0; height:100%; width:var(--p,50%); background:var(--c-accent); border-radius:2px; }
+.moon-asc-ctx { font-size:12px; letter-spacing:.5px; font-weight:700; font-family:'Oswald', sans-serif; }
+.moon-asc-ctx.asc  { color:#5a8a40; }
+.moon-asc-ctx.desc { color:#1a7a9a; }
 
 /* WINDOW */
 .win-wrap { text-align:center; padding:5px 18px 2px; flex-shrink:0; }
-.win-lbl  { font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:2px; }
-.win-val  { font-size:13px; font-weight:bold; color:var(--c-accent); }
+.win-lbl  { font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:2px; font-family:'Josefin Sans', sans-serif; font-weight:300; }
+.win-val  { font-size:15px; font-weight:700; color:var(--c-accent); font-family:'Oswald', sans-serif; letter-spacing:1px; }
+
+/* CALENDAR LEGEND */
+.cal-legend { display:flex; flex-wrap:wrap; justify-content:center; gap:2px 7px; margin-top:4px; font-size:7px; color:var(--c-muted); letter-spacing:.8px; text-transform:uppercase; font-family:'Josefin Sans', sans-serif; font-weight:300; }
+.cal-legend span { display:flex; align-items:center; gap:2px; }
+.leg-sq { display:inline-block; width:7px; height:7px; border-radius:1px; }
+.leg-tr { display:inline-block; width:10px; height:2px; background:rgba(60,140,40,.6); border-radius:1px; vertical-align:middle; }
 
 /* SEASONAL CROPS */
 .crops-wrap { padding:4px 18px 6px; flex-shrink:0; }
 .crop-row   { display:flex; align-items:baseline; gap:8px; margin-bottom:6px; }
 .crop-em    { font-size:14px; flex-shrink:0; }
-.crop-lbl   { font-size:9px; color:var(--c-muted); letter-spacing:1.5px; text-transform:uppercase; flex-shrink:0; min-width:58px; }
-.crop-val   { font-size:12px; color:var(--c-primary); font-style:italic; line-height:1.5; }
+.crop-lbl   { font-size:9px; color:var(--c-muted); letter-spacing:1.5px; text-transform:uppercase; flex-shrink:0; min-width:58px; font-family:'Josefin Sans', sans-serif; font-weight:300; }
+.crop-val   { font-size:13px; color:var(--c-primary); font-style:normal; line-height:1.6; font-family:'Josefin Sans', sans-serif; font-weight:400; }
 
 .crop-link {
   cursor:pointer; color:var(--c-primary);
   border-bottom:1px dotted var(--c-accent);
-  font-style:italic; transition:color .15s;
+  font-style:normal; transition:color .15s;
 }
 .crop-link:hover { color:var(--c-accent); }
 
 /* TIP */
 .tip-wrap { padding:4px 18px 10px; flex-shrink:0; }
 .tip-ttl  {
-  font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase;
-  margin-bottom:5px; display:flex; align-items:center; gap:7px;
+  font-size:9px; color:var(--c-muted); letter-spacing:2.5px; text-transform:uppercase;
+  margin-bottom:6px; display:flex; align-items:center; gap:7px;
+  font-family:'Oswald', sans-serif; font-weight:400;
 }
 .tip-ttl::after { content:''; flex:1; height:1px; background:var(--c-tipline); }
-.tip-body { font-size:12.5px; color:var(--c-tip); line-height:1.65; font-style:italic; }
+.tip-body { font-size:13px; color:var(--c-tip); line-height:1.7; font-style:normal; font-family:'Josefin Sans', sans-serif; font-weight:400; }
+.tip-body + .tip-body { margin-top:8px; color:var(--c-secondary); font-size:12.5px; }
 
 /* MINI CALENDAR */
 .cal-wrap {
-  margin:2px 16px 10px;
-  border:1px solid var(--bd-cal); border-radius:8px;
-  padding:7px 10px; background:var(--bg-cal); flex-shrink:0;
+  margin:0 12px 6px;
+  border:1px solid var(--bd-cal); border-radius:6px;
+  padding:4px 7px 5px; background:var(--bg-cal); flex-shrink:0;
   transition:background .3s, border-color .3s;
 }
-.cal-ttl { font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase; text-align:center; margin-bottom:4px; }
 .cal-tbl { width:100%; border-collapse:collapse; }
-.cal-tbl th{ font-size:9px; color:var(--c-muted); text-align:center; padding:2px 0; font-weight:normal; }
-.cal-tbl td{ text-align:center; padding:2px 0; }
+.cal-tbl th{ font-size:8px; color:var(--c-muted); text-align:center; padding:1px 0 3px; font-weight:300; letter-spacing:.5px; font-family:'Josefin Sans', sans-serif; }
+.cal-tbl td{ text-align:center; padding:0; }
+.cal-tbl td.tras { border-bottom:2px solid rgba(60,140,40,.55); }
 .dcell {
   display:inline-flex; align-items:center; justify-content:center;
-  width:26px; height:22px; border-radius:5px;
-  font-size:10px; color:var(--c-primary);
+  width:23px; height:18px; border-radius:4px;
+  font-size:10px; font-weight:700; color:var(--c-primary);
   cursor:pointer; transition:opacity .15s;
   -webkit-tap-highlight-color:transparent;
+  font-family:'Josefin Sans', sans-serif;
 }
 .dcell:active { opacity:.4; }
 .dcell.today  { background:var(--c-accent); color:#fff; font-weight:bold; }
 .dcell.picked { background:var(--c-picked-bg); color:var(--c-picked-fg); font-weight:bold; }
+.dcell.trans  { height:24px; flex-direction:column; gap:0; justify-content:flex-start; padding-top:2px; }
+.trans-dots   { display:flex; align-items:center; gap:1px; font-size:5px; line-height:1; margin-top:1px; }
+.trans-dots .tarr { color:var(--c-muted); font-size:4px; }
+
 
 /* FOOTER */
 .ftr {
@@ -213,7 +244,7 @@ body {
   display:flex; align-items:center; justify-content:space-between;
   flex-shrink:0; transition:background .3s;
 }
-.ftr-main { color:rgba(255,255,255,.72); font-size:9.5px; letter-spacing:.8px; }
+.ftr-main { color:rgba(255,255,255,.65); font-size:9.5px; letter-spacing:1.5px; font-family:'Josefin Sans', sans-serif; font-weight:300; text-transform:uppercase; }
 .ftr-src  { color:rgba(255,255,255,.28); font-size:7px; letter-spacing:.5px; text-align:right; line-height:1.5; }
 
 /* CONTROLS (below card) */
@@ -259,9 +290,9 @@ body.ig-mode .cal-wrap  { display:none !important; }
 /* — TIPOGRAFÍA IG — */
 body.ig-mode { font-family:'Josefin Sans', sans-serif !important; }
 body.ig-mode .date-num,
-body.ig-mode .bio-lbl    { font-family:'Playfair Display', serif !important; }
+body.ig-mode .bio-lbl    { font-family:'Oswald', sans-serif !important; }
 body.ig-mode .hdr-name,
-body.ig-mode .mnav-label { font-family:'Cormorant Garamond', serif !important; }
+body.ig-mode .mnav-label { font-family:'Oswald', sans-serif !important; }
 
 /* — HEADER — */
 body.ig-mode .hdr        { padding:1vw 6vw; background:#1a1a1a !important; border-bottom:1px solid rgba(255,255,255,.06); }
@@ -277,7 +308,7 @@ body.ig-mode .mnav-btn   { opacity:0; pointer-events:none; }
 
 /* — DATE — */
 body.ig-mode .date-wrap  { padding:.3vw 6vw 0; }
-body.ig-mode .day-name   { font-size:2.2vw; letter-spacing:1.5vw; font-weight:300; }
+body.ig-mode .mnav-day   { font-size:2vw; letter-spacing:1.5vw; font-weight:300; }
 body.ig-mode .date-num   { font-size:17vw; line-height:.88; font-weight:900; }
 
 /* — BIO TYPE (DÍA DE RAÍCES) — */
@@ -289,8 +320,8 @@ body.ig-mode .bio-lbl    { font-size:4.2vw; letter-spacing:.2vw; font-weight:700
 body.ig-mode .moon-wrap  { margin:0 5vw; padding:1.8vw 4vw; }
 body.ig-mode .moon-em    { font-size:4.2vw; }
 body.ig-mode .moon-txt   { font-size:2.8vw; line-height:1.5; font-weight:300; color:var(--c-secondary); }
-body.ig-mode .moon-sign  { font-size:3.5vw; font-family:'Playfair Display',serif; font-style:italic; font-weight:700; color:var(--c-primary); }
-body.ig-mode .moon-asc   { font-size:2.4vw; letter-spacing:.4vw; font-weight:600; color:var(--c-secondary); }
+body.ig-mode .moon-sign  { font-size:3.5vw; font-family:'Oswald',sans-serif; font-style:normal; font-weight:700; color:var(--c-primary); }
+body.ig-mode .moon-asc-ctx { font-size:2.4vw; letter-spacing:.4vw; font-weight:600; color:var(--c-secondary); }
 
 /* — PERÍODO FAVORABLE — */
 body.ig-mode .win-wrap   { padding:1vw 6vw; }
@@ -338,7 +369,7 @@ body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-col
 }
 .btn:active { opacity:.75; }
 .btn-jpg { background:#1a1a1a; color:#fff; }
-.btn-pdf { background:#cc0000; color:#fff; }
+.btn-pdf { background:#ec008c; color:#fff; }
 .btn-theme {
   background:none; border:2px solid var(--bd-card);
   color:var(--c-primary); font-size:18px;
@@ -432,7 +463,7 @@ const MAYO_2026 = {
   4: {tipo:'fruto',signo:'Escorpio → Sagitario @10-11hs', vent:'desde las 10/11hs',
       tip:'Apogeo lunar a las 20hs. Hojas hasta las 10-11hs. Frutos desde entonces (Luna en Sagitario). Buena tarde para cosechar.'},
   5: {tipo:'fruto',signo:'Sagitario',                   vent:'13 a 24hs',
-      tip:'Inicio del período de trasplante a las 10hs (Luna ascendente). Frutos desde las 13hs. Excelente para sembrar frutos y guardar semillas.'},
+      tip:'Inicio del período de trasplante a las 10hs (Luna descendente). Frutos desde las 13hs. Excelente para sembrar frutos y guardar semillas.'},
   6: {tipo:'fruto',signo:'Sagitario',                   vent:'todo el día',
       tip:'Día de Frutos (Luna en Sagitario). Excelente para cosechar, sembrar y guardar semillas. Período de trasplante activo.'},
   7: {tipo:'fruto',signo:'Sagitario',                   vent:'todo el día',
@@ -1352,12 +1383,17 @@ const SEASONAL = {
 
 // ── CONFIG POR TIPO ──────────────────────────────────────────────────────────
 const TC = {
-  fruto:{icon:'🍎',lbl:'DÍA DE FRUTOS', color:'#cc0000', bg:'rgba(0,0,0,.04)'},
-  raiz: {icon:'🥕',lbl:'DÍA DE RAÍCES', color:'#cc0000', bg:'rgba(0,0,0,.04)'},
-  flor: {icon:'🌼',lbl:'DÍA DE FLORES', color:'#cc0000', bg:'rgba(0,0,0,.04)'},
-  hoja: {icon:'🌿',lbl:'DÍA DE HOJAS',  color:'#cc0000', bg:'rgba(0,0,0,.04)'},
+  fruto:{icon:'🍎',lbl:'DÍA DE FRUTOS', short:'FRUTOS', color:'#cc0000', bg:'rgba(0,0,0,.04)'},
+  raiz: {icon:'🥕',lbl:'DÍA DE RAÍCES', short:'RAÍCES', color:'#cc0000', bg:'rgba(0,0,0,.04)'},
+  flor: {icon:'🌼',lbl:'DÍA DE FLORES', short:'FLORES', color:'#cc0000', bg:'rgba(0,0,0,.04)'},
+  hoja: {icon:'🌿',lbl:'DÍA DE HOJAS',  short:'HOJAS',  color:'#cc0000', bg:'rgba(0,0,0,.04)'},
 };
-const TC_COL={fruto:'#cc0000',raiz:'#555',flor:'#888',hoja:'#333'};
+const SIGN_TO_TIPO = {
+  'Aries':'fruto','Tauro':'raiz','Géminis':'flor','Cáncer':'hoja',
+  'Leo':'fruto','Virgo':'raiz','Libra':'flor','Escorpio':'hoja',
+  'Sagitario':'fruto','Capricornio':'raiz','Acuario':'flor','Piscis':'hoja'
+};
+const TC_COL={fruto:'#cc0000',raiz:'#7a5c3a',flor:'#8a70a0',hoja:'#3a7a50'};
 
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio',
              'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1397,9 +1433,11 @@ function moonPhase(date) {
 function moonAscending(date){
   const d=(date-new Date('2000-01-01T12:00:00Z'))/86400000;
   const L=(((218.316+13.176396*d)%360)+360)%360;
-  // Ascending: Capricornio→Géminis (L>270° or L<90°)
-  // Descending: Cáncer→Sagitario (90°≤L≤270°)
-  return L>270||L<90;
+  // Hemisferio SUR (Argentina): la Luna está más alta cuando está en Cáncer–Sagitario
+  // Ascendente (sube en cielo austral): Cáncer→Sagitario (90°≤L≤270°)
+  // Descendente (baja en cielo austral): Capricornio→Géminis (L>270° o L<90°)
+  // Período de trasplante AABDA = luna descendente = Capricornio→Géminis
+  return L>=90 && L<=270;
 }
 
 // ── SIGN ALGORITHM (fallback) ────────────────────────────────────────────────
@@ -1510,8 +1548,50 @@ function nextMonth(){
   pickedDate=new Date(pickedDate.getFullYear(),pickedDate.getMonth()+1,1);
   render(pickedDate);
 }
+function prevDay(){
+  const d=new Date(pickedDate); d.setDate(d.getDate()-1);
+  pickedDate=d; render(pickedDate);
+}
+function nextDay(){
+  const d=new Date(pickedDate); d.setDate(d.getDate()+1);
+  pickedDate=d; render(pickedDate);
+}
+
+// ── SWIPE NAVIGATION ─────────────────────────────────────────────────────────
+(function(){
+  let tx=0, ty=0;
+  const el=document.getElementById('card');
+  el.addEventListener('touchstart',e=>{
+    tx=e.touches[0].clientX;
+    ty=e.touches[0].clientY;
+  },{passive:true});
+  el.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-tx;
+    const dy=e.changedTouches[0].clientY-ty;
+    if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.5) return;
+    dx<0 ? nextDay() : prevDay();
+  },{passive:true});
+})();
 
 // ── MINI CALENDAR ────────────────────────────────────────────────────────────
+// Rangos de período de trasplante por mes (0-indexed) para 2026 — fuente: AABDA
+const TRAS_2026 = {
+  4: [[5,18]],
+  5: [[1,15],[28,30]],
+  6: [[1,11],[26,31]],
+  7: [[1,5],[22,31]],
+  8: [[1,5],[22,30]],
+  9: [[1,13],[16,29]],
+  10:[[12,19]],
+  11:[[9,16],[23,29]],
+};
+function isDayTrasplante(year,month,day){
+  if(year===2026 && TRAS_2026[month]){
+    return TRAS_2026[month].some(([s,e])=>day>=s&&day<=e);
+  }
+  return !moonAscending(new Date(year,month,day,12,0,0));
+}
+
 function miniCal(year,month,pickedDay,todayRef){
   const first=new Date(year,month,1).getDay();
   const days=new Date(year,month+1,0).getDate();
@@ -1526,10 +1606,16 @@ function miniCal(year,month,pickedDay,todayRef){
     const isPicked=(d===pickedDay);
     let cls='dcell';
     let st='';
+    const trans=getTransicion(year,month,d);
+    if(trans) cls+=' trans';
     if(isToday)  {cls+=' today';}
     else if(isPicked){cls+=' picked'; st=`color:${col};`;}
     else         {st=`color:${col};`;}
-    rows+=`<td><span class="${cls}" style="${st}" onclick="selectDay(${year},${month},${d})">${d}</span></td>`;
+    const tdCls=isDayTrasplante(year,month,d)?'tras':'';
+    const dotsHtml=trans&&!isToday&&!isPicked
+      ?`<span class="trans-dots"><span style="color:${TC_COL[trans.tipo1]}">●</span><span class="tarr">›</span><span style="color:${TC_COL[trans.tipo2]}">●</span></span>`
+      :'';
+    rows+=`<td class="${tdCls}"><span class="${cls}" style="${st}" onclick="selectDay(${year},${month},${d})">${d}${dotsHtml}</span></td>`;
     cnt++;
     if(cnt%7===0&&d<days) rows+='</tr><tr>';
   }
@@ -1537,11 +1623,18 @@ function miniCal(year,month,pickedDay,todayRef){
   rows+='</tr>';
 
   return `<div class="cal-wrap">
-    <div class="cal-ttl">${MESES[month].toUpperCase()} ${year}</div>
     <table class="cal-tbl">
       <thead><tr><th>D</th><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th></tr></thead>
       <tbody>${rows}</tbody>
-    </table></div>`;
+    </table>
+    <div class="cal-legend">
+      <span><span class="leg-sq" style="background:#cc0000"></span>Frutos</span>
+      <span><span class="leg-sq" style="background:#7a5c3a"></span>Raíces</span>
+      <span><span class="leg-sq" style="background:#8a70a0"></span>Flores</span>
+      <span><span class="leg-sq" style="background:#3a7a50"></span>Hojas</span>
+      <span><span class="leg-tr"></span>Trasplante</span>
+    </div>
+  </div>`;
 }
 
 // ── LOOKUP PRECISO (AABDA) — reemplazar cuando se tengan capturas del PDF ──────
@@ -1553,11 +1646,81 @@ const DATOS_PRECISOS = {
 };
 */
 
-// Tipo de día para el mini calendario (calculado on-the-fly por el algoritmo sidéreo)
+const MESES_AABDA_2026=[null,null,null,null,
+  MAYO_2026,JUNIO_2026,JULIO_2026,AGOSTO_2026,SEPTIEMBRE_2026,
+  OCTUBRE_2026,NOVIEMBRE_2026,DICIEMBRE_2026];
+
 function getDayType(year, month, day){
-  const d = new Date(year, month, day, 12, 0, 0);
+  const mes=year===2026?MESES_AABDA_2026[month]:null;
+  if(mes && mes[day]) return mes[day].tipo;
+  const d=new Date(year,month,day,12,0,0);
   return moonSign(d).tipo;
 }
+
+function getTransicion(year, month, day){
+  const mes=year===2026?MESES_AABDA_2026[month]:null;
+  if(!mes || !mes[day]) return null;
+  const {tipo, signo}=mes[day];
+  const ai=signo.indexOf('→');
+  if(ai===-1) return null;
+  const s1=signo.slice(0,ai).trim();
+  const tipo1=SIGN_TO_TIPO[s1];
+  if(!tipo1||tipo1===tipo) return null;
+  // Extraer hora de transición del signo: "@6-7hs" → "6–7 hs"
+  const horaM=signo.match(/@([\d\-–]+)\s*hs/i);
+  const hora=horaM ? horaM[1].replace('-','–')+' hs' : null;
+  return {tipo1, tipo2:tipo, hora};
+}
+
+// ── ZODIAC GLYPHS ─────────────────────────────────────────────────────────────
+const ZODIAC_GLYPH={
+  'Aries':'♈','Tauro':'♉','Géminis':'♊','Cáncer':'♋',
+  'Leo':'♌','Virgo':'♍','Libra':'♎','Escorpio':'♏',
+  'Sagitario':'♐','Capricornio':'♑','Acuario':'♒','Piscis':'♓'
+};
+function addGlyphs(s){
+  return s.replace(/Aries|Tauro|Géminis|Cáncer|Leo|Virgo|Libra|Escorpio|Sagitario|Capricornio|Acuario|Piscis/g,
+    m=>m+(ZODIAC_GLYPH[m]||''));
+}
+function fmtVent(v){
+  if(!v) return v;
+  const l=v.toLowerCase();
+  if(l==='todo el día') return 'todo el día ✓';
+  if(l==='restringido') return 'energía reducida ⚠';
+  return v;
+}
+
+// ── CONSEJOS BIODINÁMICOS ROTATIVOS ──────────────────────────────────────────
+const CONSEJOS = {
+  fruto:[
+    '🌞 Los frutos cosechados hoy tendrán mejor sabor y se conservarán más tiempo. Cosechar en las horas centrales del día, evitando el rocío matutino.',
+    '🌱 Ideal para guardar semillas de frutos: tomate, zapallo, pimiento, chaucha. Secar bien y guardar en papel, nunca en plástico ni en frío.',
+    '🍅 Los frutos cosechados en días de fuego son más aromáticos y concentrados. Aprovechar para elaborar conservas, salsas y fermentados.',
+    '🌶️ Buen día para podar árboles frutales si se desea estimular la producción frutal. La energía del fuego favorece el cuajado.',
+    '🔥 Sembrar frutos en días de Aries, Leo o Sagitario: tomates, pimientos, berenjenas, pepinos, zapallos. La energía calorífica activa la germinación.',
+  ],
+  raiz:[
+    '🥕 Cosechar raíces y tubérculos hoy: zanahoria, remolacha, nabo, papa. El sabor y la conservación son superiores en días de tierra.',
+    '🌱 Trasplantar en días de raíces afianza el arraigo. Regar poco tras el trasplante — la tierra húmeda en exceso pudre raíces nuevas.',
+    '🪱 Aplicar compost maduro o biofertilizantes sólidos. El suelo está especialmente receptivo hoy a los nutrientes orgánicos de la tierra.',
+    '🌿 Dividir y trasplantar bulbos: ajo, cebolla, puerro, tulipán, gladiolo. Plantar a la profundidad correcta y sin dejar aire en el hoyo.',
+    '⛏️ Laborar el suelo con horquilla — nunca pala plana — para no destruir la estructura. La aireación mejora la vida microbiana en profundidad.',
+  ],
+  flor:[
+    '🌸 Cosechar flores y aromáticas con mayor concentración de aceite esencial. Cortar a mitad de la mañana, antes del calor, para máximo aroma.',
+    '✂️ Podar arbustos ornamentales y rosales en días de flores para estimular la floración. Los cortes cicatrizan bien con energía aérea activa.',
+    '🍵 Preparar tés e infusiones de hierbas aromáticas. La energía del aire potencia los principios activos de la planta.',
+    '🐝 Buen día para trabajar con las colmenas. Las abejas están más dóciles y orientadas a la floración. Revisar marcos y limpiar fondos.',
+    '🌼 Sembrar flores, aromáticas y plantas de flor comestible: caléndula, lavanda, borraja, coriandro. La energía floral favorece la formación de botones.',
+  ],
+  hoja:[
+    '💧 Regar profusamente hoy — las plantas absorben el agua con mayor eficiencia en días de hojas. Mejor al amanecer o al atardecer.',
+    '🥬 Cosechar verduras de hoja para consumo fresco: lechuga, espinaca, acelga, radicheta. Para secar o conservar, preferir días de frutos.',
+    '🌿 Aplicar preparados foliares biodinámicos (BD 501 — sílice de cuarzo) en días de hojas para fortalecer la energía lumínica de la planta.',
+    '🪴 Sembrar verduras de hoja: lechugas, espinacas, acelgas, perejil. La energía hídrica favorece el desarrollo foliar y la terneza.',
+    '⚠️ En Piscis y Escorpio la energía puede ser intensa o difusa. Evitar siembras delicadas. Buen día para regar, mulchear y dejar descansar el huerto.',
+  ],
+};
 
 // ── RENDER ───────────────────────────────────────────────────────────────────
 function render(date){
@@ -1599,15 +1762,31 @@ function render(date){
   const sc=sea[tipo]||{p:[],h:[]};
 
   const tc=TC[tipo];
+  const trans=getTransicion(year,mon,day);
   const mp=moonPhase(date);
   const est=getEstacion(date);
   const asc=moonAscending(date);
+  const bioHtml=trans
+    ?`<div class="bio-wrap">
+        <span class="bio-icon">${TC[trans.tipo1].icon}</span>
+        <span class="bio-arrow">
+          →
+          ${trans.hora?`<span class="bio-trans-hora">${trans.hora}</span>`:''}
+        </span>
+        <span class="bio-icon">${tc.icon}</span>
+      </div>
+      <div class="bio-trans-lbl">${TC[trans.tipo1].short} → ${tc.short}</div>`
+    :`<div class="bio-wrap">
+        <span class="bio-icon">${tc.icon}</span>
+        <div class="bio-lbl">${tc.lbl}</div>
+      </div>`;
+  const consejoBio = CONSEJOS[tipo][(day-1) % CONSEJOS[tipo].length];
 
   document.getElementById('card').innerHTML=`
     <div class="hdr">
       <div>
-        <div class="hdr-name">El Huerto de Lucas</div>
-        <div class="hdr-sub">Almanaque Biodinámico</div>
+        <div class="hdr-name">Almanaque Biodinámico</div>
+        <div class="hdr-sub">Hemisferio Sur</div>
       </div>
       <div class="hdr-right">
         <div class="hdr-season">Estamos en ${est}<br><span>General Pinto, BA</span></div>
@@ -1616,34 +1795,33 @@ function render(date){
 
     <div class="month-nav">
       <button class="mnav-btn" onclick="prevMonth()">&#8249;</button>
-      <span class="mnav-label">${MESES[mon].toUpperCase()} ${year}</span>
+      <div class="mnav-center">
+        <span class="mnav-label">${MESES[mon].toUpperCase()} ${year}</span>
+        <span class="mnav-day">${DIAS[dow].toUpperCase()}${day!==TODAY.getDate()||mon!==TODAY.getMonth()||year!==TODAY.getFullYear()?` &nbsp;<button class="mnav-hoy" onclick="goToday()">↩ hoy</button>`:''}</span>
+      </div>
       <button class="mnav-btn" onclick="nextMonth()">&#8250;</button>
     </div>
 
     <div class="date-wrap">
-      <div class="day-name">${DIAS[dow].toUpperCase()}</div>
       <div class="date-num">${day}</div>
     </div>
 
     <div class="div-line"></div>
 
-    <div class="bio-wrap">
-      <span class="bio-icon">${tc.icon}</span>
-      <div class="bio-lbl">${tc.lbl}</div>
-    </div>
+    ${bioHtml}
 
     <div class="moon-wrap">
       <span class="moon-em">${mp.em}</span>
       <div class="moon-txt">
-        <span class="moon-sign">Luna en ${signo}</span><br>
-        <span>${mp.ph} · ${mp.ill}% iluminada · Día ${mp.day}</span><br>
-        <span class="moon-asc">${asc?'↑ Ascendente':'↓ Descendente'}</span>
+        <span class="moon-sign">Luna en ${addGlyphs(signo.replace(/@[\d\-–]+\s*hs/i,'').replace(/\s+$/,''))}</span><br>
+        <span class="moon-bar" style="--p:${mp.ill}%"></span>${mp.ph} · Día ${mp.day}<br>
+        <span class="moon-asc-ctx ${asc?'asc':'desc'}">${asc?'↑ Ascendente — cosechar · sembrar · podar':'↓ Descendente — trasplantar · abonar · compostar'}</span>
       </div>
     </div>
 
     <div class="win-wrap">
-      <div class="win-lbl">Período favorable</div>
-      <div class="win-val">⏱ ${vent}</div>
+      <div class="win-lbl">Mejor horario del día</div>
+      <div class="win-val">⏱ ${fmtVent(vent)}</div>
     </div>
 
     <div class="div-line"></div>
@@ -1662,14 +1840,15 @@ function render(date){
     </div>
 
     <div class="tip-wrap">
-      <div class="tip-ttl">Tip del día</div>
+      <div class="tip-ttl">Consejos biodinámicos</div>
       <div class="tip-body">${tip}</div>
+      <div class="tip-body">${consejoBio}</div>
     </div>
 
     ${miniCal(year,mon,day,TODAY)}
 
     <div class="ftr">
-      <div class="ftr-main">elhuertodelucas.com.ar</div>
+      <div class="ftr-main">app by <a href="https://www.instagram.com/tijuanatipu/" target="_blank" style="color:inherit;text-decoration:none;font-weight:bold;">@tijuanatipu</a></div>
       <div class="ftr-src"></div>
     </div>`;
 }
