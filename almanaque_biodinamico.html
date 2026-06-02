@@ -210,6 +210,23 @@ body {
 }
 .crop-link:hover { color:var(--c-accent); }
 
+/* RAYADOS */
+.rayado-wrap {
+  margin:0 16px 4px; padding:7px 12px; border-radius:6px; flex-shrink:0;
+  background:rgba(150,80,0,.08); border-left:3px solid #c06000;
+}
+body.dark .rayado-wrap { background:rgba(200,120,0,.12); }
+.rayado-ttl { font-size:11px; font-weight:700; color:#c06000; font-family:'Oswald',sans-serif; letter-spacing:.5px; }
+.rayado-sub { font-size:10.5px; color:var(--c-secondary); font-family:'Josefin Sans',sans-serif; font-weight:300; margin-top:2px; }
+.dcell.rayado::after {
+  content:''; position:absolute; left:3px; right:3px; top:50%; height:1.5px;
+  background:rgba(180,100,0,.6); border-radius:1px; pointer-events:none;
+}
+.dcell.rayado { position:relative; }
+.mes-cell.rayado-dia { background:rgba(150,80,0,.05) !important; }
+.mes-cell.rayado-dia .mes-dnum { color:#b05000; }
+.mes-rayado { font-size:6px; color:#b05000; font-family:'Josefin Sans',sans-serif; line-height:1; }
+
 /* TIP */
 .tip-wrap { padding:4px 18px 10px; flex-shrink:0; }
 .tip-ttl  {
@@ -1690,6 +1707,7 @@ function renderMesView(){
     const asc=moonAscending(date);
     const isTras=isDayTrasplante(year,mon,d);
     const isHoy=(year===todayY&&mon===todayM&&d===todayD);
+    const rayDia=isRayado(dayData?dayData.tip:'');
 
     // Organ icon(s)
     let iconHtml=trans
@@ -1712,11 +1730,11 @@ function renderMesView(){
     // Ascending/descending
     let lunaHtml=`<span class="mes-luna ${asc?'asc':'desc'}">${asc?'↑':'↓'}</span>`;
 
-    cells+=`<div class="mes-cell${isHoy?' hoy':''}${isTras?' tras':''}" onclick="selectDay(${year},${mon},${d});closeMesView()">
+    cells+=`<div class="mes-cell${isHoy?' hoy':''}${isTras?' tras':''}${rayDia?' rayado-dia':''}" onclick="selectDay(${year},${mon},${d});closeMesView()">
       <span class="mes-dnum">${d}</span>
       ${iconHtml}${transHtml}
       <span class="mes-signo">${signoClean}</span>
-      <div style="display:flex;gap:3px;align-items:center">${faseHtml}${lunaHtml}</div>
+      <div style="display:flex;gap:3px;align-items:center">${faseHtml}${lunaHtml}${rayDia?'<span class="mes-rayado">---</span>':''}</div>
     </div>`;
   }
 
@@ -1749,6 +1767,7 @@ function renderMesView(){
         <div class="mes-legend-item"><span class="mes-luna asc">↑</span> Ascendente</div>
         <div class="mes-legend-item"><span class="mes-luna desc">↓</span> Descendente</div>
         <div class="mes-legend-item"><span style="display:inline-block;width:14px;height:3px;background:rgba(60,140,40,.7);border-radius:1px;vertical-align:middle"></span> Trasplante</div>
+        <div class="mes-legend-item"><span class="mes-rayado" style="font-size:8px">---</span> Restrictivo</div>
       </div>
     </div>`;
   el.addEventListener('click', e=>{ if(e.target===el) closeMesView(); });
@@ -1782,6 +1801,8 @@ function miniCal(year,month,pickedDay,todayRef){
     let st='';
     const trans=getTransicion(year,month,d);
     if(trans) cls+=' trans';
+    const dayTip=(year===2026&&MESES_AABDA_2026[month]&&MESES_AABDA_2026[month][d])?MESES_AABDA_2026[month][d].tip:'';
+    if(isRayado(dayTip)) cls+=' rayado';
     if(isToday)  {cls+=' today';}
     else if(isPicked){cls+=' picked'; st=`color:${col};`;}
     else         {st=`color:${col};`;}
@@ -1844,6 +1865,23 @@ function getTransicion(year, month, day){
   const horaM=signo.match(/@([\d\-–]+)\s*hs/i);
   const hora=horaM ? horaM[1].replace('-','–')+' hs' : null;
   return {tipo1, tipo2:tipo, hora};
+}
+
+// ── RAYADOS — períodos desfavorables ─────────────────────────────────────────
+function isRayado(tip){
+  const t=(tip||'').toLowerCase();
+  return t.includes('eclipse')||t.includes('perigeo')||
+    (t.includes('nodo')&&(t.includes('ascendente de')||t.includes('descendente de')));
+}
+function getRayadoEvento(tip){
+  const t=tip||'';
+  const ecl=t.match(/eclipse\s+(?:total de sol|parcial de luna|de\s+\w+)/i);
+  if(ecl) return ecl[0];
+  const per=t.match(/perigeo\s*(?:lunar)?\s*@?[\d\-–]*\s*hs?/i);
+  if(per) return per[0];
+  const nod=t.match(/nodo\s+(?:ascendente|descendente)\s+(?:de\s+)?\w+/i);
+  if(nod) return nod[0];
+  return null;
 }
 
 // ── ZODIAC GLYPHS ─────────────────────────────────────────────────────────────
@@ -1991,6 +2029,12 @@ function render(date){
   const asc=moonAscending(date);
   const astro=getAstroTimes(date,userLoc.lat,userLoc.lon);
   const isDefaultLoc=(userLoc.name===LOC_DEFAULT.name);
+  const rayado=isRayado(tip);
+  const rayadoEvento=rayado?getRayadoEvento(tip):null;
+  const rayadoHtml=rayado?`<div class="rayado-wrap">
+    <div class="rayado-ttl">⚠ Momento restrictivo${rayadoEvento?' · '+rayadoEvento:''}</div>
+    <div class="rayado-sub">Evitar siembras, trasplantes y trabajos intensos con la tierra. Ideal para desmalezar o podar lo que se quiere debilitar.</div>
+  </div>`:'';
   const bioHtml=trans
     ?`<div class="bio-wrap">
         <span class="bio-icon">${TC[trans.tipo1].icon}</span>
@@ -2067,6 +2111,8 @@ function render(date){
       <div class="win-lbl">Mejor horario del día</div>
       <div class="win-val">⏱ ${fmtVent(vent)}</div>
     </div>
+
+    ${rayadoHtml}
 
     <div class="div-line"></div>
 
