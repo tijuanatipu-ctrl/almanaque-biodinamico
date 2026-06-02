@@ -179,12 +179,12 @@ body {
 .moon-asc-ctx.desc { color:#1a7a9a; }
 
 /* ASTRO TIMES */
-.astro-wrap { padding:6px 18px 2px; flex-shrink:0; display:flex; flex-direction:column; gap:3px; }
-.astro-row  { display:flex; align-items:center; gap:6px; font-family:'Josefin Sans',sans-serif; }
-.astro-icon { font-size:14px; width:20px; text-align:center; flex-shrink:0; }
-.astro-lbl  { font-size:9px; color:var(--c-muted); letter-spacing:1px; text-transform:uppercase; font-weight:300; }
-.astro-val  { font-size:13px; font-weight:700; color:var(--c-primary); font-family:'Oswald',sans-serif; min-width:38px; }
-.astro-sep  { color:var(--c-dim); font-size:11px; }
+.astro-wrap { padding:5px 18px 2px; flex-shrink:0; display:flex; align-items:center; gap:10px; font-family:'Josefin Sans',sans-serif; flex-wrap:wrap; }
+.astro-grp  { display:flex; align-items:center; gap:4px; }
+.astro-icon { font-size:13px; }
+.astro-val  { font-size:13px; font-weight:700; color:var(--c-primary); font-family:'Oswald',sans-serif; }
+.astro-sep  { color:var(--c-dim); font-size:10px; margin:0 1px; }
+.astro-div  { color:var(--c-dim); font-size:14px; }
 
 /* WINDOW */
 .win-wrap { text-align:center; padding:5px 18px 2px; flex-shrink:0; }
@@ -2108,22 +2108,19 @@ function render(date){
     </div>
 
     <div class="astro-wrap">
-      <div class="astro-row">
+      <span class="astro-grp">
         <span class="astro-icon">☀️</span>
-        <span class="astro-lbl">Sale</span>
         <span class="astro-val">${astro.salSol}</span>
-        <span class="astro-sep">·</span>
-        <span class="astro-lbl">Pone</span>
+        <span class="astro-sep">↓</span>
         <span class="astro-val">${astro.pueSol}</span>
-      </div>
-      <div class="astro-row">
+      </span>
+      <span class="astro-div">|</span>
+      <span class="astro-grp">
         <span class="astro-icon">🌙</span>
-        <span class="astro-lbl">Sale</span>
         <span class="astro-val">${astro.salLuna}</span>
-        <span class="astro-sep">·</span>
-        <span class="astro-lbl">Pone</span>
+        <span class="astro-sep">↓</span>
         <span class="astro-val">${astro.pueLuna}</span>
-      </div>
+      </span>
     </div>
 
     <div class="win-wrap">
