@@ -584,16 +584,16 @@ const MAYO_2026 = {
 
 // ── JUNIO 2026 DATA (fuente: AABDA · Calendario Astronómico Digital 2026) ────
 const JUNIO_2026 = {
-  1: {tipo:'hoja', signo:'Libra → Escorpio @5-6hs', vent:'desde las 5/6hs',
-      tip:'Flores (Libra) hasta las 5-6hs. Hojas desde entonces (Luna en Escorpio). Sol en Tauro (sidereal). Evitar siembras importantes por la tarde.'},
-  2: {tipo:'hoja', signo:'Escorpio', vent:'todo el día',
-      tip:'Día de Hojas (Luna en Escorpio). Favorable para verduras de hoja. Regar con moderación.'},
-  3: {tipo:'fruto', signo:'Escorpio → Sagitario', vent:'desde la transición',
-      tip:'Hojas (Escorpio) transicionando a Frutos (Sagitario). Inicio período de trasplante. Buena tarde para frutos.'},
-  4: {tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+  1: {tipo:'hoja', signo:'Libra → Escorpio @5-6hs', vent:'5 a 15hs',
+      tip:'Apogeo lunar @2hs. Flores (Libra) hasta las 5-6hs. Hojas (Escorpio) de 5 a 15hs. A las 15hs la luna entra en Sagitario — inicio período de trasplante. Sol en Tauro (sidereal).'},
+  2: {tipo:'fruto', signo:'Sagitario', vent:'todo el día',
       tip:'Día de Frutos (Luna en Sagitario). Período de trasplante activo. Excelente para cosechar y guardar semillas.'},
-  5: {tipo:'raiz', signo:'Sagitario → Capricornio', vent:'desde la transición',
-      tip:'Frutos (Sagitario) transicionando a Raíces (Capricornio). Período de trasplante. Buena tarde para raíces.'},
+  3: {tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Sagitario). Muy favorable para cosechar y secar semillas. Período de trasplante activo.'},
+  4: {tipo:'raiz', signo:'Sagitario → Capricornio @8-9hs', vent:'desde las 8/9hs',
+      tip:'Frutos hasta las 8-9hs. Raíces desde entonces (Luna en Capricornio). Excelente para cosechar y trasplantar raíces.'},
+  5: {tipo:'raiz', signo:'Capricornio', vent:'todo el día',
+      tip:'Día de Raíces (Capricornio). Ideal para cosechar, trasplantar y abonar raíces y tubérculos.'},
   6: {tipo:'flor', signo:'Capricornio → Acuario @15-16hs', vent:'desde las 15/16hs',
       tip:'Raíces hasta las 15-16hs. Flores desde entonces (Luna en Acuario). Mejor período por la tarde.'},
   7: {tipo:'flor', signo:'Acuario', vent:'mejor mañana temprano',
@@ -1648,7 +1648,7 @@ function nextDay(){
 // Rangos de período de trasplante por mes (0-indexed) para 2026 — fuente: AABDA
 const TRAS_2026 = {
   4: [[5,18]],
-  5: [[3,15],[28,30]],
+  5: [[1,15],[28,30]],
   6: [[1,11],[26,31]],
   7: [[1,5],[22,31]],
   8: [[1,5],[22,30]],
