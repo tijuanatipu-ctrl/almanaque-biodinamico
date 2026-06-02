@@ -2059,14 +2059,10 @@ function render(date){
           ${trans.hora?`<span class="bio-trans-hora">${trans.hora}</span>`:''}
         </span>
         <span class="bio-icon">${tc.icon}</span>
-      </div>
-      <div class="bio-trans-lbl">${TC[trans.tipo1].short} → ${tc.short}</div>`
+      </div>`
     :`<div class="bio-wrap">
         <span class="bio-icon">${tc.icon}</span>
-        <div class="bio-info">
-          <div class="bio-lbl">${tc.lbl}</div>
-          ${ventInline?`<div class="bio-vent">${ventInline}</div>`:''}
-        </div>
+        ${ventInline?`<div class="bio-vent">${ventInline}</div>`:''}
       </div>`;
   const consejoBio = CONSEJOS[tipo][(day-1) % CONSEJOS[tipo].length];
 
