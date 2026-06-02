@@ -174,6 +174,24 @@ body {
 .moon-asc-ctx.asc  { color:#5a8a40; }
 .moon-asc-ctx.desc { color:#1a7a9a; }
 
+/* ASTRO TIMES */
+.astro-wrap { padding:6px 18px 2px; flex-shrink:0; display:flex; flex-direction:column; gap:3px; }
+.astro-row  { display:flex; align-items:center; gap:6px; font-family:'Josefin Sans',sans-serif; }
+.astro-icon { font-size:14px; width:20px; text-align:center; flex-shrink:0; }
+.astro-lbl  { font-size:9px; color:var(--c-muted); letter-spacing:1px; text-transform:uppercase; font-weight:300; }
+.astro-val  { font-size:13px; font-weight:700; color:var(--c-primary); font-family:'Oswald',sans-serif; min-width:38px; }
+.astro-sep  { color:var(--c-dim); font-size:11px; }
+.astro-loc  { margin-top:3px; }
+.loc-btn {
+  background:none; border:none; padding:0;
+  font-size:9px; color:var(--c-muted); letter-spacing:1px; text-transform:uppercase;
+  font-family:'Josefin Sans',sans-serif; font-weight:300; cursor:pointer;
+  display:flex; align-items:center; gap:4px;
+  -webkit-tap-highlight-color:transparent;
+  transition:color .2s;
+}
+.loc-btn:hover,.loc-btn:active { color:var(--c-accent); }
+
 /* WINDOW */
 .win-wrap { text-align:center; padding:5px 18px 2px; flex-shrink:0; }
 .win-lbl  { font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:2px; font-family:'Josefin Sans', sans-serif; font-weight:300; }
@@ -447,6 +465,7 @@ body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-col
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.js"></script>
 <script>
 // ── ESTADO ─────────────────────────────────────────────────────────────────
 const TODAY = new Date();
@@ -1722,6 +1741,55 @@ const CONSEJOS = {
   ],
 };
 
+// ── UBICACIÓN Y HORARIOS ASTRONÓMICOS ────────────────────────────────────────
+const LOC_DEFAULT = {lat:-35.10, lon:-60.91, name:'General Pinto, BA'};
+let userLoc = LOC_DEFAULT;
+(function(){
+  try{ const s=localStorage.getItem('ubicacion'); if(s) userLoc=JSON.parse(s); }catch(e){}
+})();
+
+function fmtHora(d){
+  if(!d||isNaN(d.getTime())) return '--:--';
+  return d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false});
+}
+
+function getAstroTimes(date, lat, lon){
+  const d=new Date(date.getFullYear(),date.getMonth(),date.getDate(),12,0,0);
+  const sun=SunCalc.getTimes(d,lat,lon);
+  const moon=SunCalc.getMoonTimes(d,lat,lon);
+  return {
+    salSol:  fmtHora(sun.sunrise),
+    pueSol:  fmtHora(sun.sunset),
+    salLuna: moon.alwaysUp?'↑ siempre': moon.alwaysDown?'—': moon.rise?fmtHora(moon.rise):'—',
+    pueLuna: moon.alwaysUp?'—'        : moon.alwaysDown?'↓ no sale': moon.set ?fmtHora(moon.set) :'—',
+  };
+}
+
+function requestGPS(){
+  if(!navigator.geolocation){ alert('Tu dispositivo no soporta geolocalización'); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const loc={lat:pos.coords.latitude, lon:pos.coords.longitude,
+                 name:`${pos.coords.latitude.toFixed(2)}°, ${pos.coords.longitude.toFixed(2)}°`};
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${loc.lat}&lon=${loc.lon}&format=json&accept-language=es`)
+        .then(r=>r.json())
+        .then(d=>{
+          const a=d.address||{};
+          const city=a.city||a.town||a.village||a.municipality||a.county||'';
+          const state=a.state||'';
+          if(city) loc.name=city+(state?', '+state:'');
+          localStorage.setItem('ubicacion',JSON.stringify(loc));
+          userLoc=loc; render(pickedDate);
+        })
+        .catch(()=>{ localStorage.setItem('ubicacion',JSON.stringify(loc)); userLoc=loc; render(pickedDate); });
+    },
+    ()=>alert('No se pudo obtener la ubicación. Verificá los permisos.')
+  );
+}
+function resetLoc(){
+  userLoc=LOC_DEFAULT; localStorage.removeItem('ubicacion'); render(pickedDate);
+}
+
 // ── RENDER ───────────────────────────────────────────────────────────────────
 function render(date){
   const day=date.getDate(), mon=date.getMonth(), year=date.getFullYear();
@@ -1766,6 +1834,8 @@ function render(date){
   const mp=moonPhase(date);
   const est=getEstacion(date);
   const asc=moonAscending(date);
+  const astro=getAstroTimes(date,userLoc.lat,userLoc.lon);
+  const isDefaultLoc=(userLoc.name===LOC_DEFAULT.name);
   const bioHtml=trans
     ?`<div class="bio-wrap">
         <span class="bio-icon">${TC[trans.tipo1].icon}</span>
@@ -1789,7 +1859,7 @@ function render(date){
         <div class="hdr-sub">Hemisferio Sur</div>
       </div>
       <div class="hdr-right">
-        <div class="hdr-season">Estamos en ${est}<br><span>General Pinto, BA</span></div>
+        <div class="hdr-season">Estamos en ${est}<br><span>${userLoc.name}</span></div>
       </div>
     </div>
 
@@ -1816,6 +1886,28 @@ function render(date){
         <span class="moon-sign">Luna en ${addGlyphs(signo.replace(/@[\d\-–]+\s*hs/i,'').replace(/\s+$/,''))}</span><br>
         <span class="moon-bar" style="--p:${mp.ill}%"></span>${mp.ph} · Día ${mp.day}<br>
         <span class="moon-asc-ctx ${asc?'asc':'desc'}">${asc?'↑ Ascendente — cosechar · sembrar · podar':'↓ Descendente — trasplantar · abonar · compostar'}</span>
+      </div>
+    </div>
+
+    <div class="astro-wrap">
+      <div class="astro-row">
+        <span class="astro-icon">☀️</span>
+        <span class="astro-lbl">Sale</span>
+        <span class="astro-val">${astro.salSol}</span>
+        <span class="astro-sep">·</span>
+        <span class="astro-lbl">Pone</span>
+        <span class="astro-val">${astro.pueSol}</span>
+      </div>
+      <div class="astro-row">
+        <span class="astro-icon">🌙</span>
+        <span class="astro-lbl">Sale</span>
+        <span class="astro-val">${astro.salLuna}</span>
+        <span class="astro-sep">·</span>
+        <span class="astro-lbl">Pone</span>
+        <span class="astro-val">${astro.pueLuna}</span>
+      </div>
+      <div class="astro-loc">
+        <button class="loc-btn" onclick="requestGPS()">📍 ${userLoc.name}${isDefaultLoc?' — tocá para usar tu ubicación':''}</button>
       </div>
     </div>
 
