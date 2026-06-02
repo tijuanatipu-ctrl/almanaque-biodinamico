@@ -153,10 +153,13 @@ body {
   gap:10px; padding:8px 18px 4px; flex-shrink:0;
 }
 .bio-icon { font-size:clamp(22px,7vw,30px); line-height:1; }
-.bio-lbl  { font-size:clamp(14px,4vw,18px); font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); font-family:'Oswald', sans-serif; font-style:normal; }
+.bio-info  { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.bio-lbl   { font-size:clamp(14px,4vw,18px); font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); font-family:'Oswald', sans-serif; font-style:normal; }
+.bio-vent  { font-size:clamp(9px,2.6vw,11px); color:var(--c-muted); font-family:'Josefin Sans',sans-serif; font-weight:400; letter-spacing:.3px; }
 .bio-arrow { font-size:clamp(16px,5vw,22px); color:var(--c-muted); font-weight:400; line-height:1; display:flex; flex-direction:column; align-items:center; gap:2px; font-family:'Oswald', sans-serif; }
 .bio-trans-hora { font-size:clamp(8px,2.4vw,10px); color:var(--c-muted); font-weight:300; letter-spacing:.5px; line-height:1; font-family:'Josefin Sans', sans-serif; }
-.bio-trans-lbl { text-align:center; font-size:clamp(11px,3vw,14px); font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); padding:0 18px 4px; font-family:'Oswald', sans-serif; font-style:normal; }
+.bio-trans-lbl { text-align:center; font-size:clamp(11px,3vw,14px); font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); padding:0 18px 2px; font-family:'Oswald', sans-serif; font-style:normal; }
+.win-wrap  { display:none; }
 
 /* MOON */
 .moon-wrap {
@@ -352,7 +355,7 @@ body.ig-mode .moon-sign  { font-size:3.5vw; font-family:'Oswald',sans-serif; fon
 body.ig-mode .moon-asc-ctx { font-size:2.4vw; letter-spacing:.4vw; font-weight:600; color:var(--c-secondary); }
 
 /* — PERÍODO FAVORABLE — */
-body.ig-mode .win-wrap   { padding:1vw 6vw; }
+body.ig-mode .win-wrap   { display:block; padding:1vw 6vw; }
 body.ig-mode .win-lbl    { font-size:2vw; letter-spacing:.5vw; margin-bottom:.3vw; font-weight:300; }
 body.ig-mode .win-val    { font-size:3.5vw; font-family:'Playfair Display',serif; font-weight:700; }
 
@@ -1901,6 +1904,18 @@ function fmtVent(v){
   if(l==='restringido') return 'energía reducida ⚠';
   return v;
 }
+function fmtVentInline(v){
+  if(!v) return '';
+  const l=v.toLowerCase();
+  if(l==='todo el día'||l==='todo el día ✓') return '';
+  if(l==='restringido') return 'energía reducida ⚠';
+  if(l.includes('desde las')) return v;
+  if(l.includes('hasta las')) return v;
+  if(l.includes('mejor')) return v;
+  if(l.includes('desde transición')||l.includes('desde la transición')) return '';
+  if(/^\d/.test(l)) return 'activo ' + v;
+  return v;
+}
 
 // ── CONSEJOS BIODINÁMICOS ROTATIVOS ──────────────────────────────────────────
 const CONSEJOS = {
@@ -2035,6 +2050,7 @@ function render(date){
     <div class="rayado-ttl">⚠ Momento restrictivo${rayadoEvento?' · '+rayadoEvento:''}</div>
     <div class="rayado-sub">Evitar siembras, trasplantes y trabajos intensos con la tierra. Ideal para desmalezar o podar lo que se quiere debilitar.</div>
   </div>`:'';
+  const ventInline=fmtVentInline(vent);
   const bioHtml=trans
     ?`<div class="bio-wrap">
         <span class="bio-icon">${TC[trans.tipo1].icon}</span>
@@ -2047,7 +2063,10 @@ function render(date){
       <div class="bio-trans-lbl">${TC[trans.tipo1].short} → ${tc.short}</div>`
     :`<div class="bio-wrap">
         <span class="bio-icon">${tc.icon}</span>
-        <div class="bio-lbl">${tc.lbl}</div>
+        <div class="bio-info">
+          <div class="bio-lbl">${tc.lbl}</div>
+          ${ventInline?`<div class="bio-vent">${ventInline}</div>`:''}
+        </div>
       </div>`;
   const consejoBio = CONSEJOS[tipo][(day-1) % CONSEJOS[tipo].length];
 
