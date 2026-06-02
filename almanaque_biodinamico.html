@@ -204,11 +204,13 @@ body {
 .leg-tr { display:inline-block; width:10px; height:2px; background:rgba(60,140,40,.6); border-radius:1px; vertical-align:middle; }
 
 /* SEASONAL CROPS */
-.crops-wrap { padding:4px 18px 6px; flex-shrink:0; }
-.crop-row   { display:flex; align-items:baseline; gap:8px; margin-bottom:6px; }
-.crop-em    { font-size:14px; flex-shrink:0; }
-.crop-lbl   { font-size:9px; color:var(--c-muted); letter-spacing:1.5px; text-transform:uppercase; flex-shrink:0; min-width:58px; font-family:'Josefin Sans', sans-serif; font-weight:300; }
-.crop-val   { font-size:13px; color:var(--c-primary); font-style:normal; line-height:1.6; font-family:'Josefin Sans', sans-serif; font-weight:400; }
+.crops-wrap { padding:4px 18px 8px; flex-shrink:0; }
+.crops-ttl  { font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase;
+              margin-bottom:4px; display:flex; align-items:center; gap:7px;
+              font-family:'Josefin Sans',sans-serif; font-weight:300; }
+.crops-ttl::after { content:''; flex:1; height:1px; background:var(--c-tipline); }
+.crops-val  { font-size:13px; color:var(--c-primary); line-height:1.65; font-family:'Josefin Sans',sans-serif; font-weight:400; }
+.crops-nota { font-size:10px; color:var(--c-muted); margin-top:2px; font-family:'Josefin Sans',sans-serif; font-style:italic; }
 
 .crop-link {
   cursor:pointer; color:var(--c-primary);
@@ -348,10 +350,9 @@ body.ig-mode .win-val    { font-size:3.5vw; font-family:'Playfair Display',serif
 
 /* — SEMBRAR / COSECHAR — */
 body.ig-mode .crops-wrap { padding:1vw 6vw; }
-body.ig-mode .crop-row   { margin-bottom:1.2vw; gap:2vw; align-items:baseline; }
-body.ig-mode .crop-em    { font-size:3.5vw; }
-body.ig-mode .crop-lbl   { font-size:2vw; min-width:13vw; letter-spacing:.3vw; font-weight:300; }
-body.ig-mode .crop-val   { font-size:3.2vw; line-height:1.4; font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600; }
+body.ig-mode .crops-ttl  { font-size:2vw; letter-spacing:.5vw; margin-bottom:.4vw; }
+body.ig-mode .crops-val  { font-size:3vw; line-height:1.5; font-family:'Josefin Sans',sans-serif; }
+body.ig-mode .crops-nota { font-size:2vw; }
 
 /* — TIP DEL DÍA — */
 body.ig-mode .tip-wrap   { padding:1vw 6vw 1vw; }
@@ -1473,6 +1474,13 @@ function moonSign(date){
   return {sign:s,tipo:BT[s]};
 }
 
+// ── MERGE CROPS (unifica p y h sin duplicados) ───────────────────────────────
+function mergeCrops(sc){
+  const seen=new Set(), all=[];
+  [...(sc.p||[]),...(sc.h||[])].forEach(k=>{ if(!seen.has(k)){seen.add(k);all.push(k);} });
+  return {crops:all, nota:sc.nota_p||sc.nota_h||null};
+}
+
 // ── RENDER CROPS (linked) ────────────────────────────────────────────────────
 function renderCrops(arr, nota){
   if(!arr || arr.length===0){
@@ -1919,16 +1927,11 @@ function render(date){
     <div class="div-line"></div>
 
     <div class="crops-wrap">
-      <div class="crop-row">
-        <span class="crop-em">🌱</span>
-        <span class="crop-lbl">Sembrar</span>
-        <span class="crop-val">${renderCrops(sc.p, sc.nota_p)}</span>
-      </div>
-      <div class="crop-row">
-        <span class="crop-em">🌾</span>
-        <span class="crop-lbl">Cosechar</span>
-        <span class="crop-val">${renderCrops(sc.h, sc.nota_h)}</span>
-      </div>
+      ${(()=>{ const m=mergeCrops(sc);
+        return `<div class="crops-ttl">Plantas del día</div>
+        <div class="crops-val">${renderCrops(m.crops)}</div>
+        ${m.nota?`<div class="crops-nota">${m.nota}</div>`:''}`;
+      })()}
     </div>
 
     <div class="tip-wrap">
