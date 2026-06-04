@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Almanaque">
+<meta name="theme-color" content="#ec008c">
+<meta name="tiktok-developers-site-verification" content="ymnbaMOmHqwUH8JIBtoi44bPbmJoJzAM">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<title>Almanaque Biodinámico Hemisferio Sur</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* ── VARIABLES CLARO / OSCURO ── */
+:root {
+  --bg-page:    #ebebeb;
+  --bg-card:    #ffffff;
+  --bd-card:    #1a1a1a;
+  --bg-hdr:     #1a1a1a;
+  --bg-nav:     #ec008c;
+  --bg-moon:    #faf5f8;
+  --bd-moon:    rgba(236,0,140,.12);
+  --bg-cal:     #faf5f8;
+  --bd-cal:     rgba(236,0,140,.1);
+  --bg-ftr:     #1a1a1a;
+  --c-primary:  #1a1a1a;
+  --c-secondary:#444444;
+  --c-muted:    #999999;
+  --c-dim:      #cccccc;
+  --c-accent:   #ec008c;
+  --c-divider:  rgba(0,0,0,.12);
+  --c-tip:      #2a2a2a;
+  --c-tipline:  #e8e0e5;
+  --c-picked-bg:#1a1a1a;
+  --c-picked-fg:#ffffff;
+  --shadow:     0 8px 48px rgba(0,0,0,.18);
+}
+body.dark {
+  --bg-page:    #111111;
+  --bg-card:    #1c1c1e;
+  --bd-card:    #3a3a3a;
+  --bg-hdr:     #0d0d0d;
+  --bg-nav:     #970060;
+  --bg-moon:    #26202a;
+  --bd-moon:    rgba(236,0,140,.15);
+  --bg-cal:     #211e24;
+  --bd-cal:     rgba(255,255,255,.08);
+  --bg-ftr:     #0d0d0d;
+  --c-primary:  #e8e8e8;
+  --c-secondary:#aaaaaa;
+  --c-muted:    #555555;
+  --c-dim:      #3a3a3a;
+  --c-accent:   #ec008c;
+  --c-divider:  rgba(255,255,255,.1);
+  --c-tip:      #c0b0ba;
+  --c-tipline:  #2e222a;
+  --c-picked-bg:#e8e8e8;
+  --c-picked-fg:#1a1a1a;
+  --shadow:     0 8px 40px rgba(0,0,0,.6);
+}
+
+body {
+  min-height:100vh;
+  background:var(--bg-page);
+  display:flex; flex-direction:column; align-items:center;
+  padding:20px 0 36px;
+  font-family:'Josefin Sans', 'Georgia', sans-serif;
+  user-select:none;
+  transition:background .3s;
+}
+
+/* ── CARD ── */
+#card {
+  width:min(100vw, 420px);
+  background:var(--bg-card);
+  display:flex; flex-direction:column;
+  box-shadow:var(--shadow);
+  overflow:hidden; position:relative;
+  border-left:1.5px solid var(--bd-card);
+  border-right:1.5px solid var(--bd-card);
+  border-bottom:1.5px solid var(--bd-card);
+  transition:background .3s, border-color .3s;
+}
+#card::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:3px;
+  background:var(--c-accent); z-index:10;
+}
+
+/* HEADER */
+.hdr {
+  background:var(--bg-hdr);
+  padding:12px 18px 11px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0; margin-top:3px;
+  transition:background .3s;
+}
+.hdr-name   { color:#fff; font-size:clamp(10px,2.9vw,12px); font-weight:400; letter-spacing:3px; text-transform:uppercase; font-family:'Oswald', sans-serif; }
+.hdr-sub    { color:rgba(255,255,255,.38); font-size:clamp(7px,2vw,8.5px); letter-spacing:2px; margin-top:2px; font-family:'Josefin Sans', sans-serif; font-weight:300; }
+.hdr-right  { display:flex; align-items:center; gap:8px; }
+.hdr-icon   { font-size:clamp(18px,5.5vw,24px); }
+.hdr-season { color:#fff; font-size:clamp(9px,2.6vw,11px); letter-spacing:.5px; text-align:right; line-height:1.5; }
+.hdr-season span { color:rgba(255,255,255,.4); font-size:clamp(6px,1.9vw,8px); cursor:pointer; border-bottom:1px dotted rgba(255,255,255,.2); transition:color .2s; }
+.hdr-season span:hover,.hdr-season span:active { color:rgba(255,255,255,.8); }
+
+/* MONTH NAV */
+.month-nav {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:5px 14px; background:var(--bg-nav); flex-shrink:0;
+  transition:background .3s;
+}
+.mnav-btn {
+  background:none; border:none; color:#fff; font-size:22px;
+  cursor:pointer; padding:0 8px; opacity:.85; line-height:1;
+  -webkit-tap-highlight-color:transparent;
+}
+.mnav-btn:active { opacity:.5; }
+.mnav-center { text-align:center; }
+.mnav-label { display:block; color:#fff; font-size:clamp(11px,3.1vw,14px); font-weight:700; letter-spacing:3px; text-transform:uppercase; font-family:'Oswald', sans-serif; line-height:1.2; }
+.mnav-day   { display:block; color:rgba(255,255,255,.65); font-size:clamp(8px,2.2vw,10px); font-weight:300; letter-spacing:3px; text-transform:uppercase; font-family:'Josefin Sans', sans-serif; margin-top:1px; }
+
+/* DATE */
+.date-wrap { text-align:center; padding:6px 18px 2px; flex-shrink:0; }
+.date-num { font-size:clamp(72px,24vw,108px); font-weight:700; color:var(--c-accent); line-height:.9; font-family:'Oswald', 'Arial Black', sans-serif; font-style:normal; letter-spacing:-2px; }
+
+/* HOY BADGE */
+.mnav-hoy {
+  display:inline-block; background:rgba(255,255,255,.18); border:none;
+  color:#fff; font-size:8px; font-family:'Josefin Sans',sans-serif; font-weight:600;
+  letter-spacing:1.5px; text-transform:uppercase; padding:2px 7px; border-radius:20px;
+  cursor:pointer; margin-top:2px; -webkit-tap-highlight-color:transparent;
+  transition:background .2s;
+}
+.mnav-hoy:active { background:rgba(255,255,255,.35); }
+
+/* DIVIDERS */
+.div-line {
+  height:1px;
+  background:linear-gradient(to right,transparent,var(--c-divider),transparent);
+  margin:5px 22px; flex-shrink:0;
+}
+
+/* BIO TYPE */
+.bio-wrap {
+  display:flex; align-items:center; justify-content:center;
+  gap:10px; padding:8px 18px 4px; flex-shrink:0;
+}
+.bio-icon { font-size:clamp(22px,7vw,30px); line-height:1; }
+.bio-info  { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.bio-lbl   { font-size:clamp(14px,4vw,18px); font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); font-family:'Oswald', sans-serif; font-style:normal; }
+.bio-vent  { font-size:clamp(9px,2.6vw,11px); color:var(--c-muted); font-family:'Josefin Sans',sans-serif; font-weight:400; letter-spacing:.3px; }
+.bio-arrow { font-size:clamp(16px,5vw,22px); color:var(--c-muted); font-weight:400; line-height:1; display:flex; flex-direction:column; align-items:center; gap:2px; font-family:'Oswald', sans-serif; }
+.bio-trans-hora { font-size:clamp(8px,2.4vw,10px); color:var(--c-muted); font-weight:300; letter-spacing:.5px; line-height:1; font-family:'Josefin Sans', sans-serif; }
+.bio-trans-lbl { text-align:center; font-size:clamp(11px,3vw,14px); font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); padding:0 18px 2px; font-family:'Oswald', sans-serif; font-style:normal; }
+.win-wrap  { display:none; }
+
+/* MOON */
+.moon-wrap {
+  display:flex; align-items:center; gap:12px;
+  padding:9px 14px; margin:2px 16px;
+  border-radius:8px; background:var(--bg-moon);
+  flex-shrink:0; border:1px solid var(--bd-moon);
+  transition:background .3s, border-color .3s;
+}
+.moon-em  { font-size:24px; }
+.moon-txt { font-size:12.5px; color:var(--c-secondary); line-height:1.7; font-family:'Josefin Sans', sans-serif; font-weight:400; }
+.moon-sign{ font-weight:700; color:var(--c-primary); font-family:'Oswald', sans-serif; font-style:normal; font-size:14px; letter-spacing:.5px; }
+.moon-bar { display:inline-block; width:36px; height:3px; border-radius:2px; background:var(--c-dim); vertical-align:middle; position:relative; margin:0 4px 1px; }
+.moon-bar::after { content:''; position:absolute; left:0; top:0; height:100%; width:var(--p,50%); background:var(--c-accent); border-radius:2px; }
+.moon-asc-ctx { font-size:12px; letter-spacing:.5px; font-weight:700; font-family:'Oswald', sans-serif; }
+.moon-asc-ctx.asc  { color:#5a8a40; }
+.moon-asc-ctx.desc { color:#1a7a9a; }
+
+/* ASTRO TIMES */
+.astro-wrap { padding:5px 18px 2px; flex-shrink:0; display:flex; align-items:center; gap:10px; font-family:'Josefin Sans',sans-serif; flex-wrap:wrap; }
+.astro-grp  { display:flex; align-items:center; gap:4px; }
+.astro-icon { font-size:13px; }
+.astro-val  { font-size:13px; font-weight:700; color:var(--c-primary); font-family:'Oswald',sans-serif; }
+.astro-sep  { color:var(--c-dim); font-size:10px; margin:0 1px; }
+.astro-div  { color:var(--c-dim); font-size:14px; }
+
+/* WINDOW */
+.win-wrap { text-align:center; padding:5px 18px 2px; flex-shrink:0; }
+.win-lbl  { font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:2px; font-family:'Josefin Sans', sans-serif; font-weight:300; }
+.win-val  { font-size:15px; font-weight:700; color:var(--c-accent); font-family:'Oswald', sans-serif; letter-spacing:1px; }
+
+/* CALENDAR LEGEND */
+.cal-legend { display:flex; flex-wrap:wrap; justify-content:center; gap:2px 7px; margin-top:4px; font-size:7px; color:var(--c-muted); letter-spacing:.8px; text-transform:uppercase; font-family:'Josefin Sans', sans-serif; font-weight:300; }
+.cal-legend span { display:flex; align-items:center; gap:2px; }
+.leg-sq { display:inline-block; width:7px; height:7px; border-radius:1px; }
+.leg-tr { display:inline-block; width:10px; height:2px; background:rgba(60,140,40,.6); border-radius:1px; vertical-align:middle; }
+
+/* SEASONAL CROPS */
+.crops-wrap { padding:4px 18px 8px; flex-shrink:0; }
+.crops-ttl  { font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase;
+              margin-bottom:4px; display:flex; align-items:center; gap:7px;
+              font-family:'Josefin Sans',sans-serif; font-weight:300; }
+.crops-ttl::after { content:''; flex:1; height:1px; background:var(--c-tipline); }
+.crops-val  { font-size:13px; color:var(--c-primary); line-height:1.65; font-family:'Josefin Sans',sans-serif; font-weight:400; }
+.crops-nota { font-size:10px; color:var(--c-muted); margin-top:2px; font-family:'Josefin Sans',sans-serif; font-style:italic; }
+
+.crop-link {
+  cursor:pointer; color:var(--c-primary);
+  border-bottom:1px dotted var(--c-accent);
+  font-style:normal; transition:color .15s;
+}
+.crop-link:hover { color:var(--c-accent); }
+
+/* RAYADOS */
+.rayado-wrap {
+  margin:0 16px 4px; padding:7px 12px; border-radius:6px; flex-shrink:0;
+  background:rgba(150,80,0,.08); border-left:3px solid #c06000;
+}
+body.dark .rayado-wrap { background:rgba(200,120,0,.12); }
+.rayado-ttl { font-size:11px; font-weight:700; color:#c06000; font-family:'Oswald',sans-serif; letter-spacing:.5px; }
+.rayado-sub { font-size:10.5px; color:var(--c-secondary); font-family:'Josefin Sans',sans-serif; font-weight:300; margin-top:2px; }
+.dcell.rayado::after {
+  content:''; position:absolute; left:3px; right:3px; top:50%; height:1.5px;
+  background:rgba(180,100,0,.6); border-radius:1px; pointer-events:none;
+}
+.dcell.rayado { position:relative; }
+.mes-cell.rayado-dia { background:rgba(150,80,0,.05) !important; }
+.mes-cell.rayado-dia .mes-dnum { color:#b05000; }
+.mes-rayado { font-size:6px; color:#b05000; font-family:'Josefin Sans',sans-serif; line-height:1; }
+
+/* TIP */
+.tip-wrap { padding:4px 18px 10px; flex-shrink:0; }
+.tip-ttl  {
+  font-size:9px; color:var(--c-muted); letter-spacing:2.5px; text-transform:uppercase;
+  margin-bottom:6px; display:flex; align-items:center; gap:7px;
+  font-family:'Oswald', sans-serif; font-weight:400;
+}
+.tip-ttl::after { content:''; flex:1; height:1px; background:var(--c-tipline); }
+.tip-body { font-size:13px; color:var(--c-tip); line-height:1.7; font-style:normal; font-family:'Josefin Sans', sans-serif; font-weight:400; }
+.tip-body + .tip-body { margin-top:8px; color:var(--c-secondary); font-size:12.5px; }
+
+/* MINI CALENDAR */
+.cal-wrap {
+  margin:0 12px 6px;
+  border:1px solid var(--bd-cal); border-radius:6px;
+  padding:4px 7px 5px; background:var(--bg-cal); flex-shrink:0;
+  transition:background .3s, border-color .3s;
+}
+.cal-tbl { width:100%; border-collapse:collapse; }
+.cal-tbl th{ font-size:8px; color:var(--c-muted); text-align:center; padding:1px 0 3px; font-weight:300; letter-spacing:.5px; font-family:'Josefin Sans', sans-serif; }
+.cal-tbl td{ text-align:center; padding:0; }
+.cal-tbl td.tras { border-bottom:2px solid rgba(60,140,40,.55); }
+.dcell {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:23px; height:18px; border-radius:4px;
+  font-size:10px; font-weight:700; color:var(--c-primary);
+  cursor:pointer; transition:opacity .15s;
+  -webkit-tap-highlight-color:transparent;
+  font-family:'Josefin Sans', sans-serif;
+}
+.dcell:active { opacity:.4; }
+.dcell.today  { background:var(--c-accent); color:#fff; font-weight:bold; }
+.dcell.picked { background:var(--c-picked-bg); color:var(--c-picked-fg); font-weight:bold; }
+.dcell.trans  { height:24px; flex-direction:column; gap:0; justify-content:flex-start; padding-top:2px; }
+.trans-dots   { display:flex; align-items:center; gap:1px; font-size:5px; line-height:1; margin-top:1px; }
+.trans-dots .tarr { color:var(--c-muted); font-size:4px; }
+
+
+/* FOOTER */
+.ftr {
+  background:var(--bg-ftr);
+  padding:9px 18px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0; transition:background .3s;
+}
+.ftr-main { color:rgba(255,255,255,.65); font-size:9.5px; letter-spacing:1.5px; font-family:'Josefin Sans', sans-serif; font-weight:300; text-transform:uppercase; }
+.ftr-src  { color:rgba(255,255,255,.28); font-size:7px; letter-spacing:.5px; text-align:right; line-height:1.5; }
+
+/* CONTROLS (below card) */
+.controls {
+  display:flex; gap:10px; margin-top:18px;
+  justify-content:center; padding:0 16px; flex-wrap:wrap;
+}
+
+/* ══════════════════════════════════════════════════
+   IG SCREENSHOT MODE — ?ig=1  (1000×1250 → 1080×1350)
+   ══════════════════════════════════════════════════ */
+body.ig-mode {
+  padding:0 !important;
+  background:var(--ig-bg,#1a1a1a) !important;
+  min-height:100vh;
+  justify-content:flex-start;
+  --c-accent:    #ec008c;
+  --c-primary:   #f0f0f0;
+  --c-secondary: #e0e0e0;
+  --c-muted:     #bbbbbb;
+  --bg-nav:      #ec008c;
+  --bg-hdr:      #0d0d0d;
+  --bg-card:     #1a1a1a;
+  --bd-card:     #1a1a1a;
+  --bg-moon:     #252525;
+  --bd-moon:     rgba(236,0,140,.2);
+  --c-divider:   rgba(255,255,255,.1);
+  --c-tip:       #e0e0e0;
+  --c-tipline:   #444444;
+}
+body.ig-mode #card {
+  width:100vw !important;
+  max-width:100vw !important;
+  min-height:100vh !important;
+  box-shadow:none !important;
+  border:none !important;
+  display:flex; flex-direction:column;
+  justify-content:space-between;
+}
+body.ig-mode .controls { display:none !important; }
+body.ig-mode .cal-wrap  { display:none !important; }
+
+/* — TIPOGRAFÍA IG — */
+body.ig-mode { font-family:'Josefin Sans', sans-serif !important; }
+body.ig-mode .date-num,
+body.ig-mode .bio-lbl    { font-family:'Oswald', sans-serif !important; }
+body.ig-mode .hdr-name,
+body.ig-mode .mnav-label { font-family:'Oswald', sans-serif !important; }
+
+/* — HEADER — */
+body.ig-mode .hdr        { padding:1vw 6vw; background:#1a1a1a !important; border-bottom:1px solid rgba(255,255,255,.06); }
+body.ig-mode .hdr-name   { font-size:1.8vw; letter-spacing:.25vw; font-weight:300; }
+body.ig-mode .hdr-sub    { display:none; }
+body.ig-mode .hdr-season { font-size:1.8vw; line-height:1.4; font-family:'Josefin Sans',sans-serif; font-weight:300; }
+body.ig-mode .hdr-icon   { font-size:2.2vw; }
+
+/* — MONTH NAV — */
+body.ig-mode .month-nav  { padding:1.2vw 6vw; }
+body.ig-mode .mnav-label { font-size:3.2vw; letter-spacing:.8vw; font-weight:400; }
+body.ig-mode .mnav-btn   { opacity:0; pointer-events:none; }
+
+/* — DATE — */
+body.ig-mode .date-wrap  { padding:.3vw 6vw 0; }
+body.ig-mode .mnav-day   { font-size:2vw; letter-spacing:1.5vw; font-weight:300; }
+body.ig-mode .date-num   { font-size:17vw; line-height:.88; font-weight:900; }
+
+/* — BIO TYPE (DÍA DE RAÍCES) — */
+body.ig-mode .bio-wrap   { padding:1vw 6vw; gap:1.8vw; }
+body.ig-mode .bio-icon   { font-size:4.5vw; }
+body.ig-mode .bio-lbl    { font-size:4.2vw; letter-spacing:.2vw; font-weight:700; font-style:italic; }
+
+/* — MOON — */
+body.ig-mode .moon-wrap  { margin:0 5vw; padding:1.8vw 4vw; }
+body.ig-mode .moon-em    { font-size:4.2vw; }
+body.ig-mode .moon-txt   { font-size:2.8vw; line-height:1.5; font-weight:300; color:var(--c-secondary); }
+body.ig-mode .moon-sign  { font-size:3.5vw; font-family:'Oswald',sans-serif; font-style:normal; font-weight:700; color:var(--c-primary); }
+body.ig-mode .moon-asc-ctx { font-size:2.4vw; letter-spacing:.4vw; font-weight:600; color:var(--c-secondary); }
+
+/* — PERÍODO FAVORABLE — */
+body.ig-mode .win-wrap   { display:block; padding:1vw 6vw; }
+body.ig-mode .win-lbl    { font-size:2vw; letter-spacing:.5vw; margin-bottom:.3vw; font-weight:300; }
+body.ig-mode .win-val    { font-size:3.5vw; font-family:'Playfair Display',serif; font-weight:700; }
+
+/* — SEMBRAR / COSECHAR — */
+body.ig-mode .crops-wrap { padding:1vw 6vw; }
+body.ig-mode .crops-ttl  { font-size:2vw; letter-spacing:.5vw; margin-bottom:.4vw; }
+body.ig-mode .crops-val  { font-size:3vw; line-height:1.5; font-family:'Josefin Sans',sans-serif; }
+body.ig-mode .crops-nota { font-size:2vw; }
+
+/* — TIP DEL DÍA — */
+body.ig-mode .tip-wrap   { padding:1vw 6vw 1vw; }
+body.ig-mode .tip-ttl    { font-size:2vw; letter-spacing:.5vw; margin-bottom:.5vw; font-weight:300; }
+body.ig-mode .tip-body   { font-size:3vw; line-height:1.55; font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600; color:var(--c-tip); }
+
+/* — FOOTER — */
+body.ig-mode .ftr        { padding:1vw 6vw; background:#1a1a1a !important; border-top:1px solid rgba(255,255,255,.06); }
+body.ig-mode .ftr-main   { font-size:1.8vw; letter-spacing:.3vw; font-weight:300; color:rgba(255,255,255,.6); }
+body.ig-mode .ftr-src    { font-size:2vw; letter-spacing:.15vw; font-weight:700; color:var(--c-accent); text-align:right; display:block !important; }
+
+/* ── IG LIGHT MODE — illum > 0.5 ── */
+body.ig-mode.ig-light {
+  background:var(--ig-bg,#f0f0f0) !important;
+  --c-accent:    #ec008c;
+  --c-primary:   #0a0a0a;
+  --c-secondary: #1a1a1a;
+  --c-muted:     #333333;
+  --bg-nav:      #ec008c;
+  --bg-hdr:      #1a1a1a;
+  --bg-card:     var(--ig-bg,#ffffff);
+  --bg-moon:     var(--ig-moon,#f4f4f4);
+  --bd-moon:     rgba(236,0,140,.15);
+  --c-tip:       #111111;
+  --c-tipline:   #cccccc;
+}
+body.ig-mode.ig-light #card   { background:var(--ig-bg,#ffffff); }
+body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-color:rgba(236,0,140,.15); }
+.btn {
+  padding:11px 22px; border:none; border-radius:24px;
+  font-size:13px; font-weight:bold; cursor:pointer; letter-spacing:.4px;
+  -webkit-tap-highlight-color:transparent; transition:opacity .2s;
+}
+.btn:active { opacity:.75; }
+.btn-jpg { background:#1a1a1a; color:#fff; }
+.btn-pdf { background:#ec008c; color:#fff; }
+.btn-theme {
+  background:none; border:2px solid var(--bd-card);
+  color:var(--c-primary); font-size:18px;
+  padding:8px 14px; border-radius:24px; cursor:pointer;
+  transition:border-color .3s, color .3s;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ── MODAL (bottom sheet) ── */
+/* ── VISTA MENSUAL ── */
+.mes-ov {
+  position:fixed; inset:0; background:rgba(0,0,0,.7);
+  display:flex; align-items:flex-start; justify-content:center;
+  z-index:998; overflow-y:auto; padding:0;
+  animation:fadeIn .18s ease;
+}
+.mes-crd {
+  background:var(--bg-card); width:min(100vw,480px);
+  min-height:100vh; display:flex; flex-direction:column;
+}
+.mes-hdr {
+  background:var(--bg-hdr); color:#fff; padding:12px 16px 10px;
+  display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+}
+.mes-titulo { font-family:'Oswald',sans-serif; font-size:16px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+.mes-close  { background:none; border:none; color:rgba(255,255,255,.6); font-size:28px; cursor:pointer; padding:0; line-height:1; }
+.mes-nav    { background:var(--bg-nav); display:flex; align-items:center; justify-content:space-between; padding:5px 10px; flex-shrink:0; }
+.mes-nav span { color:#fff; font-family:'Oswald',sans-serif; font-size:14px; font-weight:700; letter-spacing:3px; text-transform:uppercase; }
+.mes-nav button { background:none; border:none; color:#fff; font-size:22px; cursor:pointer; padding:0 8px; opacity:.85; }
+
+.mes-grid { display:grid; grid-template-columns:repeat(7,1fr); flex:1; }
+.mes-dh   {
+  text-align:center; font-size:8px; font-family:'Josefin Sans',sans-serif;
+  font-weight:600; color:var(--c-muted); letter-spacing:1px; text-transform:uppercase;
+  padding:6px 0 4px; border-bottom:1px solid var(--c-divider);
+}
+.mes-cell {
+  border-right:1px solid var(--c-divider); border-bottom:1px solid var(--c-divider);
+  padding:3px 3px 4px; min-height:72px; cursor:pointer; position:relative;
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  transition:background .15s; -webkit-tap-highlight-color:transparent;
+}
+.mes-cell:nth-child(7n) { border-right:none; }
+.mes-cell:hover, .mes-cell:active { background:rgba(0,0,0,.04); }
+.mes-cell.hoy { background:rgba(236,0,140,.06); }
+.mes-cell.hoy .mes-dnum { color:var(--c-accent); font-weight:900; }
+.mes-cell.vacio { cursor:default; background:var(--bg-cal); }
+.mes-cell.tras  { border-bottom:3px solid rgba(60,140,40,.65); }
+
+.mes-dnum { font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; color:var(--c-primary); line-height:1.1; }
+.mes-icon { font-size:12px; line-height:1; }
+.mes-trans{ font-family:'Josefin Sans',sans-serif; font-size:7px; color:var(--c-muted); line-height:1; }
+.mes-signo{ font-family:'Josefin Sans',sans-serif; font-size:6.5px; color:var(--c-muted); line-height:1; text-align:center; }
+.mes-fase { font-size:9px; line-height:1; }
+.mes-luna { font-size:8px; font-family:'Josefin Sans',sans-serif; font-weight:600; }
+.mes-luna.asc  { color:#5a8a40; }
+.mes-luna.desc { color:#1a7a9a; }
+
+.mes-legend { display:flex; flex-wrap:wrap; gap:4px 10px; padding:8px 12px; border-top:1px solid var(--c-divider); background:var(--bg-cal); flex-shrink:0; }
+.mes-legend-item { display:flex; align-items:center; gap:3px; font-size:7.5px; font-family:'Josefin Sans',sans-serif; color:var(--c-muted); letter-spacing:.5px; }
+
+.modal-ov {
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.55);
+  display:flex; align-items:flex-end; justify-content:center;
+  z-index:999; padding:0;
+  animation:fadeIn .18s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.modal-crd {
+  background:var(--bg-card);
+  border-radius:18px 18px 0 0;
+  width:min(100vw, 460px); max-width:100%;
+  max-height:90vh; overflow-y:auto;
+  box-shadow:0 -8px 40px rgba(0,0,0,.35);
+  animation:slideUp .25s ease;
+  transition:background .3s;
+}
+@keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+.modal-hd {
+  background:var(--bg-hdr);
+  padding:14px 18px 13px; border-radius:18px 18px 0 0;
+  display:flex; align-items:flex-start; justify-content:space-between;
+  position:sticky; top:0; z-index:1;
+}
+.modal-hd-left  { display:flex; flex-direction:column; gap:3px; }
+.modal-hd-bio   { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
+.modal-hd-type  { color:rgba(255,255,255,.48); font-size:9px; letter-spacing:2px; text-transform:uppercase; }
+.modal-hd-n     { color:#fff; font-size:21px; font-weight:bold; line-height:1; }
+.modal-hd-c     { color:rgba(255,255,255,.42); font-size:10px; font-style:italic; }
+.modal-close    { background:none; border:none; color:rgba(255,255,255,.5); font-size:26px; cursor:pointer; padding:0 2px; line-height:1; flex-shrink:0; margin-top:-2px; }
+.modal-close:hover { color:#fff; }
+
+.modal-bd { padding:14px 18px 28px; }
+.modal-sect { margin-bottom:12px; }
+.modal-sect-ttl {
+  font-size:8px; color:var(--c-primary); letter-spacing:2px; text-transform:uppercase;
+  font-weight:bold; border-bottom:1px solid var(--c-divider);
+  padding-bottom:4px; margin-bottom:8px;
+}
+.mrow { display:flex; gap:10px; align-items:baseline; padding:3px 0; }
+.mkey { font-size:9px; color:var(--c-muted); letter-spacing:1px; text-transform:uppercase; min-width:80px; flex-shrink:0; }
+.mval { font-size:12px; color:var(--c-primary); line-height:1.55; }
+.mval.green { color:var(--c-primary); font-weight:bold; }
+.mval.red   { color:var(--c-accent); }
+.modal-nota {
+  margin-top:12px; padding:10px 14px;
+  background:var(--bg-moon); border-radius:8px;
+  font-size:11.5px; color:var(--c-tip); font-style:italic; line-height:1.65;
+  border-left:3px solid var(--c-accent);
+}
+.modal-nota::before { content:'💡 '; }
+</style>
+</head>
+<body>
+
+<div id="card"></div>
+
+<div class="controls">
+  <button class="btn btn-jpg" onclick="exportJPG(this)">📸 JPG</button>
+  <button class="btn btn-pdf" onclick="exportPDF(this)">📄 PDF</button>
+  <button class="btn btn-jpg" onclick="goToday()" style="background:#555">📅 Hoy</button>
+  <button class="btn btn-jpg" onclick="openMesView()" style="background:#336699">📆 Mes</button>
+  <button class="btn btn-theme" id="themeBtn" onclick="toggleTheme()">🌙</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.js"></script>
+<script>
+// ── ESTADO ─────────────────────────────────────────────────────────────────
+const TODAY = new Date();
+let pickedDate = new Date();
+
+// ── MAYO 2026 DATA (fuente: AABDA · Calendario Astronómico Digital 2026) ────
+const MAYO_2026 = {
+  1: {tipo:'flor', signo:'Virgo → Libra @11-12hs',     vent:'tarde (desde 11hs)',
+      tip:'Sol en Aries (sidereal). Mañana de Raíces (Luna en Virgo) hasta las 11-12hs. Flores y aromáticas desde el mediodía. Cortar flores, cosechar hierbas.'},
+  2: {tipo:'flor', signo:'Libra → Escorpio @22hs',     vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Ideal para cortar flores y cosechar aromáticas. Hojas desde las 22hs.'},
+  3: {tipo:'hoja', signo:'Escorpio',                    vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Favorable para verduras de hoja. Regar y fertilizar con moderación.'},
+  4: {tipo:'fruto',signo:'Escorpio → Sagitario @10-11hs', vent:'desde las 10/11hs',
+      tip:'Apogeo lunar a las 20hs. Hojas hasta las 10-11hs. Frutos desde entonces (Luna en Sagitario). Buena tarde para cosechar.'},
+  5: {tipo:'fruto',signo:'Sagitario',                   vent:'13 a 24hs',
+      tip:'Inicio del período de trasplante a las 10hs (Luna descendente). Frutos desde las 13hs. Excelente para sembrar frutos y guardar semillas.'},
+  6: {tipo:'fruto',signo:'Sagitario',                   vent:'todo el día',
+      tip:'Día de Frutos (Luna en Sagitario). Excelente para cosechar, sembrar y guardar semillas. Período de trasplante activo.'},
+  7: {tipo:'fruto',signo:'Sagitario',                   vent:'todo el día',
+      tip:'Día de Frutos (Sagitario). Muy favorable para secar semillas y cosechar todos los frutos del huerto.'},
+  8: {tipo:'raiz', signo:'Sagitario → Capricornio @1-2hs', vent:'desde las 1/2hs',
+      tip:'Frutos hasta la 1-2hs. Raíces desde las 2hs (Luna en Capricornio). Excelente día para cosechar y trasplantar bulbos.'},
+  9: {tipo:'raiz', signo:'Capricornio',                 vent:'todo el día',
+      tip:'Día de Raíces (Luna en Capricornio). Ideal para cosechar, trasplantar y abonar raíces y tubérculos.'},
+  10:{tipo:'flor', signo:'Capricornio → Acuario @8-9hs', vent:'desde las 21hs (mejor)',
+      tip:'Raíces hasta las 8-9hs. Flores desde las 9hs (Luna en Acuario). Mejor período de flores a partir de las 21hs.'},
+  11:{tipo:'flor', signo:'Acuario',                     vent:'desde las 6hs',
+      tip:'Día de Flores (Luna en Acuario). Buen período desde las 6hs. Ideal para trabajar flores y aromáticas.'},
+  12:{tipo:'hoja', signo:'Acuario → Piscis @6-7hs',    vent:'7 a 15hs',
+      tip:'Flores hasta las 6-7hs. Hojas desde entonces hasta las 15hs. Cosechar y sembrar verduras de hoja verde.'},
+  13:{tipo:'hoja', signo:'Piscis',                      vent:'restringido',
+      tip:'Día de Hojas (Luna en Piscis). Período de energía reducida. Nodo descendente de Mercurio. Evitar siembras importantes.'},
+  14:{tipo:'hoja', signo:'Piscis',                      vent:'restringido',
+      tip:'Día de Hojas (Piscis). Ascensión del Señor. Sol entra en Tauro (sidereal). Período restringido — descanso del huerto.'},
+  15:{tipo:'fruto',signo:'Aries',                       vent:'todo el día',
+      tip:'Frutos desde la madrugada (Luna en Aries). Excelente día para cosechar frutos y guardar semillas.'},
+  16:{tipo:'fruto',signo:'Aries → Tauro @13-14hs',     vent:'0 a 13/14hs',
+      tip:'Frutos hasta las 13-14hs (Luna en Aries). Raíces desde entonces (Tauro). Cuarto Creciente.'},
+  17:{tipo:'raiz', signo:'Tauro',                       vent:'todo el día',
+      tip:'Día de Raíces (Luna en Tauro). Perigeo lunar @11hs. Muy favorable para trasplantar y abonar raíces y tubérculos.'},
+  18:{tipo:'raiz', signo:'Tauro → Géminis @22-23hs',   vent:'0 a 22/23hs',
+      tip:'Raíces hasta las 22-23hs. Flores desde entonces. Fin del período de trasplante a las 16hs. Luna Llena.'},
+  19:{tipo:'flor', signo:'Géminis',                     vent:'13 a 14hs (mejor)',
+      tip:'Día de Flores (Luna en Géminis). Mejor período entre las 13-14hs. Podar y trabajar flores y aromáticas.'},
+  20:{tipo:'flor', signo:'Géminis → Cáncer @19-20hs',  vent:'0 a 19/20hs',
+      tip:'Flores hasta las 19-20hs (Géminis). Hojas desde las 20hs (Cáncer). Buena mañana y tarde para flores.'},
+  21:{tipo:'hoja', signo:'Cáncer',                      vent:'todo el día',
+      tip:'Día de Hojas (Luna en Cáncer). Muy favorable para todas las verduras de hoja verde del huerto.'},
+  22:{tipo:'fruto',signo:'Cáncer → Leo @7-8hs',        vent:'desde las 7/8hs',
+      tip:'Hojas hasta las 7-8hs. Frutos desde entonces (Luna en Leo). Buena tarde para cosechar frutos.'},
+  23:{tipo:'fruto',signo:'Leo (Ω 12°)',                 vent:'8 a 19hs',
+      tip:'Día de Frutos (Luna en Leo, 12°). Mejor período de 8 a 19hs. Excelente para cosechar y sembrar frutos.'},
+  24:{tipo:'fruto',signo:'Leo',                         vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Pentecostés. Muy favorable para trabajar con frutos y semillas.'},
+  25:{tipo:'raiz', signo:'Leo → Virgo @0hs',           vent:'todo el día',
+      tip:'Raíces desde medianoche (Luna en Virgo). Excelente para laborear, trasplantar y cosechar raíces.'},
+  26:{tipo:'raiz', signo:'Virgo',                       vent:'todo el día',
+      tip:'DÍA MUY BUENO de Raíces. Luna en Virgo. Excelente para laborear, compostar y cosechar raíces y tubérculos.'},
+  27:{tipo:'raiz', signo:'Virgo',                       vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Muy favorable para trabajar la tierra y cosechar raíces y tubérculos.'},
+  28:{tipo:'raiz', signo:'Virgo → Libra @17-18hs',     vent:'0 a 17/18hs',
+      tip:'Raíces hasta las 17-18hs (Virgo). Flores desde las 18hs (Libra). Cosechar raíces en la mañana y tarde.'},
+  29:{tipo:'flor', signo:'Libra',                       vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Ideal para cortar flores, cosechar aromáticas y podar plantas en flor.'},
+  30:{tipo:'hoja', signo:'Libra → Escorpio @6hs',      vent:'desde las 6hs',
+      tip:'Flores hasta las 6hs. Hojas desde las 6hs (Luna en Escorpio). Buena tarde para verduras de hoja.'},
+  31:{tipo:'hoja', signo:'Escorpio',                    vent:'16 a 17hs',
+      tip:'Día de Hojas (Escorpio). Luna nueva a las 6hs. Mejor período de hojas 16-17hs. Iniciar nuevos proyectos.'},
+};
+
+// ── JUNIO 2026 DATA — AABDA 100% (con ritmos agrícolas completos) ──────────────
+const JUNIO_2026 = {
+  1: {tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'🌙 Luna Descendente LD @15hs. 🌙 Apogeo AG @2hs. Día de Hojas (Agua). Ideal: riego, compost, labores de suelo. Cosechar hojas: mañana temprano. Luna descendente ↓ favorece trasplante, poda, abonado.'},
+  2: {tipo:'hoja', signo:'Escorpio → Sagitario @20h', vent:'hasta las 20hs',
+      tip:'Hojas (Escorpio, Agua) hasta 20hs. Frutos (Sagitario, Fuego) desde 20hs. LD activa. Mañana cosechar hojas. Tarde trasplantar.'},
+  3: {tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Fuego). Luna descendente ↓ activa (1-15). Período trasplante óptimo. Cosechar frutos: tarde. Trasplantar: atardecer.'},
+  4: {tipo:'fruto', signo:'Sagitario → Capricornio @9h', vent:'hasta las 9hs',
+      tip:'Frutos (Sagitario) hasta 9hs. Raíces (Capricornio, Tierra) desde 9hs. LD activa. Mañana frutos, tarde raíces. Trasplante a raíz desnuda muy favorable.'},
+  5: {tipo:'raiz', signo:'Capricornio', vent:'todo el día',
+      tip:'Día de Raíces (Tierra). LD activa. Trasplantar plantas con raíz desnuda. Abonar, laborer suelo, cosechar tubérculos. Atardecer: trasplante.'},
+  6: {tipo:'raiz', signo:'Capricornio → Acuario @16h', vent:'hasta las 16hs',
+      tip:'Raíces (Capricornio) hasta 16hs. Flores (Acuario, Aire) desde 16hs. LD activa. Mañana-tarde: raíces. Atardecer: cortar flores.'},
+  7: {tipo:'flor', signo:'Acuario', vent:'restringido',
+      tip:'Día de Flores (Aire). ⚠ RAYADO: Nodo Descendente ND @4hs. Período desfavorable 23h día 6 a 8h día 7 (9h). Evitar siembras/trasplantes en ese período. Cortar flores: mañana (antes 8h) o noche (desde 20h).'},
+  8: {tipo:'flor', signo:'Acuario → Piscis @15h', vent:'hasta las 15hs',
+      tip:'Flores (Acuario) hasta 15hs. Hojas (Piscis, Agua) desde 15hs. LD activa. Mañana: cortar flores, aromáticas (mejor duración en LD). Tarde: riego hojas.'},
+  9: {tipo:'hoja', signo:'Piscis', vent:'restringido',
+      tip:'Día de Hojas (Agua). Luna descendente ↓ + Piscis = energía baja. Evitar siembras importantes. Ideal: riego, deshierbe, dejar descansar el huerto.'},
+  10:{tipo:'hoja', signo:'Piscis', vent:'restringido',
+      tip:'Día de Hojas (Agua). LD con energía reducida. Período restringido. Riego y descanso del huerto. Preparar canteros para próximas siembras.'},
+  11:{tipo:'hoja', signo:'Piscis → Aries @9h', vent:'hasta las 9hs',
+      tip:'Hojas (Piscis) hasta 9hs. Frutos (Aries, Fuego) desde 9hs. LD activa. Transición favorable. Mañana: riego hojas. Tarde: cosecha frutos.'},
+  12:{tipo:'fruto', signo:'Aries', vent:'todo el día',
+      tip:'Día de Frutos (Fuego). LD activa. Excelente para cosechar y secar semillas. Tarde-atardecer: cosecha. Frutos duran más en LD.'},
+  13:{tipo:'fruto', signo:'Aries → Tauro @1h', vent:'hasta las 1hs',
+      tip:'Frutos (Aries) hasta 1hs. Raíces (Tauro, Tierra) desde 1hs. LD activa. Trasplante favorable toda la noche y día siguiente.'},
+  14:{tipo:'raiz', signo:'Tauro', vent:'restringido',
+      tip:'Día de Raíces (Tierra). ⚠ RAYADO: Perigeo PG @20hs. Período desfavorable 7-33hs (26h aprox: ~7h día 14 a ~9h día 15). Alto riesgo hongos/plagas. Evitar siembras/trasplantes en ese período. Bueno para podar lo que se quiere debilitar.'},
+  15:{tipo:'raiz', signo:'Tauro → Géminis @9h', vent:'hasta las 9hs',
+      tip:'🌙 Luna Ascendente LA @3hs (↑ cambia dinámica). 🌙 Luna Nueva LN @0hs. Raíces (Tauro) hasta 9hs. Flores (Géminis, Aire) desde 9hs. LA favorece cosecha de flores, aromáticas, corte de malezas.'},
+  16:{tipo:'flor', signo:'Géminis', vent:'todo el día',
+      tip:'Día de Flores (Aire). Luna ascendente ↑ activa (15-30). Ideal: cosechar flores y aromáticas (mejor duración), cortar malezas, injertos, podas vigorizantes. Mañana: aromáticas.'},
+  17:{tipo:'flor', signo:'Géminis → Cáncer @6h', vent:'hasta las 6hs',
+      tip:'Flores (Géminis) hasta 6hs. Hojas (Cáncer, Agua) desde 6hs. ⚠ ECLIPSE EC. Período desfavorable ~5h. LA activa. Mañana: cortar flores (antes eclipse). Tarde: riego hojas.'},
+  18:{tipo:'hoja', signo:'Cáncer → Leo @17h', vent:'hasta las 17hs',
+      tip:'Hojas (Cáncer) hasta 17hs. Frutos (Leo, Fuego) desde 17hs. LA activa. Mañana: cosechar hojas frescas (mejor en LA). Tarde: cosecha frutos.'},
+  19:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Fuego). ⚠ RAYADO: Nodo Ascendente NA @15hs. Período desfavorable ~9hs (5h antes + 4h después: 10-19hs). Evitar siembras/trasplantes 10-19hs. LA activa. Cosechar frutos para semilla: mañana o noche.'},
+  20:{tipo:'fruto', signo:'Leo', vent:'restringido',
+      tip:'Día de Frutos (Leo). ⚠ RAYADO: Nodo Ascendente en Escorpio (NAE) @22hs. Período desfavorable 21h día 19 a 11h día 21 (14h aprox). LA activa pero restringida por NAE. Evitar trabajos agrícolas importantes 21h-11h. Observar y planificar.'},
+  21:{tipo:'fruto', signo:'Leo → Virgo @7h', vent:'hasta las 7hs',
+      tip:'Frutos (Leo) hasta 7hs. Raíces (Virgo, Tierra) desde 7hs. ☉ Sol en Géminis (SOGE). LA activa. Mañana: cosechar frutos. Día: laborear suelo, trasplantar raíces.'},
+  22:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Tierra). Luna ascendente ↑ activa. Excelente: laborear, compostar, cosechar raíces, trabajar tierra, injertos radicales. Atardecer: cosechar raíces para conserva.'},
+  23:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Tierra). LA activa. Muy favorable: trabajar tierra, trasplantar bulbos, abonar con compost, cosechar tubérculos. Energía precisa en tierra.'},
+  24:{tipo:'raiz', signo:'Virgo → Libra @23h', vent:'hasta las 23hs',
+      tip:'Raíces (Virgo) hasta 23hs. Flores (Libra, Aire) desde 23hs. LA activa. Día: trabajar raíces. Noche: preparar para flores (desde 23h).'},
+  25:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Día de Flores (Aire). LA activa (hasta ~29-30). Ideal: cosechar flores y aromáticas (mejor conserva). Mañana: aromáticas medicinales.'},
+  26:{tipo:'flor', signo:'Libra → Escorpio @13h', vent:'hasta las 13hs',
+      tip:'Flores (Libra) hasta 13hs. Hojas (Escorpio, Agua) desde 13hs. LA activa. Mañana: cortar flores. Tarde: riego y compost en hojas.'},
+  27:{tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Agua). LA activa (fin de ciclo). Favorable: verduras de hoja, riego moderado, aromáticas foliares. Mañana: cosechar hojas frescas.'},
+  28:{tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'🌙 Luna Descendente LD @20hs (cambia dinámica). 🌙 Apogeo AG @4hs. Hojas (Escorpio). Fin LA, comienza LD. Inicio nuevo período trasplante (28-15). Tarde/noche: preparar para trasplantes.'},
+  29:{tipo:'hoja', signo:'Escorpio → Sagitario @2h', vent:'hasta las 2hs',
+      tip:'Hojas (Escorpio) hasta 2hs. Frutos (Sagitario, Fuego) desde 2hs. LD activa (cambia a 28). Trasplante activado. Noche: trasplantar (cuando LD comienza). Mañana: cosecha frutos.'},
+  30:{tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'🌙 Luna Llena LL @21hs. Día de Frutos (Fuego). LD activa (28-15 próximo mes). Período trasplante óptimo. 2-3 días antes LL: siembras de frutos favorecidas. Atardecer: trasplantar.'},
+};
+
+// ── JULIO 2026 DATA (fuente: AABDA · Calendario Astronómico Digital 2026) ────
+const JULIO_2026 = {
+  1: {tipo:'raiz', signo:'Sagitario → Capricornio @0hs', vent:'todo el día',
+      tip:'Sol en Géminis (sidereal). Inicio período de trasplante @0hs. Raíces (Capricornio) todo el día. Muy favorable.'},
+  2: {tipo:'raiz', signo:'Capricornio', vent:'todo el día',
+      tip:'Día de Raíces (Capricornio). Período de trasplante activo. Ideal para cosechar y trasplantar raíces.'},
+  3: {tipo:'raiz', signo:'Capricornio → Acuario', vent:'mañana (Capricornio)',
+      tip:'Raíces hasta transición. Flores desde Acuario. Período de trasplante. Excelente mañana para raíces.'},
+  4: {tipo:'flor', signo:'Acuario', vent:'todo el día',
+      tip:'Día de Flores (Luna en Acuario). Ideal para cortar flores, cosechar aromáticas y trabajar semilleros.'},
+  5: {tipo:'hoja', signo:'Acuario → Piscis', vent:'restringido',
+      tip:'Flores (Acuario) transicionando a Hojas (Piscis). Período de menor vitalidad. Regar y descansar.'},
+  6: {tipo:'hoja', signo:'Piscis', vent:'restringido',
+      tip:'Día de Hojas (Luna en Piscis). Período restringido — evitar siembras importantes.'},
+  7: {tipo:'fruto', signo:'Piscis → Aries', vent:'desde transición',
+      tip:'Hojas (Piscis) transicionando a Frutos (Aries). Mejor tarde para cosechar frutos.'},
+  8: {tipo:'fruto', signo:'Aries', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Aries). Excelente para cosechar frutos y guardar semillas.'},
+  9: {tipo:'raiz', signo:'Aries → Tauro', vent:'desde transición',
+      tip:'Frutos (Aries) transicionando a Raíces (Tauro). Buen día mixto frutos/raíces.'},
+  10:{tipo:'raiz', signo:'Tauro', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Tauro). Muy favorable para trasplantar, abonar y trabajar el suelo.'},
+  11:{tipo:'flor', signo:'Tauro → Géminis', vent:'desde transición',
+      tip:'Raíces (Tauro) transicionando a Flores (Géminis). Fin período de trasplante @12hs.'},
+  12:{tipo:'flor', signo:'Géminis', vent:'todo el día',
+      tip:'Día de Flores (Luna en Géminis). Favorable para podar, cosechar flores y trabajar aromáticas.'},
+  13:{tipo:'hoja', signo:'Géminis → Cáncer', vent:'desde transición',
+      tip:'Flores (Géminis) transicionando a Hojas (Cáncer). Perigeo @5hs. Buena tarde para hojas.'},
+  14:{tipo:'hoja', signo:'Cáncer', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Cáncer). Muy favorable para verduras de hoja. Luna llena — no trasplantar.'},
+  15:{tipo:'fruto', signo:'Cáncer → Leo', vent:'desde transición',
+      tip:'Hojas (Cáncer) transicionando a Frutos (Leo). Excelente tarde para cosechar frutos.'},
+  16:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Excelente para cosechar frutos, guardar semillas y trabajar con frutos.'},
+  17:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Continúa muy favorable. Cosechar y secar semillas de frutos.'},
+  18:{tipo:'raiz', signo:'Leo → Virgo', vent:'desde transición',
+      tip:'Frutos (Leo) transicionando a Raíces (Virgo). Buena tarde para trabajar raíces.'},
+  19:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Muy favorable para laborear, compostar y cosechar raíces.'},
+  20:{tipo:'raiz', signo:'Virgo → Libra', vent:'hasta transición',
+      tip:'Sol entra en Cáncer (sidereal). Raíces hasta transición. Flores desde Libra. Buenos días.'},
+  21:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Ideal para cosechar flores y aromáticas. Nodo descendente Marte.'},
+  22:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Continúa excelente para flores y plantas aromáticas.'},
+  23:{tipo:'hoja', signo:'Libra → Escorpio', vent:'desde transición',
+      tip:'Flores (Libra) transicionando a Hojas (Escorpio). Nodo ascendente Venus. Buena tarde para hojas.'},
+  24:{tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Nodo descendente Marte. Favorable para verduras de hoja.'},
+  25:{tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Continúa favorable para cosechar y regar hojas verdes.'},
+  26:{tipo:'fruto', signo:'Escorpio → Sagitario', vent:'desde transición',
+      tip:'Inicio período de trasplante @2hs. Hojas transicionando a Frutos. Muy favorable desde la mañana.'},
+  27:{tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Sagitario). Período de trasplante activo. Excelente para cosechar frutos.'},
+  28:{tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Sagitario). Período de trasplante activo. Muy favorable para frutos y semillas.'},
+  29:{tipo:'raiz', signo:'Sagitario → Capricornio', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces. Período de trasplante continúa. Buen día para raíces.'},
+  30:{tipo:'raiz', signo:'Capricornio', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Capricornio). Período de trasplante @31. Excelente para raíces.'},
+  31:{tipo:'raiz', signo:'Capricornio', vent:'hasta las 24hs',
+      tip:'Fin período de trasplante a las 24hs. Raíces (Capricornio) muy favorable. Abonar y trasplantar.'},
+};
+
+// ── AGOSTO 2026 DATA (fuente: AABDA · Calendario Astronómico Digital 2026) ────
+const AGOSTO_2026 = {
+  1: {tipo:'flor', signo:'Capricornio → Acuario', vent:'desde transición',
+      tip:'Sol en Cáncer (sidereal). Inicio período de trasplante @0hs. Raíces (Cap) transicionan a Flores (Acuario).'},
+  2: {tipo:'flor', signo:'Acuario', vent:'todo el día',
+      tip:'Día de Flores (Luna en Acuario). Período de trasplante activo. Ideal para flores y aromáticas.'},
+  3: {tipo:'hoja', signo:'Acuario → Piscis', vent:'restringido',
+      tip:'Flores transicionando a Hojas (Piscis). Período de menor vitalidad. Regar y descansar el huerto.'},
+  4: {tipo:'hoja', signo:'Piscis', vent:'restringido',
+      tip:'Día de Hojas (Luna en Piscis). Período restringido — evitar siembras delicadas.'},
+  5: {tipo:'fruto', signo:'Piscis → Aries', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Aries). Fin período de trasplante @20hs. Mejor tarde.'},
+  6: {tipo:'fruto', signo:'Aries', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Aries). Excelente para cosechar frutos y guardar semillas.'},
+  7: {tipo:'raiz', signo:'Aries → Tauro', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Tauro). Cuarto creciente. Buen día para raíces.'},
+  8: {tipo:'raiz', signo:'Tauro', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Tauro). Muy favorable para trasplantar, abonar y trabajar el suelo.'},
+  9: {tipo:'flor', signo:'Tauro → Géminis', vent:'desde transición',
+      tip:'Raíces (Tauro) transicionando a Flores (Géminis). Buen día mixto raíces/flores.'},
+  10:{tipo:'flor', signo:'Géminis', vent:'todo el día',
+      tip:'Día de Flores (Luna en Géminis). Perigeo @9hs. Favorable para flores y aromáticas.'},
+  11:{tipo:'hoja', signo:'Géminis → Cáncer', vent:'desde transición',
+      tip:'Sol entra en Leo (sidereal). Flores transicionando a Hojas (Cáncer). Eclipse de sol @15hs.'},
+  12:{tipo:'hoja', signo:'Cáncer', vent:'todo el día',
+      tip:'Eclipse total de sol. Día de Hojas (Luna en Cáncer). Período intenso — actuar con calma.'},
+  13:{tipo:'fruto', signo:'Cáncer → Leo', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Leo). Ω27 en Cáncer. Excelente tarde para frutos.'},
+  14:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Muy favorable para cosechar frutos y guardar semillas.'},
+  15:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Continúa excelente. Luna llena intensa — no trasplantar.'},
+  16:{tipo:'raiz', signo:'Leo → Virgo', vent:'desde transición',
+      tip:'Frutos (Leo) transicionando a Raíces (Virgo). Apogeo lunar. Buen cambio de energía.'},
+  17:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Muy favorable para laborear el suelo y cosechar raíces.'},
+  18:{tipo:'raiz', signo:'Virgo → Libra', vent:'hasta transición',
+      tip:'Raíces (Virgo) transicionando a Flores (Libra). Buenos días para raíces en la mañana.'},
+  19:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Ideal para cortar flores y cosechar aromáticas. Muy favorable.'},
+  20:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Continúa excelente para flores y plantas aromáticas.'},
+  21:{tipo:'hoja', signo:'Libra → Escorpio', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Escorpio). Buen día mixto flores/hojas.'},
+  22:{tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Apogeo @6hs. Inicio período de trasplante @9hs.'},
+  23:{tipo:'fruto', signo:'Escorpio → Sagitario', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Sagitario). Período de trasplante activo. Buena tarde.'},
+  24:{tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Sagitario). Período de trasplante activo. Excelente para frutos.'},
+  25:{tipo:'raiz', signo:'Sagitario → Capricornio', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Capricornio). Período de trasplante. Buena tarde para raíces.'},
+  26:{tipo:'raiz', signo:'Capricornio', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Capricornio). Período de trasplante activo. Muy favorable para raíces.'},
+  27:{tipo:'raiz', signo:'Capricornio', vent:'todo el día',
+      tip:'Día de Raíces (Capricornio). Período de trasplante continúa. Excelente para abonar y trasplantar.'},
+  28:{tipo:'flor', signo:'Capricornio → Acuario', vent:'desde transición',
+      tip:'Eclipse parcial de luna. Raíces transicionando a Flores (Acuario). Período de trasplante.'},
+  29:{tipo:'flor', signo:'Acuario', vent:'todo el día',
+      tip:'Día de Flores (Luna en Acuario). Período de trasplante activo. Ideal para flores y aromáticas.'},
+  30:{tipo:'hoja', signo:'Acuario → Piscis', vent:'restringido',
+      tip:'Flores transicionando a Hojas (Piscis). Fin período de trasplante a las 24hs.'},
+  31:{tipo:'hoja', signo:'Piscis', vent:'restringido',
+      tip:'Día de Hojas (Luna en Piscis). Período restringido — evitar siembras importantes.'},
+};
+
+// ── SEPTIEMBRE 2026 DATA (fuente: AABDA · Calendario Astronómico Digital 2026) ────
+const SEPTIEMBRE_2026 = {
+  1: {tipo:'fruto', signo:'Piscis → Aries', vent:'desde transición',
+      tip:'Sol en Leo (sidereal). Inicio período de trasplante @0hs. Hojas transicionando a Frutos (Aries).'},
+  2: {tipo:'fruto', signo:'Aries', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Aries). Período de trasplante activo. Excelente para cosechar frutos.'},
+  3: {tipo:'raiz', signo:'Aries → Tauro', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Tauro). Período de trasplante. Buena tarde para raíces.'},
+  4: {tipo:'raiz', signo:'Tauro', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Tauro). Muy favorable para trasplantar y abonar. Período activo.'},
+  5: {tipo:'flor', signo:'Tauro → Géminis', vent:'desde transición',
+      tip:'Fin período de trasplante @2hs. Raíces transicionando a Flores (Géminis).'},
+  6: {tipo:'flor', signo:'Géminis', vent:'todo el día',
+      tip:'Día de Flores (Luna en Géminis). Perigeo @18hs. Favorable para flores y aromáticas.'},
+  7: {tipo:'hoja', signo:'Géminis → Cáncer', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Cáncer). Eclipse de Júpiter. Buen día para hojas.'},
+  8: {tipo:'hoja', signo:'Cáncer', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Cáncer). Muy favorable para verduras de hoja. Regar abundante.'},
+  9: {tipo:'fruto', signo:'Cáncer → Leo', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Leo). Ω17 en Cáncer. Excelente tarde para frutos.'},
+  10:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Muy favorable para cosechar frutos y guardar semillas.'},
+  11:{tipo:'raiz', signo:'Leo → Virgo', vent:'desde transición',
+      tip:'Eclipse de sol. Frutos transicionando a Raíces (Virgo). Ω en Leo. Actuar con calma.'},
+  12:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Excelente para laborear, compostar y cosechar raíces.'},
+  13:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Continúa muy favorable. Ω en Virgo. Excelente día.'},
+  14:{tipo:'flor', signo:'Virgo → Libra', vent:'desde transición',
+      tip:'Eclipse de Venus. Raíces transicionando a Flores (Libra). Buena tarde para flores.'},
+  15:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Ideal para cortar flores y cosechar aromáticas. Muy favorable.'},
+  16:{tipo:'hoja', signo:'Libra → Escorpio', vent:'desde transición',
+      tip:'Sol entra en Virgo (sidereal). Flores transicionando a Hojas (Escorpio). Apogeo lunar.'},
+  17:{tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Favorable para verduras de hoja. Cosechar con calma.'},
+  18:{tipo:'fruto', signo:'Escorpio → Sagitario', vent:'desde las 17hs',
+      tip:'Inicio período de trasplante @17hs. Hojas transicionando a Frutos (Sagitario). Buena tarde.'},
+  19:{tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Sagitario). Período de trasplante activo. Excelente para frutos.'},
+  20:{tipo:'raiz', signo:'Sagitario → Capricornio', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Capricornio). Período de trasplante. Buena tarde.'},
+  21:{tipo:'raiz', signo:'Capricornio', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Capricornio). Período de trasplante activo. Excelente para raíces.'},
+  22:{tipo:'flor', signo:'Capricornio → Acuario', vent:'desde transición',
+      tip:'Equinoccio de primavera 20:05hs. Raíces transicionando a Flores (Acuario). ¡Bienvenida la primavera!'},
+  23:{tipo:'flor', signo:'Acuario', vent:'todo el día',
+      tip:'Día de Flores (Luna en Acuario). Primer día pleno de primavera. Ideal para flores y aromáticas.'},
+  24:{tipo:'hoja', signo:'Acuario → Piscis', vent:'restringido',
+      tip:'Flores transicionando a Hojas (Piscis). Período de menor vitalidad. Regar el huerto.'},
+  25:{tipo:'hoja', signo:'Piscis', vent:'restringido',
+      tip:'Día de Hojas (Luna en Piscis). Período restringido. Fin período de trasplante a las 2hs.'},
+  26:{tipo:'fruto', signo:'Piscis → Aries', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Aries). Ω17°. Buena tarde para cosechar frutos.'},
+  27:{tipo:'fruto', signo:'Aries', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Aries). Excelente para cosechar frutos y guardar semillas.'},
+  28:{tipo:'raiz', signo:'Aries → Tauro', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Tauro). San Miguel Arcángel. Excelente para raíces.'},
+  29:{tipo:'raiz', signo:'Tauro', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Tauro). Muy favorable para trasplantar y abonar. Período activo.'},
+  30:{tipo:'flor', signo:'Tauro → Géminis', vent:'desde transición',
+      tip:'Raíces transicionando a Flores (Géminis). Hasta las 24hs del período de trasplante.'},
+};
+
+// ── OCTUBRE 2026 DATA (fuente: AABDA · Calendario Astronómico Digital 2026) ────
+const OCTUBRE_2026 = {
+  1: {tipo:'flor', signo:'Géminis', vent:'hasta las 8hs',
+      tip:'Sol en Virgo (sidereal). Inicio período de trasplante @0hs. Flores (Géminis) hasta las 8hs. Perigeo @19hs.'},
+  2: {tipo:'hoja', signo:'Géminis → Cáncer', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Cáncer). Período de trasplante activo. Buena tarde para hojas.'},
+  3: {tipo:'hoja', signo:'Cáncer', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Cáncer). Muy favorable para verduras de hoja. Período de trasplante.'},
+  4: {tipo:'fruto', signo:'Cáncer → Leo', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Leo). Eclipse de Marte. Excelente tarde para frutos.'},
+  5: {tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Eclipse de Marte. Favorable para frutos y semillas.'},
+  6: {tipo:'raiz', signo:'Leo → Virgo', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Virgo). Eclipse de Júpiter. Buena tarde para raíces.'},
+  7: {tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Muy favorable para laborear el suelo y cosechar raíces.'},
+  8: {tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Continúa muy favorable. Ω23° en Virgo. Excelente día.'},
+  9: {tipo:'flor', signo:'Virgo → Libra', vent:'desde transición',
+      tip:'Raíces transicionando a Flores (Libra). Perigeo. Buena tarde para flores.'},
+  10:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Ideal para cortar flores y cosechar aromáticas. Muy favorable.'},
+  11:{tipo:'hoja', signo:'Libra → Escorpio', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Escorpio). Apogeo @20hs. Buen día mixto.'},
+  12:{tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Favorable para verduras de hoja. Luna llena.'},
+  13:{tipo:'fruto', signo:'Escorpio → Sagitario', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Sagitario). Fin período de trasplante a las 8hs.'},
+  14:{tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Sagitario). Excelente para cosechar frutos y guardar semillas.'},
+  15:{tipo:'raiz', signo:'Sagitario → Capricornio', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Capricornio). Buen día para trabajar raíces.'},
+  16:{tipo:'raiz', signo:'Capricornio', vent:'desde las 1hs',
+      tip:'Día de Raíces (Capricornio). Inicio período de trasplante @1hs. Apogeo @20hs. Muy favorable.'},
+  17:{tipo:'flor', signo:'Capricornio → Acuario', vent:'desde transición',
+      tip:'Raíces transicionando a Flores (Acuario). Período de trasplante activo. Buena tarde.'},
+  18:{tipo:'flor', signo:'Acuario', vent:'todo el día',
+      tip:'Día de Flores (Luna en Acuario). Período de trasplante activo. Ideal para flores y aromáticas.'},
+  19:{tipo:'hoja', signo:'Acuario → Piscis', vent:'restringido',
+      tip:'Flores transicionando a Hojas (Piscis). Período de menor vitalidad. Regar y descansar.'},
+  20:{tipo:'hoja', signo:'Piscis', vent:'restringido',
+      tip:'Día de Hojas (Luna en Piscis). Período restringido — evitar siembras delicadas.'},
+  21:{tipo:'fruto', signo:'Piscis → Aries', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Aries). Ω6° en Piscis. Excelente tarde para frutos.'},
+  22:{tipo:'fruto', signo:'Aries', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Aries). Excelente para cosechar frutos y guardar semillas.'},
+  23:{tipo:'raiz', signo:'Aries → Tauro', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Tauro). Ω2°. Excelente para raíces desde la transición.'},
+  24:{tipo:'raiz', signo:'Tauro', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Tauro). Muy favorable para trasplantar y abonar. Período activo.'},
+  25:{tipo:'flor', signo:'Tauro → Géminis', vent:'desde transición',
+      tip:'Raíces transicionando a Flores (Géminis). Buena tarde para flores y aromáticas.'},
+  26:{tipo:'flor', signo:'Géminis', vent:'todo el día',
+      tip:'Día de Flores (Luna en Géminis). Favorable para flores y aromáticas. Perigeo @15hs.'},
+  27:{tipo:'hoja', signo:'Géminis → Cáncer', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Cáncer). Buen día para hojas verdes en el huerto.'},
+  28:{tipo:'hoja', signo:'Cáncer', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Cáncer). Muy favorable para verduras de hoja. Perigeo @15hs.'},
+  29:{tipo:'fruto', signo:'Cáncer → Leo', vent:'desde las 14hs',
+      tip:'Fin período de trasplante a las 14hs. Hojas transicionando a Frutos (Leo). Excelente tarde.'},
+  30:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Excelente para cosechar frutos y guardar semillas. Muy favorable.'},
+  31:{tipo:'fruto', signo:'Leo → Virgo', vent:'hasta transición',
+      tip:'Frutos (Leo) transicionando a Raíces (Virgo). Ω22° en Géminis. Buena mañana para frutos.'},
+};
+
+// ── NOVIEMBRE 2026 DATA (fuente: AABDA · Calendario Astronómico Digital 2026) ────
+const NOVIEMBRE_2026 = {
+  1: {tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Sol en Virgo (sidereal). Día de Raíces (Luna en Virgo). Excelente para laborear y cosechar raíces.'},
+  2: {tipo:'flor', signo:'Virgo → Libra', vent:'desde transición',
+      tip:'Raíces transicionando a Flores (Libra). Eclipse de Marte. Buena tarde para flores.'},
+  3: {tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Muy favorable para flores y aromáticas. Nodo Ω en Libra.'},
+  4: {tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Día de Flores (Luna en Libra). Continúa excelente para flores y plantas aromáticas.'},
+  5: {tipo:'hoja', signo:'Libra → Escorpio', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Escorpio). Nodo descendente Mercurio. Buen día para hojas.'},
+  6: {tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Favorable para verduras de hoja. Regar con moderación.'},
+  7: {tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Eclipse de Venus. Continúa favorable para hojas.'},
+  8: {tipo:'fruto', signo:'Escorpio → Sagitario', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Sagitario). Buena tarde para cosechar frutos.'},
+  9: {tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Sagitario). Excelente para cosechar frutos y guardar semillas.'},
+  10:{tipo:'flor', signo:'Sagitario → Capricornio', vent:'hasta transición',
+      tip:'Frutos (Sagitario) transicionando a Raíces (Capricornio). Buen día mixto frutos/raíces.'},
+  11:{tipo:'raiz', signo:'Capricornio', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Capricornio). Muy favorable para trasplantar, abonar y cosechar raíces.'},
+  12:{tipo:'raiz', signo:'Capricornio → Acuario', vent:'hasta transición',
+      tip:'Inicio período de trasplante @12hs. Raíces transicionando a Flores (Acuario).'},
+  13:{tipo:'flor', signo:'Acuario', vent:'todo el día',
+      tip:'Día de Flores (Luna en Acuario). Período de trasplante activo. Ideal para flores y aromáticas.'},
+  14:{tipo:'flor', signo:'Acuario', vent:'todo el día',
+      tip:'Día de Flores (Luna en Acuario). Período de trasplante continúa. Muy favorable.'},
+  15:{tipo:'hoja', signo:'Acuario → Piscis', vent:'restringido',
+      tip:'Flores transicionando a Hojas (Piscis). Período de menor vitalidad. Descansar el huerto.'},
+  16:{tipo:'hoja', signo:'Piscis', vent:'restringido',
+      tip:'Día de Hojas (Luna en Piscis). Período restringido — evitar siembras importantes.'},
+  17:{tipo:'fruto', signo:'Piscis → Aries', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Aries). Ω9° en Aries. Excelente tarde para frutos.'},
+  18:{tipo:'fruto', signo:'Aries', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Aries). Excelente para cosechar frutos y guardar semillas.'},
+  19:{tipo:'raiz', signo:'Aries → Tauro', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Tauro). Fin período de trasplante a las 22hs.'},
+  20:{tipo:'raiz', signo:'Tauro', vent:'todo el día',
+      tip:'Sol entra en Escorpio (sidereal). Día de Raíces (Luna en Tauro). Nodo Ω en Escorpio.'},
+  21:{tipo:'flor', signo:'Tauro → Géminis', vent:'desde transición',
+      tip:'Raíces transicionando a Flores (Géminis). Nodo descendente Venus. Buena tarde para flores.'},
+  22:{tipo:'hoja', signo:'Géminis → Cáncer', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Cáncer). Ω12° en Géminis. Buen día para hojas.'},
+  23:{tipo:'fruto', signo:'Cáncer → Leo', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Leo). Luna llena a las 23hs. Muy favorable para frutos.'},
+  24:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Excelente para cosechar frutos y guardar semillas.'},
+  25:{tipo:'raiz', signo:'Leo → Virgo', vent:'hasta las 22hs',
+      tip:'Frutos (Leo) transicionando a Raíces (Virgo). Fin período de trasplante a las 22hs. Perigeo @18hs.'},
+  26:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Muy favorable para laborear, compostar y cosechar raíces.'},
+  27:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Continúa excelente. Ω en Virgo. Laborear y trasplantar.'},
+  28:{tipo:'flor', signo:'Virgo → Libra', vent:'desde transición',
+      tip:'Raíces transicionando a Flores (Libra). Buen día para flores y aromáticas.'},
+  29:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'1° Domingo de Adviento. Día de Flores (Luna en Libra). Eclipse de Júpiter. Muy favorable.'},
+  30:{tipo:'hoja', signo:'Libra → Escorpio', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Escorpio). Nodo Ω21 en Libra. Buena tarde para hojas.'},
+};
+
+// ── DICIEMBRE 2026 DATA (fuente: AABDA · Calendario Astronómico Digital 2026) ────
+const DICIEMBRE_2026 = {
+  1: {tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Sol en Escorpio (sidereal). Día de Hojas (Luna en Escorpio). Favorable para verduras de hoja.'},
+  2: {tipo:'fruto', signo:'Escorpio → Sagitario', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Sagitario). Ω5°/6°. Buena tarde para cosechar frutos.'},
+  3: {tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Sagitario). Excelente para cosechar frutos y guardar semillas.'},
+  4: {tipo:'raiz', signo:'Sagitario → Capricornio', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Capricornio). Excelente tarde para raíces y tubérculos.'},
+  5: {tipo:'raiz', signo:'Capricornio', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Capricornio). Muy favorable para trasplantar y abonar raíces.'},
+  6: {tipo:'flor', signo:'Capricornio → Acuario', vent:'desde transición',
+      tip:'2° Domingo de Adviento. Raíces transicionando a Flores (Acuario). Buena tarde para flores.'},
+  7: {tipo:'flor', signo:'Acuario', vent:'todo el día',
+      tip:'Día de Flores (Luna en Acuario). Ideal para cortar flores y cosechar aromáticas. Ω1°/2°.'},
+  8: {tipo:'hoja', signo:'Acuario → Piscis', vent:'restringido',
+      tip:'Flores transicionando a Hojas (Piscis). Período de menor vitalidad. Descansar el huerto.'},
+  9: {tipo:'hoja', signo:'Piscis', vent:'desde las 14hs',
+      tip:'Inicio período de trasplante @14hs. Día de Hojas (Piscis). Perigeo @7hs.'},
+  10:{tipo:'fruto', signo:'Piscis → Aries', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Aries). Período de trasplante activo. Excelente tarde.'},
+  11:{tipo:'fruto', signo:'Aries', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Aries). Período de trasplante activo. Muy favorable para frutos.'},
+  12:{tipo:'raiz', signo:'Aries → Tauro', vent:'desde transición',
+      tip:'Frutos transicionando a Raíces (Tauro). Período de trasplante. Buena tarde para raíces.'},
+  13:{tipo:'raiz', signo:'Tauro', vent:'todo el día',
+      tip:'3° Domingo de Adviento. Día de Raíces (Luna en Tauro). Nodo Ω Géminis. Muy favorable.'},
+  14:{tipo:'flor', signo:'Tauro → Géminis', vent:'desde transición',
+      tip:'Raíces transicionando a Flores (Géminis). Período de trasplante. Buena tarde para flores.'},
+  15:{tipo:'hoja', signo:'Géminis → Cáncer', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Cáncer). Ω19°/20° en Tauro. Buen día para hojas.'},
+  16:{tipo:'hoja', signo:'Cáncer', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Cáncer). Muy favorable para verduras de hoja. Fin trasplante @0hs.'},
+  17:{tipo:'fruto', signo:'Cáncer → Leo', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Leo). Ω19°/20°. Excelente tarde para cosechar frutos.'},
+  18:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Muy favorable para cosechar frutos y guardar semillas.'},
+  19:{tipo:'fruto', signo:'Leo', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Leo). Continúa excelente. Cosechar y secar semillas de frutos.'},
+  20:{tipo:'raiz', signo:'Leo → Virgo', vent:'desde transición',
+      tip:'4° Domingo de Adviento. Sol entra en Sagitario (sidereal). Frutos transicionando a Raíces (Virgo).'},
+  21:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Solsticio de verano 17:50hs. Día de Raíces (Luna en Virgo). Muy favorable para raíces.'},
+  22:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
+      tip:'Día de Raíces (Luna en Virgo). Continúa excelente. Laborear el suelo y compostar.'},
+  23:{tipo:'flor', signo:'Virgo → Libra', vent:'desde transición',
+      tip:'Raíces transicionando a Flores (Libra). Inicio período de trasplante @9hs. Buena tarde.'},
+  24:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Nochebuena. Día de Flores (Luna en Libra). Perigeo @7hs. Período de trasplante activo.'},
+  25:{tipo:'flor', signo:'Libra', vent:'todo el día',
+      tip:'Navidad. Día de Flores (Luna en Libra). Período de trasplante activo. Muy favorable.'},
+  26:{tipo:'hoja', signo:'Libra → Escorpio', vent:'desde transición',
+      tip:'Flores transicionando a Hojas (Escorpio). Período de trasplante continúa.'},
+  27:{tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Ω5°. Favorable para verduras de hoja.'},
+  28:{tipo:'hoja', signo:'Escorpio', vent:'todo el día',
+      tip:'Día de Hojas (Luna en Escorpio). Continúa favorable para cosechar y regar hojas.'},
+  29:{tipo:'fruto', signo:'Escorpio → Sagitario', vent:'desde transición',
+      tip:'Hojas transicionando a Frutos (Sagitario). Apogeo. Fin período de trasplante a las 9hs.'},
+  30:{tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'Día de Frutos (Luna en Sagitario). Excelente para cosechar frutos y guardar semillas.'},
+  31:{tipo:'fruto', signo:'Sagitario', vent:'todo el día',
+      tip:'San Silvestre · Fin de año. Día de Frutos muy bueno (Sagitario). ¡Feliz 2027!'},
+};
+
+// Tipo por día — Mayo 2026 (fuente: AABDA 2026). Referencia histórica.
+const MAYO_T=[null,
+ 'flor','flor','hoja','fruto','fruto','fruto','fruto','raiz','raiz','flor',
+ 'flor','hoja','hoja','hoja','fruto','fruto','raiz','raiz','flor','flor',
+ 'hoja','fruto','fruto','fruto','raiz','raiz','raiz','raiz','flor','hoja','hoja'
+];
+
+// ── FICHAS TÉCNICAS ──────────────────────────────────────────────────────────
+// Datos calibrados para General Pinto, Buenos Aires (Hemisferio Sur)
+const FICHAS = {
+  arvejas:{
+    n:'Arveja', c:'Pisum sativum', f:'Fabaceae · Leguminosas',
+    bio:'fruto',
+    siembra:'Abr–Jul · siembra directa',
+    temp:'7–18°C (cultivo frío)',
+    dp:'5–8 cm', df:'30–40 cm', prof:'3–5 cm', dc:'70–90 días',
+    asoc:'Zanahorias, rábanos, lechugas, espinacas, menta, remolacha',
+    evitar:'Cebollas, ajos, puerros (aliáceas inhiben la nodulación)',
+    rotacion:'Seguir con crucíferas (kale, rúcula) o solanáceas. Precede bien al tomate.',
+    nota:'Fija nitrógeno atmosférico — mejora el suelo para el cultivo siguiente. Necesita soporte (red o estacas). Sembrar en días de Frutos.'
+  },
+  habas:{
+    n:'Haba', c:'Vicia faba', f:'Fabaceae · Leguminosas',
+    bio:'fruto',
+    siembra:'Abr–Jun · siembra directa',
+    temp:'5–15°C (muy frío, tolera heladas)',
+    dp:'15–20 cm', df:'40–50 cm', prof:'5–8 cm', dc:'90–150 días',
+    asoc:'Zanahorias, espinacas, papas, remolachas, borraja',
+    evitar:'Cebollas, ajos, hinojo',
+    rotacion:'Excelente precultivo para cualquier hortaliza. Picar la planta como abono verde.',
+    nota:'El mejor cultivo de invierno. Picar la planta al finalizar como abono verde enriquece mucho el suelo.'
+  },
+  tomates:{
+    n:'Tomate', c:'Solanum lycopersicum', f:'Solanaceae',
+    bio:'fruto',
+    siembra:'Ago–Oct almácigo interior · trasplante Sep–Nov',
+    temp:'15–30°C (sensible al frío)',
+    dp:'50–70 cm', df:'80–100 cm', prof:'0.5 cm (almácigo)', dc:'70–120 días desde trasplante',
+    asoc:'Albahaca, zanahoria, perejil, caléndula, ortiga, espárragos',
+    evitar:'Hinojo, repollo, berenjenas y pimientos (misma familia, no rotar seguido)',
+    rotacion:'No repetir Solanáceas en el mismo lugar por al menos 3 años. Seguir con leguminosas o cucurbitáceas.',
+    nota:'Podar brotes laterales en variedades indeterminadas para concentrar producción. Necesita tutor.'
+  },
+  zapallos:{
+    n:'Zapallo', c:'Cucurbita maxima', f:'Cucurbitaceae',
+    bio:'fruto',
+    siembra:'Sep–Nov · directo o almácigo',
+    temp:'18–30°C (calor)',
+    dp:'80–120 cm', df:'150–200 cm', prof:'2–3 cm', dc:'90–120 días',
+    asoc:'Maíz, porotos, caléndula, rábanos, orégano',
+    evitar:'Pepinos y zapallitos (misma familia, comparten plagas)',
+    rotacion:'Rotación con leguminosas (arvejas, porotos). Ocupa mucho espacio — planificar bien.',
+    nota:'"Las tres hermanas": maíz + porotos + zapallo en el mismo cantero, sistema indígena muy eficiente.'
+  },
+  zapallitos:{
+    n:'Zapallito redondo', c:'Cucurbita pepo', f:'Cucurbitaceae',
+    bio:'fruto',
+    siembra:'Sep–Nov · siembra directa',
+    temp:'18–28°C',
+    dp:'60–80 cm', df:'80–100 cm', prof:'2–3 cm', dc:'50–65 días',
+    asoc:'Maíz, porotos, caléndula, rábanos',
+    evitar:'Pepinos, zapallos (misma familia)',
+    rotacion:'Seguir con leguminosas o raíces. No repetir cucurbitáceas en el mismo cantero.',
+    nota:'Cosechar pequeños (8–10 cm) para sabor y producción continua. Planta muy productiva en verano.'
+  },
+  pepinos:{
+    n:'Pepino', c:'Cucumis sativus', f:'Cucurbitaceae',
+    bio:'fruto',
+    siembra:'Oct–Nov · directa o almácigo',
+    temp:'20–30°C',
+    dp:'30–50 cm', df:'80–100 cm', prof:'1–2 cm', dc:'50–70 días',
+    asoc:'Porotos, maíz, caléndula, rábanos, eneldo',
+    evitar:'Zapallos, zapallitos (comparten oídio y mosca del zapallo)',
+    rotacion:'Rotar con raíces o leguminosas al año siguiente.',
+    nota:'Se cultiva vertical (soporte) para ahorrar espacio. Cosechar antes de amarillar.'
+  },
+  maiz:{
+    n:'Maíz', c:'Zea mays', f:'Poaceae · Gramíneas',
+    bio:'fruto',
+    siembra:'Oct–Nov · siembra directa',
+    temp:'18–35°C',
+    dp:'20–30 cm', df:'60–80 cm', prof:'3–5 cm', dc:'80–120 días',
+    asoc:'Zapallos, porotos, girasol, pepinos, calabaza',
+    evitar:'Tomates (compiten por recursos), remolacha',
+    rotacion:'Seguir con leguminosas (porotos, arvejas) para reponer nitrógeno. No repetir más de 2 años.',
+    nota:'Planta en bloques de al menos 4×4 plantas para asegurar polinización cruzada por viento.'
+  },
+  porotos:{
+    n:'Poroto / Chaucha', c:'Phaseolus vulgaris', f:'Fabaceae',
+    bio:'fruto',
+    siembra:'Oct–Dic · siembra directa',
+    temp:'18–30°C',
+    dp:'10–15 cm', df:'40–50 cm', prof:'3–5 cm', dc:'55–80 días (chaucha) / 90–110 días (grano)',
+    asoc:'Zapallos, maíz, zanahorias, pepinos, caléndula',
+    evitar:'Cebollas, ajos, hinojo, remolacha',
+    rotacion:'Excelente precultivo — fija nitrógeno. Seguir con maíz, zapallos o crucíferas.',
+    nota:'"Las tres hermanas" con maíz y zapallo. Variedades enanas (mata) no necesitan soporte.'
+  },
+  zanahorias:{
+    n:'Zanahoria', c:'Daucus carota', f:'Apiaceae',
+    bio:'raiz',
+    siembra:'Todo el año · mejor Abr–Sep en General Pinto',
+    temp:'10–24°C',
+    dp:'5–8 cm', df:'20–30 cm', prof:'0.5–1 cm', dc:'80–100 días',
+    asoc:'Lechugas, cebollas, puerros, tomates, romero, salvia, arvejas',
+    evitar:'Anís, hinojo (compiten por espacio radicular)',
+    rotacion:'Rotar con hoja (acelgas, lechugas) o leguminosas. No repetir umbelíferas seguido.',
+    nota:'Suelo muy suelto y profundo — sin piedras ni piedrecitas. Ralear a 5 cm cuando tengan 10 cm altura.'
+  },
+  remolachas:{
+    n:'Remolacha', c:'Beta vulgaris', f:'Amaranthaceae',
+    bio:'raiz',
+    siembra:'Todo el año · mejor Mar–Oct en Buenos Aires',
+    temp:'10–24°C',
+    dp:'8–10 cm', df:'25–30 cm', prof:'2–3 cm', dc:'60–90 días',
+    asoc:'Cebollas, ajos, lechugas, repollos, zanahorias',
+    evitar:'Espinacas (misma familia, enfermedades comunes), choclos',
+    rotacion:'Seguir con leguminosas o cucurbitáceas. Parte de la familia Amaranthaceae como la acelga.',
+    nota:'La semilla de remolacha es multigerminativa (sale más de una planta). Ralear a 8 cm.'
+  },
+  rabanos:{
+    n:'Rábano', c:'Raphanus sativus', f:'Brassicaceae',
+    bio:'raiz',
+    siembra:'Todo el año · más lento en verano',
+    temp:'7–20°C',
+    dp:'5 cm', df:'20 cm', prof:'1–2 cm', dc:'25–40 días',
+    asoc:'Zanahorias, lechugas, espinacas, pepinos, arvejas',
+    evitar:'Ninguna conocida',
+    rotacion:'Excelente cultivo rápido entre hileras. Puede preceder a cualquier cultivo.',
+    nota:'Ideal para marcar hileras de siembra lenta (zanahoria) y aprovechar espacios vacíos.'
+  },
+  papas:{
+    n:'Papa', c:'Solanum tuberosum', f:'Solanaceae',
+    bio:'raiz',
+    siembra:'Jun–Ago para cosecha primaveral · Sep–Oct para estival',
+    temp:'10–22°C',
+    dp:'25–35 cm', df:'60–80 cm', prof:'8–15 cm', dc:'75–120 días',
+    asoc:'Maíz, rábanos, caléndula, cilantro, espinacas',
+    evitar:'Tomates, berenjenas, pimientos (misma familia Solanaceae)',
+    rotacion:'No repetir Solanáceas en el mismo lugar por 3–4 años. Seguir con leguminosas.',
+    nota:'Aporcar (cubrir el tallo emergente) 2–3 veces para aumentar producción. Cosechar cuando la planta se seca.'
+  },
+  cebollas:{
+    n:'Cebolla', c:'Allium cepa', f:'Amaryllidaceae · Aliáceas',
+    bio:'raiz',
+    siembra:'Abr–Jun almácigo · trasplante Jun–Ago',
+    temp:'10–24°C',
+    dp:'10–15 cm', df:'20–25 cm', prof:'1 cm (almácigo)', dc:'150–180 días',
+    asoc:'Zanahorias, lechugas, remolachas, tomates, fresas',
+    evitar:'Porotos, habas, arvejas, salvia (inhibe leguminosas cercanas)',
+    rotacion:'Seguir con cucurbitáceas o solanáceas. Evitar aliáceas por 2–3 años.',
+    nota:'Trasplantar cuando tienen el grosor de un lápiz. El cuello se seca cuando están listas.'
+  },
+  ajos:{
+    n:'Ajo', c:'Allium sativum', f:'Amaryllidaceae · Aliáceas',
+    bio:'raiz',
+    siembra:'Abr–Jun · siembra directa (dientes)',
+    temp:'5–20°C',
+    dp:'10–15 cm', df:'20–30 cm', prof:'3–5 cm', dc:'150–210 días',
+    asoc:'Tomates, rosas, zanahorias, lechugas, remolachas (repele plagas)',
+    evitar:'Leguminosas (arvejas, porotos, habas) — inhibe la nodulación de raíces',
+    rotacion:'Excelente después de cereales o cucurbitáceas. Evitar aliáceas por 3 años.',
+    nota:'Plantar el diente con la punta hacia arriba. Cortar el "escapo" (flor) para concentrar energía en el bulbo.'
+  },
+  puerros:{
+    n:'Puerro', c:'Allium ampeloprasum', f:'Amaryllidaceae · Aliáceas',
+    bio:'raiz',
+    siembra:'Abr–Jul almácigo · trasplante Jun–Sep',
+    temp:'7–24°C',
+    dp:'15–20 cm', df:'25–30 cm', prof:'1 cm (almácigo)', dc:'120–180 días',
+    asoc:'Zanahorias, apio, lechugas, tomates',
+    evitar:'Leguminosas, ajo (compite con bulbos)',
+    rotacion:'Seguir con cucurbitáceas o solanáceas. Rotar con hoja o fruto.',
+    nota:'Trasplantar profundo (10–15 cm) para blanquear el tallo. Muy resistente al frío inviernal.'
+  },
+  lechugas:{
+    n:'Lechuga', c:'Lactuca sativa', f:'Asteraceae',
+    bio:'hoja',
+    siembra:'Todo el año · almácigo + trasplante (evitar pleno verano)',
+    temp:'10–22°C (espigazca con calor sostenido)',
+    dp:'20–25 cm', df:'25–30 cm', prof:'0.3 cm (superficie)', dc:'45–70 días',
+    asoc:'Zanahorias, rábanos, fresas, cebollas, espinacas',
+    evitar:'Apio (compite), perejil (altera el sabor según algunos)',
+    rotacion:'Muy versátil. Puede seguir a cualquier cultivo. Buena entre trasplantes de verano.',
+    nota:'En verano elegir variedades tolerantes al calor (batavia, lollo). Sembrar en semisombra.'
+  },
+  acelgas:{
+    n:'Acelga', c:'Beta vulgaris var. cicla', f:'Amaranthaceae',
+    bio:'hoja',
+    siembra:'Todo el año · mejor Ene–Mar y Jul–Sep',
+    temp:'10–28°C',
+    dp:'20–25 cm', df:'30–40 cm', prof:'2 cm', dc:'50–70 días',
+    asoc:'Lechugas, zanahorias, cebollas, rábanos',
+    evitar:'Remolacha (misma especie, comparte enfermedades)',
+    rotacion:'Seguir con leguminosas o cucurbitáceas. Muy adaptable.',
+    nota:'Cosechar hojas externas dejando el cogollo — planta productiva durante muchos meses. Tolera heladas leves.'
+  },
+  espinacas:{
+    n:'Espinaca', c:'Spinacia oleracea', f:'Amaranthaceae',
+    bio:'hoja',
+    siembra:'Mar–May y Jul–Sep',
+    temp:'7–18°C (no tolera calor — espigazca)',
+    dp:'8–10 cm', df:'20–25 cm', prof:'1–2 cm', dc:'40–55 días',
+    asoc:'Lechugas, rábanos, fresas, arvejas',
+    evitar:'Ninguna conocida',
+    rotacion:'Cultivo de ciclo corto. Seguir con cucurbitáceas de verano.',
+    nota:'Muy sensible al calor: espigazca y amarga. Cultivo ideal de otoño-invierno en General Pinto.'
+  },
+  kale:{
+    n:'Kale / Col rizada', c:'Brassica oleracea var. sabellica', f:'Brassicaceae',
+    bio:'hoja',
+    siembra:'Feb–May y Ago–Sep',
+    temp:'5–24°C (heladas mejoran el sabor)',
+    dp:'40–50 cm', df:'50–60 cm', prof:'0.5 cm', dc:'60–80 días',
+    asoc:'Cebollas, remolacha, apio, eneldo',
+    evitar:'Tomates, fresas (evitar misma rotación), otras crucíferas seguidas',
+    rotacion:'No repetir Brassicaceae (kale, rúcula, rábanos) en el mismo lugar por 2 años.',
+    nota:'Muy nutritivo. Las heladas concentran azúcares y mejoran el sabor. Cosechar hojas basales.'
+  },
+  rucula:{
+    n:'Rúcula', c:'Eruca sativa', f:'Brassicaceae',
+    bio:'hoja',
+    siembra:'Todo el año · siembra directa (evitar pleno verano)',
+    temp:'10–22°C',
+    dp:'5–10 cm', df:'20 cm', prof:'0.5 cm', dc:'30–45 días',
+    asoc:'Lechugas, espinacas, rábanos',
+    evitar:'Otras crucíferas seguidas (misma familia)',
+    rotacion:'Rotar con raíces o leguminosas. Ciclo muy corto.',
+    nota:'Sabor más intenso con frío. Espigazca con calor sostenido (hojas amargas). Siembra escalonada.'
+  },
+  perejil:{
+    n:'Perejil', c:'Petroselinum crispum', f:'Apiaceae',
+    bio:'hoja',
+    siembra:'Todo el año · mejor Ago–Mar',
+    temp:'10–24°C',
+    dp:'15 cm', df:'20–25 cm', prof:'0.5 cm', dc:'70–90 días',
+    asoc:'Zanahorias, tomates, espárragos, rosas',
+    evitar:'Lechuga (puede inhibir según algunos agricultores)',
+    rotacion:'Bianual — florece en el año 2. Muy durable en el cantero.',
+    nota:'Germinación lenta (20–30 días). Remojar semillas 24 h antes para acelerar. Trasplantar con cuidado.'
+  },
+  albahaca:{
+    n:'Albahaca', c:'Ocimum basilicum', f:'Lamiaceae',
+    bio:'hoja',
+    siembra:'Oct–Dic · almácigo interior o exterior cálido',
+    temp:'18–32°C (muy sensible al frío — muere con heladas)',
+    dp:'20–25 cm', df:'25–30 cm', prof:'0.3 cm', dc:'30–45 días',
+    asoc:'Tomates, pimientos, pepinos (repele pulgones y mosca blanca)',
+    evitar:'Salvia, romero (competencia de recursos)',
+    rotacion:'Cultivo anual de temporada cálida. Seguir con leguminosas en otoño.',
+    nota:'Pellizcar flores para alargar producción de hojas. La albahaca al lado del tomate mejora el sabor del fruto.'
+  },
+  manzanilla:{
+    n:'Manzanilla', c:'Matricaria chamomilla', f:'Asteraceae',
+    bio:'flor',
+    siembra:'Mar–May y Sep–Oct · siembra en superficie',
+    temp:'10–22°C',
+    dp:'15–20 cm', df:'20–25 cm', prof:'Superficie (luz para germinar)', dc:'60–90 días',
+    asoc:'Repollos, cebollas, zanahorias, pepinos (mejora sabor y vigor)',
+    evitar:'Ninguna conocida — planta benéfica universal',
+    rotacion:'Autosembra naturalmente. Se puede dejar florecer y dispersar semilla.',
+    nota:'Semilla muy fina: mezclar con arena para dispersar. Planta acumuladora de calcio. Té de manzanilla activa el compost.'
+  },
+  calendula:{
+    n:'Caléndula', c:'Calendula officinalis', f:'Asteraceae',
+    bio:'flor',
+    siembra:'Mar–May y Sep–Oct',
+    temp:'7–22°C',
+    dp:'20–25 cm', df:'25–30 cm', prof:'0.5–1 cm', dc:'50–70 días',
+    asoc:'Tomates, zanahorias, espárragos, rosas (repele nematodos y pulgones)',
+    evitar:'Ninguna conocida',
+    rotacion:'Anual autosembrante. Dejar algunos ejemplares para semilla. Muy versátil.',
+    nota:'Excelente planta compañera universal. Repele nematodos del suelo. Pétalos comestibles y medicinales.'
+  },
+  lavanda:{
+    n:'Lavanda', c:'Lavandula angustifolia', f:'Lamiaceae',
+    bio:'flor',
+    siembra:'Ago–Oct · esquejes semileñosos (mucho más rápido que semilla)',
+    temp:'10–30°C (tolera heladas moderadas)',
+    dp:'40–60 cm', df:'50–70 cm', prof:'0.3 cm (semilla)', dc:'12–18 meses hasta plena floración',
+    asoc:'Rosas, repollos, zanahorias, tomates (repele polillas y pulgones)',
+    evitar:'Ninguna conocida',
+    rotacion:'Perenne — permanece en el mismo lugar años. Renovar cada 5–7 años.',
+    nota:'Propagación por esquejes es lo más práctico. Poda fuerte post-floración para renovar. Atrae polinizadores.'
+  },
+  romero:{
+    n:'Romero', c:'Salvia rosmarinus', f:'Lamiaceae',
+    bio:'flor',
+    siembra:'Todo el año · esquejes semileñosos',
+    temp:'10–35°C (resistente a sequía y heladas)',
+    dp:'50–60 cm', df:'60–80 cm', prof:'—', dc:'1–2 años hasta planta establecida',
+    asoc:'Repollos, porotos, zanahorias, salvia, berenjenas',
+    evitar:'Pepinos, calabazas',
+    rotacion:'Perenne. No requiere rotación. Podar para mantener forma y estimular brotación.',
+    nota:'Propagación por esquejes semileñosos (casi siempre funciona). Muy poco riego una vez establecido.'
+  },
+  oregano:{
+    n:'Orégano', c:'Origanum vulgare', f:'Lamiaceae',
+    bio:'flor',
+    siembra:'Sep–Nov · siembra o división de matas',
+    temp:'12–28°C',
+    dp:'20–30 cm', df:'30–40 cm', prof:'Superficie', dc:'60–90 días',
+    asoc:'Tomates, pimientos, repollos, berenjenas',
+    evitar:'Ninguna conocida',
+    rotacion:'Perenne. Se divide la mata cada 3–4 años para rejuvenecer.',
+    nota:'Cosechar antes o durante la floración para mayor concentración de aceites esenciales. Seco tiene más sabor.'
+  },
+  tomillo:{
+    n:'Tomillo', c:'Thymus vulgaris', f:'Lamiaceae',
+    bio:'flor',
+    siembra:'Todo el año · esquejes o división de mata',
+    temp:'10–30°C',
+    dp:'20–25 cm', df:'25–30 cm', prof:'0.2 cm', dc:'60–90 días',
+    asoc:'Repollos, tomates, berenjenas, patatas',
+    evitar:'Ninguna conocida',
+    rotacion:'Perenne semi-leñosa. División de mata cada 3 años.',
+    nota:'Muy resistente a la sequía. Cosechar en floración. Excelente para borduras y entre piedras.'
+  },
+  berenjenas:{
+    n:'Berenjena', c:'Solanum melongena', f:'Solanaceae',
+    bio:'fruto',
+    siembra:'Jul–Sep almácigo · trasplante Oct–Nov',
+    temp:'20–35°C (la que más calor necesita)',
+    dp:'40–50 cm', df:'70–80 cm', prof:'0.5 cm (almácigo)', dc:'80–100 días desde trasplante',
+    asoc:'Porotos, caléndula, orégano, tomillo',
+    evitar:'Tomates, pimientos (misma familia, rotar largo)',
+    rotacion:'No repetir Solanáceas en el mismo lugar por 3–4 años.',
+    nota:'Necesita calor para producir bien. Almácigo largo: 10–12 semanas antes del trasplante.'
+  },
+  pimientos:{
+    n:'Pimiento / Morrón', c:'Capsicum annuum', f:'Solanaceae',
+    bio:'fruto',
+    siembra:'Jul–Sep almácigo · trasplante Oct–Nov',
+    temp:'18–32°C',
+    dp:'40–50 cm', df:'60–70 cm', prof:'0.5 cm (almácigo)', dc:'75–110 días desde trasplante',
+    asoc:'Albahaca, zanahoria, caléndula, perejil',
+    evitar:'Tomates, berenjenas (rotación — misma familia)',
+    rotacion:'No repetir Solanáceas por 3 años. Seguir con leguminosas.',
+    nota:'Almácigo muy largo: iniciar en julio para tener trasplante vigoroso en noviembre.'
+  },
+  girasol:{
+    n:'Girasol', c:'Helianthus annuus', f:'Asteraceae',
+    bio:'flor',
+    siembra:'Oct–Dic · siembra directa',
+    temp:'18–32°C',
+    dp:'30–50 cm', df:'60–90 cm', prof:'2–3 cm', dc:'70–90 días',
+    asoc:'Pepinos, maíz, melones',
+    evitar:'Papas, porotos (produce sustancias alelopáticas)',
+    rotacion:'Anual. Seguir con leguminosas o raíces. Los restos mejoran el suelo.',
+    nota:'El agua acumulada en la "corona" floral atrae insectos benéficos. Sirve de tutor para trepadoras.'
+  },
+};
+
+// ── CULTIVOS POR ÉPOCA Y TIPO (General Pinto, Buenos Aires) ────────────────
+// Estructura: arrays de claves de FICHAS. Si no tiene clave → texto plano.
+// Hemisferio Sur: Otoño=Mar-May | Invierno=Jun-Ago | Primavera=Sep-Nov | Verano=Dic-Feb
+const SEASONAL = {
+  1: {fruto:{p:['porotos','maiz','pepinos'],        h:['tomates','zapallos','pepinos','maiz'],     nota_h:'Pico de cosecha de verano'},
+      raiz: {p:['rabanos','remolachas','zanahorias'],h:['cebollas','puerros','zanahorias']},
+      hoja: {p:['lechugas','rucula'],                h:['lechugas','rucula','albahaca','perejil']},
+      flor: {p:[],                                   h:['oregano','calendula','girasol'],          nota_p:'Descanso de siembra'}},
+  2: {fruto:{p:['arvejas'],                          h:['tomates','zapallos','pepinos','maiz','porotos']},
+      raiz: {p:['rabanos','remolachas','zanahorias'],h:['zanahorias','remolachas','cebollas']},
+      hoja: {p:['lechugas','espinacas','rucula'],    h:['lechugas','rucula','albahaca','perejil']},
+      flor: {p:['manzanilla','calendula'],           h:['oregano','calendula']}},
+  3: {fruto:{p:['arvejas','habas'],                  h:['tomates','zapallos'],                     nota_h:'Secar y guardar semillas'},
+      raiz: {p:['zanahorias','remolachas','cebollas','ajos','puerros','rabanos'],h:['zanahorias','remolachas']},
+      hoja: {p:['lechugas','acelgas','espinacas','kale','rucula','perejil'],h:['lechugas','acelgas','perejil']},
+      flor: {p:['manzanilla','calendula','lavanda'], h:['oregano','manzanilla']}},
+  4: {fruto:{p:['arvejas','habas'],                  h:[],                                         nota_h:'Secar y guardar semillas de verano'},
+      raiz: {p:['zanahorias','remolachas','cebollas','ajos','puerros','rabanos'],h:['remolachas','zanahorias','cebollas']},
+      hoja: {p:['lechugas','acelgas','espinacas','kale','rucula'],h:['lechugas','acelgas','espinacas']},
+      flor: {p:['manzanilla','calendula','lavanda','romero'],h:['oregano','manzanilla','calendula']}},
+  5: {fruto:{p:['arvejas','habas'],                  h:[],                                         nota_h:'Secar y guardar semillas de verano'},
+      raiz: {p:['zanahorias','remolachas','cebollas','ajos','puerros'],h:['remolachas','zanahorias','puerros','cebollas']},
+      hoja: {p:['lechugas','acelgas','espinacas','kale','rucula'],h:['acelgas','espinacas','lechugas','kale']},
+      flor: {p:['manzanilla','calendula','lavanda','romero'],h:['oregano','manzanilla','calendula']}},
+  6: {fruto:{p:['habas'],                            h:[],                                         nota_h:'Conservar y clasificar semillas'},
+      raiz: {p:['ajos','cebollas','puerros'],        h:['zanahorias','remolachas','ajos']},
+      hoja: {p:['acelgas','espinacas','kale'],       h:['kale','espinacas','acelgas']},
+      flor: {p:['lavanda','romero'],                 h:['lavanda','romero','tomillo']}},
+  7: {fruto:{p:['habas'],                            h:[],                                         nota_h:'Mantener semillas almacenadas'},
+      raiz: {p:['papas','ajos','cebollas'],          h:['ajos','puerros','zanahorias']},
+      hoja: {p:['espinacas','kale','acelgas'],       h:['kale','espinacas']},
+      flor: {p:['lavanda','romero'],                 h:['lavanda','tomillo']}},
+  8: {fruto:{p:['tomates','pimientos'],              h:['habas'],                                  nota_p:'En almácigo interior',nota_h:'Si ya maduraron'},
+      raiz: {p:['papas','rabanos','remolachas'],     h:['puerros','ajos','zanahorias']},
+      hoja: {p:['lechugas','rucula','espinacas','acelgas'],h:['kale','espinacas','acelgas']},
+      flor: {p:['manzanilla','calendula'],           h:['lavanda','romero']}},
+  9: {fruto:{p:['tomates','pimientos','berenjenas','zapallos'],h:[],                               nota_h:'Primeros frutos de primavera'},
+      raiz: {p:['papas','rabanos','remolachas','zanahorias'],h:['rabanos','ajos']},
+      hoja: {p:['lechugas','rucula','espinacas','albahaca'],h:['lechugas','rucula','espinacas']},
+      flor: {p:['manzanilla','calendula','albahaca','lavanda'],h:['manzanilla','romero','oregano']}},
+  10:{fruto:{p:['tomates','zapallos','zapallitos','pepinos','porotos','maiz'],h:[],                 nota_h:'Primeros frutos de la estación'},
+      raiz: {p:['rabanos','remolachas','zanahorias','cebollas'],h:['rabanos']},
+      hoja: {p:['lechugas','rucula','albahaca','perejil'],h:['lechugas','rucula','espinacas']},
+      flor: {p:['albahaca','calendula','lavanda'],   h:['manzanilla','calendula']}},
+  11:{fruto:{p:['tomates','zapallos','pepinos','porotos','maiz'],h:[],                             nota_h:'Primeros frutos de verano'},
+      raiz: {p:['rabanos','remolachas','cebollas'],  h:['rabanos','remolachas']},
+      hoja: {p:['lechugas','rucula','albahaca'],     h:['lechugas','rucula','albahaca']},
+      flor: {p:['albahaca','calendula'],             h:['calendula','manzanilla','lavanda']}},
+  12:{fruto:{p:['porotos','maiz'],                   h:['tomates','zapallos','pepinos','maiz'],    nota_h:'Pico de cosecha verano'},
+      raiz: {p:['rabanos','cebollas'],               h:['cebollas','remolachas','zanahorias']},
+      hoja: {p:['lechugas','rucula'],                h:['lechugas','rucula','albahaca']},
+      flor: {p:[],                                   h:['calendula','lavanda'],                    nota_p:'Sin siembras de flores'}},
+};
+
+// ── CONFIG POR TIPO ──────────────────────────────────────────────────────────
+const TC = {
+  fruto:{icon:'🍎',lbl:'DÍA DE FRUTOS', short:'FRUTOS', color:'#cc0000', bg:'rgba(0,0,0,.04)'},
+  raiz: {icon:'🥕',lbl:'DÍA DE RAÍCES', short:'RAÍCES', color:'#cc0000', bg:'rgba(0,0,0,.04)'},
+  flor: {icon:'🌼',lbl:'DÍA DE FLORES', short:'FLORES', color:'#cc0000', bg:'rgba(0,0,0,.04)'},
+  hoja: {icon:'🌿',lbl:'DÍA DE HOJAS',  short:'HOJAS',  color:'#cc0000', bg:'rgba(0,0,0,.04)'},
+};
+const SIGN_TO_TIPO = {
+  'Aries':'fruto','Tauro':'raiz','Géminis':'flor','Cáncer':'hoja',
+  'Leo':'fruto','Virgo':'raiz','Libra':'flor','Escorpio':'hoja',
+  'Sagitario':'fruto','Capricornio':'raiz','Acuario':'flor','Piscis':'hoja'
+};
+const TC_COL={fruto:'#cc0000',raiz:'#7a5c3a',flor:'#8a70a0',hoja:'#3a7a50'};
+
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+             'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function getEstacion(date) {
+  const y = date.getFullYear();
+  const T = (y - 2000) / 1000;
+  function jd(jd0, a, b, c) { return new Date((jd0 + a*T + b*T*T + c*T*T*T - 2440587.5) * 86400000); }
+  const mar = jd(2451623.80984, 365242.37404,  0.05169, -0.00411);
+  const jun = jd(2451716.56767, 365241.62603,  0.00325,  0.00888);
+  const sep = jd(2451810.21715, 365242.01767, -0.11575,  0.00337);
+  const dec = jd(2451900.05952, 365242.74049, -0.06223, -0.00823);
+  if (date >= mar && date < jun) return 'Otoño 🍂';
+  if (date >= jun && date < sep) return 'Invierno ❄️';
+  if (date >= sep && date < dec) return 'Primavera 🌸';
+  return 'Verano ☀️';
+}
+
+// ── MOON PHASE ───────────────────────────────────────────────────────────────
+function moonPhase(date) {
+  const ref=new Date('2000-01-06T18:14:00Z'), SYN=29.530589;
+  const c=(((date-ref)/86400000)%SYN+SYN)%SYN;
+  const ill=Math.round(50*(1-Math.cos(2*Math.PI*c/SYN)));
+  let ph,em;
+  if(c<1.85)       {ph='Luna Nueva';       em='🌑';}
+  else if(c<7.38)  {ph='Luna Creciente';   em='🌒';}
+  else if(c<9.22)  {ph='Cuarto Creciente'; em='🌓';}
+  else if(c<14.77) {ph='Gibosa Creciente'; em='🌔';}
+  else if(c<16.61) {ph='Luna Llena';       em='🌕';}
+  else if(c<22.15) {ph='Gibosa Menguante'; em='🌖';}
+  else if(c<23.99) {ph='Cuarto Menguante'; em='🌗';}
+  else             {ph='Luna Menguante';   em='🌘';}
+  return {ph,em,ill,day:Math.round(c)};
+}
+
+// ── MOON ASCENDING / DESCENDING ──────────────────────────────────────────────
+function moonAscending(date){
+  const d=(date-new Date('2000-01-01T12:00:00Z'))/86400000;
+  const L=(((218.316+13.176396*d)%360)+360)%360;
+  // Hemisferio SUR (Argentina): la Luna está más alta cuando está en Cáncer–Sagitario
+  // Ascendente (sube en cielo austral): Cáncer→Sagitario (90°≤L≤270°)
+  // Descendente (baja en cielo austral): Capricornio→Géminis (L>270° o L<90°)
+  // Período de trasplante AABDA = luna descendente = Capricornio→Géminis
+  return L>=90 && L<=270;
+}
+
+// ── SIGN ALGORITHM (fallback) ────────────────────────────────────────────────
+function moonSign(date){
+  const d=(date-new Date('2000-01-01T12:00:00Z'))/86400000;
+  const L=(((218.3165+13.17639648*d)%360)+360)%360;
+  const Ls=((L-23.85)%360+360)%360;
+  const SG=['Aries','Tauro','Géminis','Cáncer','Leo','Virgo',
+            'Libra','Escorpio','Sagitario','Capricornio','Acuario','Piscis'];
+  const BT={Aries:'fruto',Tauro:'raiz','Géminis':'flor','Cáncer':'hoja',
+            Leo:'fruto',Virgo:'raiz',Libra:'flor',Escorpio:'hoja',
+            Sagitario:'fruto',Capricornio:'raiz',Acuario:'flor',Piscis:'hoja'};
+  const s=SG[Math.floor(Ls/30)];
+  return {sign:s,tipo:BT[s]};
+}
+
+// ── MERGE CROPS (unifica p y h sin duplicados) ───────────────────────────────
+function mergeCrops(sc){
+  const seen=new Set(), all=[];
+  [...(sc.p||[]),...(sc.h||[])].forEach(k=>{ if(!seen.has(k)){seen.add(k);all.push(k);} });
+  return {crops:all, nota:sc.nota_p||sc.nota_h||null};
+}
+
+// ── RENDER CROPS (linked) ────────────────────────────────────────────────────
+function renderCrops(arr, nota){
+  if(!arr || arr.length===0){
+    return nota ? `<em style="color:#aaa;font-size:9.5px">${nota}</em>` : '<span style="color:#aaa">—</span>';
+  }
+  const parts = arr.map(k => {
+    if(FICHAS[k]){
+      return `<span class="crop-link" onclick="showFicha('${k}')">${FICHAS[k].n}</span>`;
+    }
+    return `<span style="font-style:italic;color:#888;font-size:9.5px">${k}</span>`;
+  });
+  const html = parts.join(', ');
+  return nota ? html + ` <em style="color:#aaa;font-size:9px">(${nota})</em>` : html;
+}
+
+// ── FICHA MODAL ──────────────────────────────────────────────────────────────
+function showFicha(key){
+  const f = FICHAS[key];
+  if(!f) return;
+  const tc = TC[f.bio] || {};
+  document.getElementById('ficha-modal')?.remove();
+
+  const el = document.createElement('div');
+  el.id = 'ficha-modal';
+  el.className = 'modal-ov';
+  el.innerHTML = `
+    <div class="modal-crd" onclick="event.stopPropagation()">
+      <div class="modal-hd">
+        <div class="modal-hd-left">
+          <div class="modal-hd-bio">
+            <span style="font-size:16px">${tc.icon||''}</span>
+            <span class="modal-hd-type" style="color:rgba(232,213,163,.65)">${tc.lbl||f.bio}</span>
+          </div>
+          <div class="modal-hd-n">${f.n}</div>
+          <div class="modal-hd-c">${f.c}</div>
+        </div>
+        <button class="modal-close" onclick="closeFicha()">×</button>
+      </div>
+      <div class="modal-bd">
+
+        <div class="modal-sect">
+          <div class="modal-sect-ttl">📋 Identificación</div>
+          <div class="mrow"><span class="mkey">Familia</span><span class="mval">${f.f}</span></div>
+        </div>
+
+        <div class="modal-sect">
+          <div class="modal-sect-ttl">🗓 Siembra y cultivo</div>
+          <div class="mrow"><span class="mkey">Siembra</span><span class="mval green">${f.siembra}</span></div>
+          <div class="mrow"><span class="mkey">Temperatura</span><span class="mval">${f.temp}</span></div>
+          <div class="mrow"><span class="mkey">Entre plantas</span><span class="mval">${f.dp}</span></div>
+          <div class="mrow"><span class="mkey">Entre filas</span><span class="mval">${f.df}</span></div>
+          <div class="mrow"><span class="mkey">Profundidad</span><span class="mval">${f.prof}</span></div>
+          <div class="mrow"><span class="mkey">Días a cosecha</span><span class="mval">${f.dc}</span></div>
+        </div>
+
+        <div class="modal-sect">
+          <div class="modal-sect-ttl">🌿 Asociación de cultivos</div>
+          <div class="mrow"><span class="mkey">Plantas amigas</span><span class="mval green">${f.asoc}</span></div>
+          <div class="mrow"><span class="mkey">Evitar con</span><span class="mval red">${f.evitar}</span></div>
+        </div>
+
+        <div class="modal-sect">
+          <div class="modal-sect-ttl">🔄 Rotación</div>
+          <div class="mrow"><span class="mkey">Rotación</span><span class="mval">${f.rotacion}</span></div>
+        </div>
+
+        <div class="modal-nota">${f.nota}</div>
+      </div>
+    </div>`;
+  el.addEventListener('click', closeFicha);
+  document.body.appendChild(el);
+}
+function closeFicha(){
+  document.getElementById('ficha-modal')?.remove();
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeFicha(); });
+
+// ── SELECT DAY ───────────────────────────────────────────────────────────────
+function selectDay(y,m,d){
+  pickedDate=new Date(y,m,d);
+  render(pickedDate);
+}
+function goToday(){
+  pickedDate=new Date();
+  render(pickedDate);
+}
+function prevMonth(){
+  pickedDate=new Date(pickedDate.getFullYear(),pickedDate.getMonth()-1,1);
+  render(pickedDate);
+}
+function nextMonth(){
+  pickedDate=new Date(pickedDate.getFullYear(),pickedDate.getMonth()+1,1);
+  render(pickedDate);
+}
+function prevDay(){
+  const d=new Date(pickedDate); d.setDate(d.getDate()-1);
+  pickedDate=d; render(pickedDate);
+}
+function nextDay(){
+  const d=new Date(pickedDate); d.setDate(d.getDate()+1);
+  pickedDate=d; render(pickedDate);
+}
+
+// ── SWIPE NAVIGATION ─────────────────────────────────────────────────────────
+(function(){
+  let tx=0, ty=0;
+  const el=document.getElementById('card');
+  el.addEventListener('touchstart',e=>{
+    tx=e.touches[0].clientX;
+    ty=e.touches[0].clientY;
+  },{passive:true});
+  el.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-tx;
+    const dy=e.changedTouches[0].clientY-ty;
+    if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.5) return;
+    dx<0 ? nextDay() : prevDay();
+  },{passive:true});
+})();
+
+// ── MINI CALENDAR ────────────────────────────────────────────────────────────
+// Rangos de período de trasplante por mes (0-indexed) para 2026 — fuente: AABDA
+const TRAS_2026 = {
+  4: [[5,18]],
+  5: [[1,15],[28,30]],
+  6: [[1,11],[26,31]],
+  7: [[1,5],[22,31]],
+  8: [[1,5],[22,30]],
+  9: [[1,13],[16,29]],
+  10:[[12,19]],
+  11:[[9,16],[23,29]],
+};
+// ── VISTA MENSUAL ─────────────────────────────────────────────────────────────
+let mesViewMon=null, mesViewYear=null;
+
+function openMesView(){
+  mesViewMon=pickedDate.getMonth();
+  mesViewYear=pickedDate.getFullYear();
+  renderMesView();
+}
+
+function renderMesView(){
+  document.getElementById('mes-modal')?.remove();
+  const year=mesViewYear, mon=mesViewMon;
+  const first=new Date(year,mon,1).getDay();
+  const days=new Date(year,mon+1,0).getDate();
+  const todayY=TODAY.getFullYear(), todayM=TODAY.getMonth(), todayD=TODAY.getDate();
+
+  const DIAS_SHORT=['D','L','M','M','J','V','S'];
+  let headers=DIAS_SHORT.map(d=>`<div class="mes-dh">${d}</div>`).join('');
+
+  let cells='';
+  for(let i=0;i<first;i++) cells+=`<div class="mes-cell vacio"></div>`;
+
+  for(let d=1;d<=days;d++){
+    const date=new Date(year,mon,d,12,0,0);
+    const aabdaMes=year===2026?MESES_AABDA_2026[mon]:null;
+    const dayData=aabdaMes?aabdaMes[d]:null;
+    const tipo=dayData?dayData.tipo:moonSign(date).tipo;
+    const signo=dayData?dayData.signo:moonSign(date).sign;
+    const tc=TC[tipo]||TC.hoja;
+    const trans=getTransicion(year,mon,d);
+    const mp=moonPhase(date);
+    const asc=moonAscending(date);
+    const isTras=isDayTrasplante(year,mon,d);
+    const isHoy=(year===todayY&&mon===todayM&&d===todayD);
+    const rayDia=isRayado(dayData?dayData.tip:'');
+
+    // Organ icon(s)
+    let iconHtml=trans
+      ?`<span class="mes-icon">${TC[trans.tipo1].icon}<span style="font-size:7px;color:var(--c-muted)">→</span>${tc.icon}</span>`
+      :`<span class="mes-icon">${tc.icon}</span>`;
+
+    // Transition time
+    let transHtml=trans&&trans.hora
+      ?`<span class="mes-trans">${trans.hora}</span>`:'';
+
+    // Zodiac sign (clean, no @hs)
+    let signoClean=(signo||'').replace(/@[\d\-–]+\s*hs/i,'').replace(/\s+$/,'');
+    // Add glyphs
+    signoClean=addGlyphs(signoClean);
+
+    // Moon phase (only on phase days)
+    let faseHtml=mp.day<=1||mp.day===8||mp.day===15||mp.day===22
+      ?`<span class="mes-fase">${mp.em}</span>`:'';
+
+    // Ascending/descending
+    let lunaHtml=`<span class="mes-luna ${asc?'asc':'desc'}">${asc?'↑':'↓'}</span>`;
+
+    cells+=`<div class="mes-cell${isHoy?' hoy':''}${isTras?' tras':''}${rayDia?' rayado-dia':''}" onclick="selectDay(${year},${mon},${d});closeMesView()">
+      <span class="mes-dnum">${d}</span>
+      ${iconHtml}${transHtml}
+      <span class="mes-signo">${signoClean}</span>
+      <div style="display:flex;gap:3px;align-items:center">${faseHtml}${lunaHtml}${rayDia?'<span class="mes-rayado">---</span>':''}</div>
+    </div>`;
+  }
+
+  // Fill last row
+  const total=first+days;
+  const rem=total%7===0?0:7-(total%7);
+  for(let i=0;i<rem;i++) cells+=`<div class="mes-cell vacio"></div>`;
+
+  const el=document.createElement('div');
+  el.id='mes-modal'; el.className='mes-ov';
+  el.innerHTML=`
+    <div class="mes-crd">
+      <div class="mes-hdr">
+        <span class="mes-titulo">Vista mensual</span>
+        <button class="mes-close" onclick="closeMesView()">×</button>
+      </div>
+      <div class="mes-nav">
+        <button onclick="mesViewMon--;if(mesViewMon<0){mesViewMon=11;mesViewYear--;}renderMesView()">&#8249;</button>
+        <span>${MESES[mon].toUpperCase()} ${year}</span>
+        <button onclick="mesViewMon++;if(mesViewMon>11){mesViewMon=0;mesViewYear++;}renderMesView()">&#8250;</button>
+      </div>
+      <div class="mes-grid">
+        ${headers}${cells}
+      </div>
+      <div class="mes-legend">
+        <div class="mes-legend-item"><span>🍎</span> Frutos</div>
+        <div class="mes-legend-item"><span>🥕</span> Raíces</div>
+        <div class="mes-legend-item"><span>🌼</span> Flores</div>
+        <div class="mes-legend-item"><span>🌿</span> Hojas</div>
+        <div class="mes-legend-item"><span class="mes-luna asc">↑</span> Ascendente</div>
+        <div class="mes-legend-item"><span class="mes-luna desc">↓</span> Descendente</div>
+        <div class="mes-legend-item"><span style="display:inline-block;width:14px;height:3px;background:rgba(60,140,40,.7);border-radius:1px;vertical-align:middle"></span> Trasplante</div>
+        <div class="mes-legend-item"><span class="mes-rayado" style="font-size:8px">---</span> Restrictivo</div>
+      </div>
+    </div>`;
+  el.addEventListener('click', e=>{ if(e.target===el) closeMesView(); });
+  document.body.appendChild(el);
+}
+
+function closeMesView(){
+  document.getElementById('mes-modal')?.remove();
+}
+
+function isDayTrasplante(year,month,day){
+  if(year===2026 && TRAS_2026[month]){
+    return TRAS_2026[month].some(([s,e])=>day>=s&&day<=e);
+  }
+  return !moonAscending(new Date(year,month,day,12,0,0));
+}
+
+function miniCal(year,month,pickedDay,todayRef){
+  const first=new Date(year,month,1).getDay();
+  const days=new Date(year,month+1,0).getDate();
+  const todayD=(todayRef.getFullYear()===year&&todayRef.getMonth()===month)?todayRef.getDate():-1;
+
+  let rows='<tr>',cnt=0;
+  for(let i=0;i<first;i++){rows+='<td></td>';cnt++;}
+  for(let d=1;d<=days;d++){
+    const tipo=getDayType(year,month,d);
+    const col=tipo?TC_COL[tipo]:'#666';
+    const isToday=(d===todayD);
+    const isPicked=(d===pickedDay);
+    let cls='dcell';
+    let st='';
+    const trans=getTransicion(year,month,d);
+    if(trans) cls+=' trans';
+    const dayTip=(year===2026&&MESES_AABDA_2026[month]&&MESES_AABDA_2026[month][d])?MESES_AABDA_2026[month][d].tip:'';
+    if(isRayado(dayTip)) cls+=' rayado';
+    if(isToday)  {cls+=' today';}
+    else if(isPicked){cls+=' picked'; st=`color:${col};`;}
+    else         {st=`color:${col};`;}
+    const tdCls=isDayTrasplante(year,month,d)?'tras':'';
+    const dotsHtml=trans&&!isToday&&!isPicked
+      ?`<span class="trans-dots"><span style="color:${TC_COL[trans.tipo1]}">●</span><span class="tarr">›</span><span style="color:${TC_COL[trans.tipo2]}">●</span></span>`
+      :'';
+    rows+=`<td class="${tdCls}"><span class="${cls}" style="${st}" onclick="selectDay(${year},${month},${d})">${d}${dotsHtml}</span></td>`;
+    cnt++;
+    if(cnt%7===0&&d<days) rows+='</tr><tr>';
+  }
+  while(cnt%7!==0){rows+='<td></td>';cnt++;}
+  rows+='</tr>';
+
+  return `<div class="cal-wrap">
+    <table class="cal-tbl">
+      <thead><tr><th>D</th><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="cal-legend">
+      <span><span class="leg-sq" style="background:#cc0000"></span>Frutos</span>
+      <span><span class="leg-sq" style="background:#7a5c3a"></span>Raíces</span>
+      <span><span class="leg-sq" style="background:#8a70a0"></span>Flores</span>
+      <span><span class="leg-sq" style="background:#3a7a50"></span>Hojas</span>
+      <span><span class="leg-tr"></span>Trasplante</span>
+    </div>
+  </div>`;
+}
+
+// ── LOOKUP PRECISO (AABDA) — reemplazar cuando se tengan capturas del PDF ──────
+// MAYO_2026 contiene datos del calendario 2023 (pendiente de corrección con 2026 real)
+// Para activar datos precisos de un mes: descomentarlo y agregar la condición en render()
+/*
+const DATOS_PRECISOS = {
+  // '2026-05': MAYO_2026,  // descomentar cuando tengamos datos 2026 correctos
+};
+*/
+
+const MESES_AABDA_2026=[null,null,null,null,
+  MAYO_2026,JUNIO_2026,JULIO_2026,AGOSTO_2026,SEPTIEMBRE_2026,
+  OCTUBRE_2026,NOVIEMBRE_2026,DICIEMBRE_2026];
+
+function getDayType(year, month, day){
+  const mes=year===2026?MESES_AABDA_2026[month]:null;
+  if(mes && mes[day]) return mes[day].tipo;
+  const d=new Date(year,month,day,12,0,0);
+  return moonSign(d).tipo;
+}
+
+function getTransicion(year, month, day){
+  const mes=year===2026?MESES_AABDA_2026[month]:null;
+  if(!mes || !mes[day]) return null;
+  const {tipo, signo}=mes[day];
+  const ai=signo.indexOf('→');
+  if(ai===-1) return null;
+  const s1=signo.slice(0,ai).trim();
+  const tipo1=SIGN_TO_TIPO[s1];
+  if(!tipo1) return null;
+
+  // Extraer constelación final después de →
+  const afterArrow=signo.slice(ai+1).trim();
+  const s2M=afterArrow.match(/^([A-ZÁáÉéÍíÓóÚú\w]+)/);
+  const s2=s2M?s2M[1]:'';
+  const tipo2=SIGN_TO_TIPO[s2];
+  if(!tipo2) return null;
+
+  // Extraer hora de transición: "@6-7hs" → "6–7 hs"
+  const horaM=signo.match(/@([\d\-–]+)\s*hs/i);
+  const hora=horaM ? horaM[1].replace('-','–')+' hs' : null;
+  return {tipo1, tipo2, hora};
+}
+
+// ── RAYADOS — períodos desfavorables ─────────────────────────────────────────
+function isRayado(tip){
+  const t=(tip||'').toLowerCase();
+  return t.includes('eclipse')||t.includes('perigeo')||
+    (t.includes('nodo')&&(t.includes('ascendente de')||t.includes('descendente de')));
+}
+function getRayadoEvento(tip){
+  const t=tip||'';
+  const ecl=t.match(/eclipse\s+(?:total de sol|parcial de luna|de\s+\w+)/i);
+  if(ecl) return ecl[0];
+  const per=t.match(/perigeo\s*(?:lunar)?\s*@?[\d\-–]*\s*hs?/i);
+  if(per) return per[0];
+  const nod=t.match(/nodo\s+(?:ascendente|descendente)\s+(?:de\s+)?\w+/i);
+  if(nod) return nod[0];
+  return null;
+}
+function getRayadoPeriodo(tip){
+  const t=tip||'';
+  // Buscar patrón "Período desfavorable XXX a XXX"
+  const per=t.match(/período\s+desfavorable\s+([^.]+)/i);
+  if(per) return per[1].trim();
+  // Buscar patrón "~XXh" o "XXh"
+  const hrs=t.match(/(\d{1,2}(?:[–\-]\d{1,2})?(?:h|hs)?)/i);
+  if(hrs) return hrs[1];
+  return null;
+}
+
+// ── ZODIAC GLYPHS ─────────────────────────────────────────────────────────────
+const ZODIAC_GLYPH={
+  'Aries':'♈','Tauro':'♉','Géminis':'♊','Cáncer':'♋',
+  'Leo':'♌','Virgo':'♍','Libra':'♎','Escorpio':'♏',
+  'Sagitario':'♐','Capricornio':'♑','Acuario':'♒','Piscis':'♓'
+};
+function addGlyphs(s){
+  return s.replace(/Aries|Tauro|Géminis|Cáncer|Leo|Virgo|Libra|Escorpio|Sagitario|Capricornio|Acuario|Piscis/g,
+    m=>m+(ZODIAC_GLYPH[m]||''));
+}
+function fmtVent(v){
+  if(!v) return v;
+  const l=v.toLowerCase();
+  if(l==='todo el día') return 'todo el día ✓';
+  if(l==='restringido') return 'energía reducida ⚠';
+  return v;
+}
+function fmtVentInline(v){
+  if(!v) return '';
+  const l=v.toLowerCase();
+  if(l==='todo el día'||l==='todo el día ✓') return '';
+  if(l==='restringido') return 'energía reducida ⚠';
+  if(l.includes('desde las')) return v;
+  if(l.includes('hasta las')) return v;
+  if(l.includes('mejor')) return v;
+  if(l.includes('desde transición')||l.includes('desde la transición')) return '';
+  if(/^\d/.test(l)) return 'activo ' + v;
+  return v;
+}
+
+// ── CONSEJOS BIODINÁMICOS ROTATIVOS ──────────────────────────────────────────
+const CONSEJOS = {
+  fruto:[
+    '🌞 Los frutos cosechados hoy tendrán mejor sabor y se conservarán más tiempo. Cosechar en las horas centrales del día, evitando el rocío matutino.',
+    '🌱 Ideal para guardar semillas de frutos: tomate, zapallo, pimiento, chaucha. Secar bien y guardar en papel, nunca en plástico ni en frío.',
+    '🍅 Los frutos cosechados en días de fuego son más aromáticos y concentrados. Aprovechar para elaborar conservas, salsas y fermentados.',
+    '🌶️ Buen día para podar árboles frutales si se desea estimular la producción frutal. La energía del fuego favorece el cuajado.',
+    '🔥 Sembrar frutos en días de Aries, Leo o Sagitario: tomates, pimientos, berenjenas, pepinos, zapallos. La energía calorífica activa la germinación.',
+  ],
+  raiz:[
+    '🥕 Cosechar raíces y tubérculos hoy: zanahoria, remolacha, nabo, papa. El sabor y la conservación son superiores en días de tierra.',
+    '🌱 Trasplantar en días de raíces afianza el arraigo. Regar poco tras el trasplante — la tierra húmeda en exceso pudre raíces nuevas.',
+    '🪱 Aplicar compost maduro o biofertilizantes sólidos. El suelo está especialmente receptivo hoy a los nutrientes orgánicos de la tierra.',
+    '🌿 Dividir y trasplantar bulbos: ajo, cebolla, puerro, tulipán, gladiolo. Plantar a la profundidad correcta y sin dejar aire en el hoyo.',
+    '⛏️ Laborar el suelo con horquilla — nunca pala plana — para no destruir la estructura. La aireación mejora la vida microbiana en profundidad.',
+  ],
+  flor:[
+    '🌸 Cosechar flores y aromáticas con mayor concentración de aceite esencial. Cortar a mitad de la mañana, antes del calor, para máximo aroma.',
+    '✂️ Podar arbustos ornamentales y rosales en días de flores para estimular la floración. Los cortes cicatrizan bien con energía aérea activa.',
+    '🍵 Preparar tés e infusiones de hierbas aromáticas. La energía del aire potencia los principios activos de la planta.',
+    '🐝 Buen día para trabajar con las colmenas. Las abejas están más dóciles y orientadas a la floración. Revisar marcos y limpiar fondos.',
+    '🌼 Sembrar flores, aromáticas y plantas de flor comestible: caléndula, lavanda, borraja, coriandro. La energía floral favorece la formación de botones.',
+  ],
+  hoja:[
+    '💧 Regar profusamente hoy — las plantas absorben el agua con mayor eficiencia en días de hojas. Mejor al amanecer o al atardecer.',
+    '🥬 Cosechar verduras de hoja para consumo fresco: lechuga, espinaca, acelga, radicheta. Para secar o conservar, preferir días de frutos.',
+    '🌿 Aplicar preparados foliares biodinámicos (BD 501 — sílice de cuarzo) en días de hojas para fortalecer la energía lumínica de la planta.',
+    '🪴 Sembrar verduras de hoja: lechugas, espinacas, acelgas, perejil. La energía hídrica favorece el desarrollo foliar y la terneza.',
+    '⚠️ En Piscis y Escorpio la energía puede ser intensa o difusa. Evitar siembras delicadas. Buen día para regar, mulchear y dejar descansar el huerto.',
+  ],
+};
+
+// ── UBICACIÓN Y HORARIOS ASTRONÓMICOS ────────────────────────────────────────
+const LOC_DEFAULT = {lat:-35.10, lon:-60.91, name:'General Pinto, BA'};
+let userLoc = LOC_DEFAULT;
+(function(){
+  try{ const s=localStorage.getItem('ubicacion'); if(s) userLoc=JSON.parse(s); }catch(e){}
+})();
+
+function fmtHora(d){
+  if(!d||isNaN(d.getTime())) return '--:--';
+  return d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false});
+}
+
+function getAstroTimes(date, lat, lon){
+  const d=new Date(date.getFullYear(),date.getMonth(),date.getDate(),12,0,0);
+  const sun=SunCalc.getTimes(d,lat,lon);
+  const moon=SunCalc.getMoonTimes(d,lat,lon);
+  return {
+    salSol:  fmtHora(sun.sunrise),
+    pueSol:  fmtHora(sun.sunset),
+    salLuna: moon.alwaysUp?'↑ siempre': moon.alwaysDown?'—': moon.rise?fmtHora(moon.rise):'—',
+    pueLuna: moon.alwaysUp?'—'        : moon.alwaysDown?'↓ no sale': moon.set ?fmtHora(moon.set) :'—',
+  };
+}
+
+function requestGPS(){
+  if(!navigator.geolocation){ alert('Tu dispositivo no soporta geolocalización'); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const loc={lat:pos.coords.latitude, lon:pos.coords.longitude,
+                 name:`${pos.coords.latitude.toFixed(2)}°, ${pos.coords.longitude.toFixed(2)}°`};
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${loc.lat}&lon=${loc.lon}&format=json&accept-language=es`)
+        .then(r=>r.json())
+        .then(d=>{
+          const a=d.address||{};
+          const city=a.city||a.town||a.village||a.municipality||a.county||'';
+          const state=a.state||'';
+          if(city) loc.name=city+(state?', '+state:'');
+          localStorage.setItem('ubicacion',JSON.stringify(loc));
+          userLoc=loc; render(pickedDate);
+        })
+        .catch(()=>{ localStorage.setItem('ubicacion',JSON.stringify(loc)); userLoc=loc; render(pickedDate); });
+    },
+    ()=>alert('No se pudo obtener la ubicación. Verificá los permisos.')
+  );
+}
+function resetLoc(){
+  userLoc=LOC_DEFAULT; localStorage.removeItem('ubicacion'); render(pickedDate);
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render(date){
+  const day=date.getDate(), mon=date.getMonth(), year=date.getFullYear();
+  const dow=date.getDay();
+  const monNum=mon+1; // 1-12
+
+  // Biodynamic data — datos precisos AABDA cuando disponibles, algoritmo para el resto
+  const TIPS={
+    Aries:      'Luna en Aries (Fuego 🔥). Día de Frutos muy dinámico. Excelente para cosechar frutos y guardar semillas. Energía activa que favorece la germinación y el vigor de las plantas.',
+    Tauro:      'Luna en Tauro (Tierra 🌍). Día de Raíces consolidado. Ideal para trasplantar, abonar y trabajar el suelo. La Luna en Tauro da estabilidad y favorece el arraigo.',
+    'Géminis':  'Luna en Géminis (Aire 💨). Día de Flores liviano. Favorable para podar, cosechar flores y aromáticas. Buena jornada para trabajar con las partes aéreas de las plantas.',
+    'Cáncer':   'Luna en Cáncer (Agua 💧). Día de Hojas muy fértil. Regar, trasplantar y cosechar verduras de hoja. La Luna en su propio signo amplifica la humedad — cuidado con hongos en días húmedos.',
+    Leo:        'Luna en Leo (Fuego 🔥). Día de Frutos brillante. El mejor momento para cosechar frutos destinados a semilla o consumo. Energía solar y concentrada en la fruta.',
+    Virgo:      'Luna en Virgo (Tierra 🌍). Día de Raíces excelente. Muy favorable para laborear, compostar y cosechar raíces. La tierra trabaja con precisión y detalle.',
+    Libra:      'Luna en Libra (Aire 💨). Día de Flores equilibrado. Ideal para cortar flores, cosechar aromáticas y podar. La belleza y el aroma de las plantas se potencian.',
+    Escorpio:   'Luna en Escorpio (Agua 💧). Día de Hojas profundo. Regar y fertilizar, pero con moderación. Período de energía intensa — evitar siembras delicadas o trasplantes de raíces.',
+    Sagitario:  'Luna en Sagitario (Fuego 🔥). Día de Frutos expansivo. Excelente para secar semillas y cosechar. La energía es expansiva y cálida, ideal para frutos con mucho aroma.',
+    Capricornio:'Luna en Capricornio (Tierra 🌍). Día de Raíces muy favorable. Trasplantar bulbos, cosechar raíces y abonar con compost. Energía densa y nutritiva para el suelo.',
+    Acuario:    'Luna en Acuario (Aire 💨). Día de Flores original. Favorable para podar, cosechar flores y trabajar semilleros. Energía fresca y circulante en la planta.',
+    Piscis:     'Luna en Piscis (Agua 💧). Día de Hojas con energía difusa. Período de menor vitalidad — evitar siembras importantes. Bueno para regar y dejar descansar el huerto.',
+  };
+  const AABDA_2026=[null,null,null,null,
+    MAYO_2026,JUNIO_2026,JULIO_2026,AGOSTO_2026,SEPTIEMBRE_2026,
+    OCTUBRE_2026,NOVIEMBRE_2026,DICIEMBRE_2026];
+  let tipo, signo, vent, tip;
+  const aabdaMes=year===2026?AABDA_2026[mon]:null;
+  if(aabdaMes && aabdaMes[day]){
+    ({tipo,signo,vent,tip}=aabdaMes[day]);
+  } else {
+    const a=moonSign(date);
+    signo=a.sign; tipo=a.tipo; vent='todo el día';
+    tip=(TIPS[signo]||`Luna en ${signo}. ${TC[tipo]?.lbl||tipo}.`)
+      +' · Consultar AABDA para horas exactas de transición.';
+  }
+
+  // Seasonal crops
+  const sea=SEASONAL[monNum]||SEASONAL[5];
+  const sc=sea[tipo]||{p:[],h:[]};
+
+  const tc=TC[tipo];
+  const trans=getTransicion(year,mon,day);
+  const mp=moonPhase(date);
+  const est=getEstacion(date);
+  const asc=moonAscending(date);
+  const astro=getAstroTimes(date,userLoc.lat,userLoc.lon);
+  const isDefaultLoc=(userLoc.name===LOC_DEFAULT.name);
+  const rayado=isRayado(tip);
+  const rayadoEvento=rayado?getRayadoEvento(tip):null;
+  const rayadoPeriodo=rayado?getRayadoPeriodo(tip):null;
+  const rayadoHtml=rayado?`<div class="rayado-wrap">
+    <div class="rayado-ttl">⚠ Momento restrictivo${rayadoEvento?' · '+rayadoEvento:''}</div>
+    ${rayadoPeriodo?`<div style="color:#ff4444; font-weight:bold; margin-top:4px; font-size:12px;">📍 Período desfavorable: ${rayadoPeriodo}</div>`:''}
+    <div class="rayado-sub">Evitar siembras, trasplantes y trabajos intensos con la tierra. Ideal para desmalezar o podar lo que se quiere debilitar.</div>
+  </div>`:'';
+  const ventInline=fmtVentInline(vent);
+  const bioHtml=trans
+    ?`<div class="bio-wrap">
+        <div style="text-align:center;font-size:13px;font-weight:bold;letter-spacing:1px;">
+          <span>${TC[trans.tipo1].short}</span>
+          <span style="color:var(--c-muted);margin:0 6px;font-weight:normal;">→</span>
+          <span>${TC[trans.tipo2].short}</span>
+          ${trans.hora?`<span style="font-size:10px;color:var(--c-muted);font-weight:normal;"> (${trans.hora})</span>`:''}
+        </div>
+      </div>`
+    :`<div class="bio-wrap">
+        <span class="bio-icon">${tc.icon}</span>
+        ${ventInline?`<div class="bio-vent">${ventInline}</div>`:''}
+      </div>`;
+  const consejoBio = CONSEJOS[tipo][(day-1) % CONSEJOS[tipo].length];
+
+  document.getElementById('card').innerHTML=`
+    <div class="hdr">
+      <div>
+        <div class="hdr-name">Almanaque Biodinámico</div>
+        <div class="hdr-sub">Hemisferio Sur</div>
+      </div>
+      <div class="hdr-right">
+        <div class="hdr-season">Estamos en ${est}<br><span onclick="requestGPS()" title="Tocá para usar tu ubicación">📍 ${userLoc.name}</span></div>
+      </div>
+    </div>
+
+    <div class="month-nav">
+      <button class="mnav-btn" onclick="prevMonth()">&#8249;</button>
+      <div class="mnav-center">
+        <span class="mnav-label">${MESES[mon].toUpperCase()} ${year}</span>
+        <span class="mnav-day">${DIAS[dow].toUpperCase()}${day!==TODAY.getDate()||mon!==TODAY.getMonth()||year!==TODAY.getFullYear()?` &nbsp;<button class="mnav-hoy" onclick="goToday()">↩ hoy</button>`:''}</span>
+      </div>
+      <button class="mnav-btn" onclick="nextMonth()">&#8250;</button>
+    </div>
+
+    <div class="date-wrap">
+      <div class="date-num">${day}</div>
+    </div>
+
+    <div class="div-line"></div>
+
+    ${bioHtml}
+
+    <div class="moon-wrap">
+      <span class="moon-em">${mp.em}</span>
+      <div class="moon-txt">
+        <span class="moon-sign">Luna en ${addGlyphs(signo.replace(/@[\d\-–]+\s*hs/i,'').replace(/\s+$/,''))}</span><br>
+        <span class="moon-bar" style="--p:${mp.ill}%"></span>${mp.ph} · Día ${mp.day}<br>
+        <span class="moon-asc-ctx ${asc?'asc':'desc'}">${asc?'↑ Ascendente — cosechar · sembrar · podar':'↓ Descendente — trasplantar · abonar · compostar'}</span>
+      </div>
+    </div>
+
+    <div class="astro-wrap">
+      <span class="astro-grp">
+        <span class="astro-icon">☀️</span>
+        <span class="astro-val">${astro.salSol}</span>
+        <span class="astro-sep">↓</span>
+        <span class="astro-val">${astro.pueSol}</span>
+      </span>
+      <span class="astro-div">|</span>
+      <span class="astro-grp">
+        <span class="astro-icon">🌙</span>
+        <span class="astro-val">${astro.salLuna}</span>
+        <span class="astro-sep">↓</span>
+        <span class="astro-val">${astro.pueLuna}</span>
+      </span>
+    </div>
+
+    <div class="win-wrap">
+      <div class="win-lbl">Mejor horario del día</div>
+      <div class="win-val">⏱ ${fmtVent(vent)}</div>
+    </div>
+
+    ${rayadoHtml}
+
+    <div class="div-line"></div>
+
+    <div class="crops-wrap">
+      ${(()=>{ const m=mergeCrops(sc);
+        return `<div class="crops-ttl">Plantas del día</div>
+        <div class="crops-val">${renderCrops(m.crops)}</div>
+        ${m.nota?`<div class="crops-nota">${m.nota}</div>`:''}`;
+      })()}
+    </div>
+
+    <div class="tip-wrap">
+      <div class="tip-ttl">Consejos biodinámicos</div>
+      <div class="tip-body">${tip}</div>
+      <div class="tip-body">${consejoBio}</div>
+    </div>
+
+    ${miniCal(year,mon,day,TODAY)}
+
+    <div class="ftr">
+      <div class="ftr-main">app by <a href="https://www.instagram.com/tijuanatipu/" target="_blank" style="color:inherit;text-decoration:none;font-weight:bold;">@tijuanatipu</a></div>
+      <div class="ftr-src"></div>
+    </div>`;
+}
+
+// ── EXPORT ───────────────────────────────────────────────────────────────────
+const _isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
+const _isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+function _btnBusy(btn,busy,label){
+  if(!btn) return;
+  btn.disabled=busy;
+  btn.textContent=busy?'⏳':label;
+}
+
+async function exportJPG(btn){
+  _btnBusy(btn,true,'📸 JPG');
+  try{
+    const scale=_isMobile?2:2.67;
+    const c=await html2canvas(document.getElementById('card'),
+      {scale,useCORS:true,logging:false,backgroundColor:null});
+    const d=pickedDate.toISOString().slice(0,10);
+    const dataUrl=c.toDataURL('image/jpeg',.92);
+    if(_isIOS){
+      // iOS no soporta a.download — abrir en nueva pestaña para guardar/compartir
+      const w=window.open('','_blank');
+      if(w) w.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Almanaque ${d}</title></head><body style="margin:0;background:#111;display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px"><p style="color:#ccc;font-family:sans-serif;font-size:13px;text-align:center;margin:0">Mantené presionada la imagen → <b>Guardar en Fotos</b></p><img src="${dataUrl}" style="max-width:100%;border-radius:8px"></body></html>`);
+    } else {
+      // Android + Desktop: blob URL download
+      const res=await fetch(dataUrl);
+      const blob=await res.blob();
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=`almanaque-${d}.jpg`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),3000);
+    }
+  } catch(e){ alert('Error al exportar imagen: '+e.message); }
+  finally{ _btnBusy(btn,false,'📸 JPG'); }
+}
+
+async function exportPDF(btn){
+  _btnBusy(btn,true,'📄 PDF');
+  try{
+    const scale=_isMobile?2:2.67;
+    const c=await html2canvas(document.getElementById('card'),
+      {scale,useCORS:true,logging:false,backgroundColor:null});
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:[108,192]});
+    pdf.addImage(c.toDataURL('image/jpeg',.92),'JPEG',0,0,108,192);
+    const d=pickedDate.toISOString().slice(0,10);
+    const blob=pdf.output('blob');
+    const url=URL.createObjectURL(blob);
+    if(_isIOS){
+      // iOS: abrir en nueva pestaña (Safari muestra el PDF con opción de compartir)
+      window.open(url,'_blank');
+      setTimeout(()=>URL.revokeObjectURL(url),30000);
+    } else {
+      const a=document.createElement('a');
+      a.href=url; a.download=`almanaque-${d}.pdf`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),3000);
+    }
+  } catch(e){ alert('Error al exportar PDF: '+e.message); }
+  finally{ _btnBusy(btn,false,'📄 PDF'); }
+}
+
+// ── THEME ────────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const dark=document.body.classList.toggle('dark');
+  document.getElementById('themeBtn').textContent=dark?'☀️':'🌙';
+  localStorage.setItem('theme',dark?'dark':'light');
+}
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('ig')==='1'){
+    document.body.classList.add('ig-mode');
+    const illum=parseFloat(p.get('illum')||'0');
+    const v =Math.round(17 +illum*228); // #111111 → #f5f5f5
+    const mv=Math.round(37 +illum*198); // card luna: ligeramente offset
+    document.documentElement.style.setProperty('--ig-bg',  `rgb(${v},${v},${v})`);
+    document.documentElement.style.setProperty('--ig-moon',`rgb(${mv},${mv},${mv})`);
+    if(illum>0.5) document.body.classList.add('ig-light');
+  } else if(localStorage.getItem('theme')==='dark'){
+    document.body.classList.add('dark');
+    const b=document.getElementById('themeBtn');
+    if(b) b.textContent='☀️';
+  }
+})();
+
+const _igDate = new URLSearchParams(location.search).get('date');
+if (_igDate) pickedDate = new Date(_igDate + 'T12:00:00');
+render(pickedDate);
+
+if(document.body.classList.contains('ig-mode')){
+  const n=document.querySelector('.hdr-name');
+  if(n) n.textContent='Calendario Biodinámico Argentino';
+  const s=document.querySelector('.hdr-sub');
+  if(s) s.style.display='none';
+  const gp=document.querySelector('.hdr-season span');
+  if(gp) gp.remove();
+  const fm=document.querySelector('.ftr-main');
+  if(fm) fm.textContent='';
+  const fs=document.querySelector('.ftr-src');
+  if(fs){ fs.style.display='block'; fs.innerHTML='App by&nbsp;<a href="https://www.instagram.com/tijuanatipu/" target="_blank" style="color:inherit;text-decoration:none;font-weight:700;">@tijuanatipu</a>'; }
+}
+
+// ── SERVICE WORKER ────────────────────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
