@@ -1912,11 +1912,11 @@ function getRayadoPeriodo(tip, day){
           const dia2=parseInt(diaMatch[2]);
           // Si estamos en el día que continúa, mostrar desde 0
           if(day && dia2===day) return `0hs a ${hora2}hs`;
-          // Si estamos en el día que comienza, mostrar hasta 24
-          if(day && day < dia2) return `${h1}hs a 24hs`;
+          // Si estamos en el día que comienza, mostrar hasta 23:59
+          if(day && day < dia2) return `${h1}hs a 23:59hs`;
         }
       }
-      const h2=horaMatch[2]||'24';
+      const h2=horaMatch[2]||'23:59';
       return `${h1}hs a ${h2}hs`;
     }
     return periodoTxt;
