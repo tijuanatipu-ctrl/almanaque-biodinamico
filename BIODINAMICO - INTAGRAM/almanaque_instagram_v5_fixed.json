@@ -58,8 +58,8 @@
         "authentication": "basicAuth",
         "genericAuthType": "basicAuth",
         "basicAuth": {
-          "user": "01KSFPZ4PYH7WHF7DND92CKYZE",
-          "password": "019e5f6f-92de-7afd-a8a2-045500dc3538"
+          "user": "01KT9J8Q746SENAM8W2T90Q1C7",
+          "password": "019e9324-5ce4-7aca-8449-756f05ec55ef"
         },
         "sendBody": true,
         "specifyBody": "json",
