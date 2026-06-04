@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Post Preview - Almanaque Biodinámico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #fafafa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Instagram Header */
+        .ig-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid #efefef;
+        }
+
+        .ig-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ig-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec008c, #ff6b9d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .ig-username {
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+        }
+
+        .ig-location {
+            font-size: 12px;
+            color: #65676b;
+        }
+
+        .ig-menu {
+            cursor: pointer;
+            font-size: 20px;
+            color: #262626;
+        }
+
+        /* Post Image */
+        .ig-image {
+            width: 100%;
+            aspect-ratio: 9 / 16;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+            overflow: hidden;
+        }
+
+        .ig-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Instagram Actions */
+        .ig-actions {
+            padding: 8px 16px;
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid #efefef;
+        }
+
+        .ig-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #262626;
+            transition: opacity 0.2s;
+        }
+
+        .ig-action-btn:hover {
+            opacity: 0.7;
+        }
+
+        /* Instagram Likes */
+        .ig-likes {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #262626;
+        }
+
+        /* Instagram Caption */
+        .ig-caption {
+            padding: 0 16px 16px;
+        }
+
+        .ig-caption-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #262626;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .ig-caption-author {
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .ig-caption-content {
+            display: inline;
+        }
+
+        /* Instagram Comments */
+        .ig-comments {
+            padding: 8px 16px;
+            color: #65676b;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* Instagram Date */
+        .ig-date {
+            padding: 8px 16px;
+            color: #65676b;
+            font-size: 12px;
+            border-top: 1px solid #efefef;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Preview Badge */
+        .preview-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .upload-section h2 {
+            margin-bottom: 15px;
+            color: #262626;
+            font-size: 16px;
+        }
+
+        .upload-input {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 2px solid #efefef;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        textarea.upload-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .upload-btn {
+            background: #0095f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .upload-btn:hover {
+            background: #0a8fdb;
+        }
+
+        .info-text {
+            color: #65676b;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="preview-badge">📸 Vista Previa - No se publica</div>
+
+        <!-- Instagram Post -->
+        <div class="ig-header">
+            <div class="ig-user">
+                <div class="ig-avatar">📅</div>
+                <div>
+                    <div class="ig-username">calendariobiodinamicoargentino</div>
+                    <div class="ig-location">Argentina 🌿</div>
+                </div>
+            </div>
+            <div class="ig-menu">⋯</div>
+        </div>
+
+        <div class="ig-image" id="imageContainer">
+            <span>Cargando imagen...</span>
+        </div>
+
+        <div class="ig-actions">
+            <button class="ig-action-btn">❤️</button>
+            <button class="ig-action-btn">💬</button>
+            <button class="ig-action-btn">✈️</button>
+            <button class="ig-action-btn" style="margin-left: auto;">🔖</button>
+        </div>
+
+        <div class="ig-likes">
+            <strong id="likesCount">0</strong> likes
+        </div>
+
+        <div class="ig-caption">
+            <div class="ig-caption-text">
+                <span class="ig-caption-author">calendariobiodinamicoargentino</span>
+                <span class="ig-caption-content" id="captionText">Cargando caption...</span>
+            </div>
+        </div>
+
+        <div class="ig-comments">Ver los 0 comentarios</div>
+
+        <div class="ig-date" id="dateText">Hace unos segundos</div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+        <h2>🔄 Cargar Vista Previa</h2>
+        <p class="info-text">Pega aquí los datos de tu publicación para previsualizarla</p>
+
+        <label style="display: block; margin-top: 15px; text-align: left;">
+            <strong style="font-size: 12px;">URL de la imagen:</strong>
+            <input type="text" id="imageUrl" class="upload-input" placeholder="https://cloudinary.com/...jpg">
+        </label>
+
+        <label style="display: block; margin-top: 10px; text-align: left;">
+            <strong style="font-size: 12px;">Caption:</strong>
+            <textarea id="captionText" class="upload-input" placeholder="Pega aquí el caption del post..."></textarea>
+        </label>
+
+        <button class="upload-btn" onclick="loadPreview()">📤 Cargar Preview</button>
+
+        <p class="info-text" style="margin-top: 15px;">
+            💡 Tip: En n8n, agrega un nodo Code que guarde la imagen URL y el caption aquí.<br>
+            Luego abre este HTML para ver cómo se vería antes de publicar.
+        </p>
+    </div>
+
+    <script>
+        // Load preview when page loads
+        function loadPreview() {
+            const imageUrl = document.getElementById('imageUrl').value;
+            const caption = document.getElementById('captionText').value;
+
+            if (imageUrl) {
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.onerror = function() {
+                    document.getElementById('imageContainer').innerHTML = '❌ Error cargando imagen';
+                };
+                document.getElementById('imageContainer').innerHTML = '';
+                document.getElementById('imageContainer').appendChild(img);
+            }
+
+            if (caption) {
+                document.getElementById('captionText').textContent = caption;
+                document.getElementById('likesCount').textContent = Math.floor(Math.random() * 500) + 50;
+            }
+
+            // Update date
+            const date = new Date();
+            document.getElementById('dateText').textContent = 'Hace ' +
+                (Math.floor(Math.random() * 120) + 1) + ' minutos';
+
+            // Save to localStorage
+            localStorage.setItem('previewImageUrl', imageUrl);
+            localStorage.setItem('previewCaption', caption);
+        }
+
+        // Load from localStorage on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedImageUrl = localStorage.getItem('previewImageUrl');
+            const savedCaption = localStorage.getItem('previewCaption');
+
+            if (savedImageUrl) {
+                document.getElementById('imageUrl').value = savedImageUrl;
+            }
+            if (savedCaption) {
+                document.getElementById('captionText').value = savedCaption;
+            }
+
+            // Auto-load if both exist
+            if (savedImageUrl && savedCaption) {
+                loadPreview();
+            }
+        });
+
+        // Allow Enter key to load preview
+        document.getElementById('captionText').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                loadPreview();
+            }
+        });
+    </script>
+</body>
+</html>
