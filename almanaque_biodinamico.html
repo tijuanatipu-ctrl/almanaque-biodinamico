@@ -1878,11 +1878,73 @@ function getTransicion(year, month, day){
   return {tipo1, tipo2, hora};
 }
 
+// ── EVENTOS LUNARES Y ASTRONÓMICOS ────────────────────────────────────────────
+function extractLunarEvents(tip){
+  const t=tip||'';
+  const events={};
+
+  // Luna Descendente (LD)
+  const ldMatch=t.match(/\bLD\s*:?(\d{1,2})\s*h/i);
+  if(ldMatch) events.ld={hora:ldMatch[1]};
+
+  // Luna Ascendente (LA)
+  const laMatch=t.match(/\bLA\s*:?(\d{1,2})\s*h/i);
+  if(laMatch) events.la={hora:laMatch[1]};
+
+  // Luna Nueva (LN)
+  const lnMatch=t.match(/\bLN\s*:?(\d{1,2})\s*h/i);
+  if(lnMatch) events.ln={hora:lnMatch[1]};
+
+  // Luna Llena (LL)
+  const llMatch=t.match(/\bLL\s*:?(\d{1,2})\s*h/i);
+  if(llMatch) events.ll={hora:llMatch[1]};
+
+  // Apogeo (AG)
+  const agMatch=t.match(/\bAG\s*:?(\d{1,2})\s*h/i);
+  if(agMatch) events.ag={hora:agMatch[1]};
+
+  // Perigeo (PG) con inicio/fin
+  const pgMatch=t.match(/\bPG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
+  if(pgMatch) events.pg={inicio:pgMatch[1], fin:pgMatch[2]+(pgMatch[3]?':'+pgMatch[3]:'')};
+
+  // Eclipse Venus (ECVE)
+  const ecveMatch=t.match(/\bECVE\s*:?i(\d{1,2})\s*h.*?ECVE\s*:?f(\d{1,2})\s*h/i);
+  if(ecveMatch) events.ecve={inicio:ecveMatch[1], fin:ecveMatch[2]};
+
+  // Nodo Descendente (ND)
+  const ndMatch=t.match(/\bND\s*:?i(\d{1,2})\s*h/i);
+  if(ndMatch) events.nd={inicio:ndMatch[1]};
+  const ndFMatch=t.match(/\bND\s*:?f(\d{1,2})\s*h/i);
+  if(ndFMatch) {if(events.nd) events.nd.fin=ndFMatch[1]; else events.nd={fin:ndFMatch[1]};}
+
+  // Nodo Ascendente (NA)
+  const naMatch=t.match(/\bNA\s*:?i(\d{1,2})\s*h/i);
+  if(naMatch) events.na={inicio:naMatch[1]};
+  const naFMatch=t.match(/\bNA\s*:?f(\d{1,2})\s*h/i);
+  if(naFMatch) {if(events.na) events.na.fin=naFMatch[1]; else events.na={fin:naFMatch[1]};}
+
+  // Nodo Descendente en Escorpio (NDES)
+  const ndesMatch=t.match(/\bNDES\s*:?(\d{1,2})\s*h/i);
+  if(ndesMatch) events.ndes={hora:ndesMatch[1]};
+
+  // Nodo Ascendente en Escorpio (NAES)
+  const naesMatch=t.match(/\bNAES\s*:?(\d{1,2})\s*h/i);
+  if(naesMatch) events.naes={hora:naesMatch[1]};
+
+  // Sol en (SOGE)
+  const soleMatch=t.match(/SOL\s*en\s+(\w+)|SO(\w{2})/i);
+  if(soleMatch) events.sol=soleMatch[1]||soleMatch[2];
+
+  return Object.keys(events).length>0 ? events : null;
+}
+
 // ── RAYADOS — períodos desfavorables ─────────────────────────────────────────
 function isRayado(tip){
   const t=(tip||'').toLowerCase();
-  return t.includes('eclipse')||t.includes('perigeo')||
-    (t.includes('nodo')&&(t.includes('ascendente de')||t.includes('descendente de')));
+  const hasEclipse=t.includes('eclipse')||t.includes('ecve');
+  const hasPeriodo=t.includes('período desfavorable')||t.includes('periodo desfavorable');
+  const hasNodo=t.includes('nodo')&&(t.includes(':i')||t.includes(':f'));
+  return hasEclipse || hasPeriodo || hasNodo;
 }
 function getRayadoEvento(tip){
   const t=tip||'';
@@ -2083,12 +2145,30 @@ function render(date){
   const asc=moonAscending(date);
   const astro=getAstroTimes(date,userLoc.lat,userLoc.lon);
   const isDefaultLoc=(userLoc.name===LOC_DEFAULT.name);
+  const lunarEvents=extractLunarEvents(tip);
   const rayado=isRayado(tip);
   const rayadoEvento=rayado?getRayadoEvento(tip):null;
   const rayadoPeriodo=rayado?getRayadoPeriodo(tip,day):null;
   const rayadoHtml=rayado?`<div class="rayado-wrap">
     <div class="rayado-ttl" style="color:#ff4444; font-weight:bold;">⚠ PERIODO DESFAVORABLE: ${rayadoPeriodo?rayadoPeriodo.toUpperCase():''}</div>
     <div class="rayado-sub">Evitar siembras, trasplantes y trabajos intensos con la tierra. Ideal para desmalezar o podar lo que se quiere debilitar.</div>
+  </div>`:'';
+  const eventsHtml=lunarEvents?`<div style="padding:4px 18px 8px; flex-shrink:0;">
+    <div style="font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; font-family:'Josefin Sans',sans-serif; font-weight:300;">Eventos</div>
+    <div style="font-size:11px; color:var(--c-primary); line-height:1.6; font-family:'Josefin Sans',sans-serif;">
+      ${lunarEvents.ld?`🌙 LD ${lunarEvents.ld.hora}hs<br>`:''}
+      ${lunarEvents.la?`🌙 LA ${lunarEvents.la.hora}hs<br>`:''}
+      ${lunarEvents.ln?`🌑 LN ${lunarEvents.ln.hora}hs<br>`:''}
+      ${lunarEvents.ll?`🌕 LL ${lunarEvents.ll.hora}hs<br>`:''}
+      ${lunarEvents.ag?`📍 AG ${lunarEvents.ag.hora}hs<br>`:''}
+      ${lunarEvents.pg?`📍 PG ${lunarEvents.pg.inicio}hs-${lunarEvents.pg.fin}hs<br>`:''}
+      ${lunarEvents.nd?`☋ ND ${lunarEvents.nd.inicio}hs${lunarEvents.nd.fin?'-'+lunarEvents.nd.fin+'hs':''}<br>`:''}
+      ${lunarEvents.na?`☊ NA ${lunarEvents.na.inicio}hs${lunarEvents.na.fin?'-'+lunarEvents.na.fin+'hs':''}<br>`:''}
+      ${lunarEvents.ndes?`☋ NDES ${lunarEvents.ndes.hora}hs<br>`:''}
+      ${lunarEvents.naes?`☊ NAES ${lunarEvents.naes.hora}hs<br>`:''}
+      ${lunarEvents.ecve?`⭐ ECVE ${lunarEvents.ecve.inicio}hs-${lunarEvents.ecve.fin}hs<br>`:''}
+      ${lunarEvents.sol?`☉ SOL en ${lunarEvents.sol}<br>`:''}
+    </div>
   </div>`:'';
   const ventInline=fmtVentInline(vent);
   const bioHtml=trans
@@ -2158,6 +2238,8 @@ function render(date){
         <span class="astro-val">${astro.pueLuna}</span>
       </span>
     </div>
+
+    ${eventsHtml}
 
     <div class="win-wrap">
       <div class="win-lbl">Mejor horario del día</div>
