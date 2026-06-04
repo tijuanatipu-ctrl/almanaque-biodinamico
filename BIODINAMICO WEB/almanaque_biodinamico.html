@@ -2113,44 +2113,44 @@ function render(date){
   const eventosTexto=(()=>{
     const eventos=[];
 
-    if(tip.match(/\bLD\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bLD\s*:?(\d{1,2})\s*h/i);
+    if(tip.match(/\bLD\s*[@:]?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bLD\s*[@:]?(\d{1,2})\s*h/i);
       eventos.push(`🌙 Luna Descendente ${m[1]}hs — Trasplante, poda, abonados, roturación`);
     }
-    if(tip.match(/\bLA\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bLA\s*:?(\d{1,2})\s*h/i);
+    if(tip.match(/\bLA\s*[@:]?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bLA\s*[@:]?(\d{1,2})\s*h/i);
       eventos.push(`🌙 Luna Ascendente ${m[1]}hs — Corte de flores, cosecha de hojas, injertos`);
     }
-    if(tip.match(/\bLN\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bLN\s*:?(\d{1,2})\s*h/i);
+    if(tip.match(/\bLN\s*[@:]?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bLN\s*[@:]?(\d{1,2})\s*h/i);
       eventos.push(`🌑 Luna Nueva ${m[1]}hs — Renovación, inicio de proyectos`);
     }
-    if(tip.match(/\bLL\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bLL\s*:?(\d{1,2})\s*h/i);
+    if(tip.match(/\bLL\s*[@:]?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bLL\s*[@:]?(\d{1,2})\s*h/i);
       eventos.push(`🌕 Luna Llena ${m[1]}hs — Óptimo para siembras (2-3 días antes)`);
     }
-    if(tip.match(/\bAG\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bAG\s*:?(\d{1,2})\s*h/i);
+    if(tip.match(/\bAG\s*[@:]?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bAG\s*[@:]?(\d{1,2})\s*h/i);
       eventos.push(`📍 Apogeo ${m[1]}hs — Energía lunar alta`);
     }
-    if(tip.match(/\bPG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i)) {
-      const m=tip.match(/\bPG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
+    if(tip.match(/\bPG\s*[:i](\d{1,2})\s*h.*?PG\s*[:f](\d{1,2}):?(\d{2})?\s*h/i)) {
+      const m=tip.match(/\bPG\s*[:i](\d{1,2})\s*h.*?PG\s*[:f](\d{1,2}):?(\d{2})?\s*h/i);
       eventos.push(`📍 Perigeo ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs — NO apto: alto riesgo de plagas y hongos`);
     }
-    if(tip.match(/\bND\s*:?i(\d{1,2})\s*h.*?ND\s*:?f(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bND\s*:?i(\d{1,2})\s*h.*?ND\s*:?f(\d{1,2})\s*h/i);
+    if(tip.match(/\bND\s*[:i](\d{1,2})\s*h.*?ND\s*[:f](\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bND\s*[:i](\d{1,2})\s*h.*?ND\s*[:f](\d{1,2})\s*h/i);
       eventos.push(`☋ Nodo Descendente ${m[1]}hs-${m[2]}hs — DESFAVORABLE`);
     }
-    if(tip.match(/\bNA\s*:?i(\d{1,2})\s*h.*?NA\s*:?f(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bNA\s*:?i(\d{1,2})\s*h.*?NA\s*:?f(\d{1,2})\s*h/i);
+    if(tip.match(/\bNA\s*[:i](\d{1,2})\s*h.*?NA\s*[:f](\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bNA\s*[:i](\d{1,2})\s*h.*?NA\s*[:f](\d{1,2})\s*h/i);
       eventos.push(`☊ Nodo Ascendente ${m[1]}hs-${m[2]}hs — DESFAVORABLE`);
     }
-    if(tip.match(/\bNAME\s*:?i(\d{1,2})\s*h.*?NAME\s*:?f(\d{1,2}):?(\d{2})?\s*h/i)) {
-      const m=tip.match(/\bNAME\s*:?i(\d{1,2})\s*h.*?NAME\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
+    if(tip.match(/\bNAME\s*[:i](\d{1,2})\s*h.*?NAME\s*[:f](\d{1,2}):?(\d{2})?\s*h/i)) {
+      const m=tip.match(/\bNAME\s*[:i](\d{1,2})\s*h.*?NAME\s*[:f](\d{1,2}):?(\d{2})?\s*h/i);
       eventos.push(`☊ NA-Mercurio ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs — DESFAVORABLE (14hs)`);
     }
-    if(tip.match(/\bECVE\s*:?i(\d{1,2})\s*h.*?ECVE\s*:?f(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bECVE\s*:?i(\d{1,2})\s*h.*?ECVE\s*:?f(\d{1,2})\s*h/i);
+    if(tip.match(/\bECVE\s*[:i](\d{1,2})\s*h.*?ECVE\s*[:f](\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bECVE\s*[:i](\d{1,2})\s*h.*?ECVE\s*[:f](\d{1,2})\s*h/i);
       eventos.push(`⭐ Eclipse Venus ${m[1]}hs-${m[2]}hs — DESFAVORABLE`);
     }
     if(tip.match(/\bSOGE|Sol\s+en\s+Géminis/i)) {
