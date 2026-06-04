@@ -1900,23 +1900,25 @@ function getRayadoPeriodo(tip, day){
   const per=t.match(/período\s+desfavorable\s+([^\.]+)/i);
   if(per){
     let periodoTxt=per[1].trim();
-    // Extraer horas: "7 a 9 horas", "7-33hs", "7h día 14 a ~9h día 15", etc.
-    const horaMatch=periodoTxt.match(/(\d{1,2})\s*(?:a|–|-)?\s*(\d{1,2})?/);
-    if(horaMatch){
-      const h1=horaMatch[1];
-      // Si hay "día X a ~Yh día Z", extraer las horas del día actual
-      if(periodoTxt.includes('día')){
-        const diaMatch=periodoTxt.match(/~?(\d{1,2})h?\s+día\s+(\d{1,2})/);
-        if(diaMatch){
-          const hora2=diaMatch[1];
-          const dia2=parseInt(diaMatch[2]);
-          // Si estamos en el día que continúa, mostrar desde 0
-          if(day && dia2===day) return `0hs a ${hora2}hs`;
-          // Si estamos en el día que comienza, mostrar hasta 23:59
-          if(day && day < dia2) return `${h1}hs a 23:59hs`;
-        }
-      }
-      const h2=horaMatch[2]||'23:59';
+    // Primero buscar patrón multi-día: "~Xh día Y a ~Zh día W"
+    const multiDiaMatch=periodoTxt.match(/~?(\d{1,2})h?\s+día\s+(\d{1,2})\s+a\s+~?(\d{1,2})h?\s+día\s+(\d{1,2})/);
+    if(multiDiaMatch){
+      const h1=multiDiaMatch[1];
+      const dia1=parseInt(multiDiaMatch[2]);
+      const h2=multiDiaMatch[3];
+      const dia2=parseInt(multiDiaMatch[4]);
+      // Si estamos en el día que comienza
+      if(day && day===dia1) return `${h1}hs a 23:59hs`;
+      // Si estamos en el día que continúa
+      if(day && day===dia2) return `0hs a ${h2}hs`;
+      // Fallback para días intermedios
+      if(day && day > dia1 && day < dia2) return `0hs a 23:59hs`;
+    }
+    // Buscar patrón simple "X a Y horas" o "X-Y hs"
+    const simpleMatch=periodoTxt.match(/(\d{1,2})\s*(?:a|–|-|hs)\s*(\d{1,2})/);
+    if(simpleMatch){
+      const h1=simpleMatch[1];
+      const h2=simpleMatch[2];
       return `${h1}hs a ${h2}hs`;
     }
     return periodoTxt;
