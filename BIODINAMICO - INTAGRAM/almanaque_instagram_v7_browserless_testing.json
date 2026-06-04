@@ -133,6 +133,16 @@
     },
     {
       "parameters": {
+        "jsCode": "const creationId = $node['IG Subir Imagen'].json.id || 'fake-' + Math.random().toString(36).substr(2, 9);\nreturn [{ json: { id: creationId, status: 'FINISHED', simulate: true, mensaje: '✅ SIMULADO: Post publicado (sin afectar Instagram)' } }];"
+      },
+      "id": "node-publish-fake",
+      "name": "IG Publicar (SIMULADO - para testing)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2120, 450]
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "={{ 'https://graph.facebook.com/v19.0/' + $node['Obtener Consejo Agrícola'].json.ig_user_id + '/media_publish' }}",
         "sendBody": true,
@@ -141,7 +151,7 @@
         "options": {}
       },
       "id": "node-publish-006",
-      "name": "IG Publicar",
+      "name": "IG Publicar (REAL - Instagram)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [2120, 300]
@@ -155,7 +165,7 @@
     "Screenshot": { "main": [[{ "node": "Subir a Cloudinary1", "type": "main", "index": 0 }]] },
     "Subir a Cloudinary1": { "main": [[{ "node": "IG Subir Imagen", "type": "main", "index": 0 }]] },
     "IG Subir Imagen": { "main": [[{ "node": "Esperar 3s", "type": "main", "index": 0 }]] },
-    "Esperar 3s": { "main": [[{ "node": "IG Publicar", "type": "main", "index": 0 }]] }
+    "Esperar 3s": { "main": [[{ "node": "IG Publicar (SIMULADO - para testing)", "type": "main", "index": 0 }]] }
   },
   "active": false,
   "settings": { "executionOrder": "v1" },
