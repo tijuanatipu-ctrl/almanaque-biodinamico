@@ -1863,11 +1863,19 @@ function getTransicion(year, month, day){
   if(ai===-1) return null;
   const s1=signo.slice(0,ai).trim();
   const tipo1=SIGN_TO_TIPO[s1];
-  if(!tipo1||tipo1===tipo) return null;
-  // Extraer hora de transición del signo: "@6-7hs" → "6–7 hs"
+  if(!tipo1) return null;
+
+  // Extraer constelación final después de →
+  const afterArrow=signo.slice(ai+1);
+  const s2M=afterArrow.match(/^([A-ZÁáÉéÍíÓóÚú\w]+)/);
+  const s2=s2M?s2M[1]:'';
+  const tipo2=SIGN_TO_TIPO[s2];
+  if(!tipo2||tipo2===tipo1) return null;
+
+  // Extraer hora de transición: "@6-7hs" → "6–7 hs"
   const horaM=signo.match(/@([\d\-–]+)\s*hs/i);
   const hora=horaM ? horaM[1].replace('-','–')+' hs' : null;
-  return {tipo1, tipo2:tipo, hora};
+  return {tipo1, tipo2, hora};
 }
 
 // ── RAYADOS — períodos desfavorables ─────────────────────────────────────────
