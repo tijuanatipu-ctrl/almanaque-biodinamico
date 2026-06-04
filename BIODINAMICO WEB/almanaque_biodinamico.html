@@ -2276,14 +2276,13 @@ function render(date){
           const icon2=TC[trans.tipo2].icon||'🌱';
           return `<div class="crops-ttl">Plantas del día</div>
             <div style="font-size:13px;line-height:1.5">
-              <div style="margin-bottom:8px"><span style="font-size:16px;margin-right:6px">${icon1}</span>(hasta ${trans.hora}): ${renderCrops(m1.crops)}</div>
-              <div><span style="font-size:16px;margin-right:6px">${icon2}</span>(desde ${trans.hora}): ${renderCrops(m2.crops)}</div>
+              <div style="margin-bottom:8px"><span style="font-size:16px;margin-right:6px">${icon1}</span>(hasta ${trans.hora}): ${renderCrops(m1.crops, m1.nota)}</div>
+              <div><span style="font-size:16px;margin-right:6px">${icon2}</span>(desde ${trans.hora}): ${renderCrops(m2.crops, m2.nota)}</div>
             </div>`;
         } else {
           const m=mergeCrops(sc);
-          const cropsHtml=renderCrops(m.crops);
           return `<div class="crops-ttl">Plantas del día</div>
-            <div style="font-size:13px"><span style="font-size:16px;margin-right:6px">${icon1}</span>${cropsHtml}${m.nota?` <em style="color:#aaa;font-size:9px">(${m.nota})</em>`:''}</div>`;
+            <div style="font-size:13px"><span style="font-size:16px;margin-right:6px">${icon1}</span>${renderCrops(m.crops, m.nota)}</div>`;
         }
       })()}
     </div>
