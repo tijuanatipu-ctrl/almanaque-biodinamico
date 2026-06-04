@@ -1,0 +1,151 @@
+{
+  "name": "Almanaque Biodinámico → Instagram v5 (htmlcsstoimage FIXED)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 0 9 * * *" }] }
+      },
+      "id": "node-schedule-001",
+      "name": "Todos los días 9am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date(new Date().getTime() - 3 * 3600000);\nconst day   = today.getDate();\nconst mon   = today.getMonth();\nconst year  = today.getFullYear();\nconst dow   = today.getDay();\nconst monNum = mon + 1;\nconst DIAS  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];\nconst MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];\nfunction moonSign(date){const J2000=new Date('2000-01-01T12:00:00Z').getTime();const days=(date.getTime()-J2000)/86400000;const L=((218.316+13.176396*days)%360-23.85+360)%360;const S=[{sign:'Aries',tipo:'fruto'},{sign:'Tauro',tipo:'raiz'},{sign:'Géminis',tipo:'flor'},{sign:'Cáncer',tipo:'hoja'},{sign:'Leo',tipo:'fruto'},{sign:'Virgo',tipo:'raiz'},{sign:'Libra',tipo:'flor'},{sign:'Escorpio',tipo:'hoja'},{sign:'Sagitario',tipo:'fruto'},{sign:'Capricornio',tipo:'raiz'},{sign:'Acuario',tipo:'flor'},{sign:'Piscis',tipo:'hoja'}];return S[Math.floor(L/30)%12];}\nfunction moonPhase(date){const REF=new Date('2000-01-06T18:14:00Z').getTime();const cycle=29.530589*86400000;const frac=(((date.getTime()-REF)%cycle)+cycle)%cycle/cycle;if(frac<0.03||frac>0.97)return'Luna Nueva 🌑';if(frac<0.22)return'Luna Creciente 🌒';if(frac<0.28)return'Cuarto Creciente 🌓';if(frac<0.47)return'Luna Gibosa 🌔';if(frac<0.53)return'Luna Llena 🌕';if(frac<0.72)return'Luna Gibosa Menguante 🌖';if(frac<0.78)return'Cuarto Menguante 🌗';return'Luna Menguante 🌘';}\nfunction moonAscending(date){const J2000=new Date('2000-01-01T12:00:00Z').getTime();const days=(date.getTime()-J2000)/86400000;const L=(((218.316+13.176396*days)%360)+360)%360;return L>270||L<90;}\nconst SEASONAL={1:{fruto:{p:['Tomates','Zapallos','Pepinos','Maíz'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Cebollas','Ajos','Puerros'],h:['Cebollas','Ajos','Puerros','Papas']},hoja:{p:['Lechugas','Albahaca','Rúcula'],h:['Lechugas','Albahaca','Rúcula']},flor:{p:['Girasoles','Caléndulas'],h:['Lavanda','Romero','Orégano']}},2:{fruto:{p:['Tomates','Zapallos','Pepinos'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Zanahorias','Remolachas','Cebollas'],h:['Cebollas','Ajos','Puerros','Papas']},hoja:{p:['Lechugas','Espinacas','Rúcula'],h:['Lechugas','Espinacas','Acelgas']},flor:{p:['Caléndulas'],h:['Caléndulas','Orégano','Manzanilla']}},3:{fruto:{p:['Zapallitos','Pepinos'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Zanahorias','Remolachas','Cebollas','Ajos'],h:['Cebollas','Ajos','Zanahorias','Remolachas']},hoja:{p:['Lechugas','Espinacas','Acelgas','Kale'],h:['Lechugas','Espinacas','Acelgas']},flor:{p:['Manzanilla','Caléndulas'],h:['Orégano','Caléndulas','Manzanilla']}},4:{fruto:{p:['Arvejas','Habas'],h:['Tomates','Zapallos','Pepinos']},raiz:{p:['Zanahorias','Remolachas','Cebollas','Ajos'],h:['Cebollas','Ajos','Zanahorias','Remolachas']},hoja:{p:['Lechugas','Acelgas','Espinacas','Kale'],h:['Acelgas','Espinacas','Lechugas']},flor:{p:['Manzanilla','Caléndulas','Lavanda'],h:['Orégano','Manzanilla','Caléndulas']}},5:{fruto:{p:['Arvejas','Habas'],h:['Zapallos','Pepinos']},raiz:{p:['Zanahorias','Remolachas','Cebollas','Ajos','Puerros'],h:['Remolachas','Zanahorias','Puerros','Cebollas']},hoja:{p:['Lechugas','Acelgas','Espinacas','Kale','Rúcula'],h:['Acelgas','Espinacas','Lechugas','Kale']},flor:{p:['Manzanilla','Caléndulas','Lavanda','Romero'],h:['Orégano','Manzanilla','Caléndulas']}},6:{fruto:{p:['Arvejas','Habas'],h:['Arvejas','Habas']},raiz:{p:['Cebollas','Ajos','Puerros'],h:['Cebollas','Ajos','Puerros','Nabos']},hoja:{p:['Espinacas','Acelgas','Kale'],h:['Espinacas','Acelgas','Kale']},flor:{p:['Lavanda','Romero'],h:['Lavanda','Romero','Tomillo']}},7:{fruto:{p:['Arvejas','Habas'],h:['Arvejas','Habas']},raiz:{p:['Zanahorias','Remolachas','Puerros'],h:['Cebollas','Ajos','Puerros','Nabos']},hoja:{p:['Espinacas','Acelgas','Kale','Rúcula'],h:['Espinacas','Acelgas','Kale']},flor:{p:['Lavanda','Romero','Tomillo'],h:['Lavanda','Romero','Tomillo']}},8:{fruto:{p:['Tomates','Zapallos'],h:['Arvejas','Habas']},raiz:{p:['Zanahorias','Remolachas','Nabos'],h:['Zanahorias','Remolachas','Nabos']},hoja:{p:['Lechugas','Espinacas','Rúcula'],h:['Espinacas','Acelgas','Kale']},flor:{p:['Caléndulas','Lavanda'],h:['Lavanda','Romero','Tomillo']}},9:{fruto:{p:['Tomates','Zapallos','Pepinos','Zapallitos'],h:['Tomates','Zapallos','Pepinos']},raiz:{p:['Zanahorias','Remolachas','Rábanos'],h:['Zanahorias','Remolachas','Nabos']},hoja:{p:['Lechugas','Rúcula','Espinacas'],h:['Lechugas','Espinacas']},flor:{p:['Caléndulas','Girasoles'],h:['Caléndulas','Lavanda']}},10:{fruto:{p:['Tomates','Zapallos','Pepinos','Maíz'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Zanahorias','Remolachas','Rábanos'],h:['Zanahorias','Remolachas','Rábanos']},hoja:{p:['Lechugas','Rúcula','Albahaca'],h:['Lechugas','Rúcula','Albahaca']},flor:{p:['Girasoles','Caléndulas'],h:['Caléndulas','Lavanda']}},11:{fruto:{p:['Tomates','Zapallos','Pepinos','Maíz','Porotos'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Cebollas','Rábanos'],h:['Cebollas','Rábanos','Zanahorias']},hoja:{p:['Lechugas','Rúcula','Albahaca'],h:['Lechugas','Rúcula','Albahaca']},flor:{p:['Caléndulas','Albahaca'],h:['Caléndulas','Lavanda','Manzanilla']}},12:{fruto:{p:['Porotos','Maíz'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Rábanos','Cebollas'],h:['Cebollas','Remolachas','Zanahorias']},hoja:{p:['Lechugas','Rúcula'],h:['Lechugas','Rúcula','Albahaca']},flor:{p:[],h:['Caléndulas','Lavanda']}}};\nconst TC={fruto:{icon:'🍎',lbl:'DÍA DE FRUTOS'},raiz:{icon:'🥕',lbl:'DÍA DE RAÍCES'},flor:{icon:'🌼',lbl:'DÍA DE FLORES'},hoja:{icon:'🌿',lbl:'DÍA DE HOJAS'}};\nconst ms=moonSign(today);const tipo=ms.tipo;const sea=SEASONAL[monNum]||SEASONAL[5];const sc=sea[tipo]||{p:[],h:[]};const tc=TC[tipo];const fase=moonPhase(today);const asc=moonAscending(today);\nlet caption=`${tc.icon} ${tc.lbl.toUpperCase()} · ${DIAS[dow]} ${day} de ${MESES[mon]}\n\n🌙 Luna en ${ms.sign} · ${fase}\n${asc?'↑ Luna Ascendente':'↓ Luna Descendente'}\n\n🌱 Sembrar hoy: ${sc.p.length?sc.p.join(', '):'—'}\n🌾 Cosechar hoy: ${sc.h.length?sc.h.join(', '):'—'}`;\nconst _REF=new Date('2000-01-06T18:14:00Z').getTime();const _CYC=29.530589*86400000;const _frac=(((today.getTime()-_REF)%_CYC)+_CYC)%_CYC/_CYC;const illum=parseFloat(((1-Math.cos(2*Math.PI*_frac))/2).toFixed(3));\nreturn [{ json: { caption, ig_user_id: '17841429539202533', page_token: 'EAAOHttPyRi4BRjZCoLuCvmc700rciNDJWmmRYMEMU2o2MYO6ISXE4fEX1UlfNRJWZAV40DyrjvG2y3deofIsfWYtNIOBZBUkp3j3nDg6A8lQNG2jeTzFo6KXZCy87qXT7H76DpQ9gEuU13tlV6PmJXFeJ3VQPZCNfYjRO4Dq4x0mHGPvq4URdfh4hGMcwWxeEbf0ZCdyM1J2NYmDVU5wKOVBmT', illum, day } }];"
+      },
+      "id": "node-code-002",
+      "name": "Datos del día",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const day = $node['Datos del día'].json.day;\nconst htmlUrl = `https://raw.githubusercontent.com/tijuanatipu-ctrl/almanaque-biodinamico/main/BIODINAMICO%20WEB/almanaque_biodinamico.html?ig=1&day=${day}`;\n\ntry {\n  const html = await fetch(htmlUrl).then(r => r.text());\n  const tipMatch = html.match(/<div class=\"tip-body\"[^>]*>([^<]+)<\\/div>/);\n  \n  if (tipMatch && tipMatch[1]) {\n    const consejo = tipMatch[1].trim();\n    let caption = $node['Datos del día'].json.caption;\n    caption += `\\n\\n💡 CONSEJO AGRÍCOLA\\n${consejo}`;\n    caption += `\\n\\n🌿 Almanaque biodinámico para el Hemisferio Sur.\\nAplicación desarrollada por @tijuanatipu\\n\\n#biodinamica #huertobiodinamico #luna #lunabiodinamica #almanaque #calendariobiodinamicoargentino #argentina #huerto #permacultura #agroecologia #organico #jardin #lunallena #siembra`;\n    \n    return [{ json: { ...($node['Datos del día'].json), caption } }];\n  }\n} catch (e) {\n  console.log('No se pudo obtener el consejo del HTML:', e.message);\n}\n\nlet caption = $node['Datos del día'].json.caption;\ncaption += `\\n\\n🌿 Almanaque biodinámico para el Hemisferio Sur.\\nAplicación desarrollada por @tijuanatipu\\n\\n#biodinamica #huertobiodinamico #luna #lunabiodinamica #almanaque #calendariobiodinamicoargentino #argentina #huerto #permacultura #agroecologia #organico #jardin #lunallena #siembra`;\nreturn [{ json: { ...($node['Datos del día'].json), caption } }];"
+      },
+      "id": "node-consejo-010",
+      "name": "Obtener Consejo Agrícola",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\nconst ahora = new Date(new Date().getTime() - 3 * 3600000);\nconst hoy = ahora.toISOString().split('T')[0];\n\nif (data.ultimaPublicacion === hoy) {\n  throw new Error('Ejecucion duplicada bloqueada: ya se publicó el ' + hoy);\n}\n\ndata.ultimaPublicacion = hoy;\nreturn $input.all();"
+      },
+      "id": "node-guard-007",
+      "name": "Guard: ya publicado hoy",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\ndata.ultimaPublicacion = null;\nreturn [{ json: { reset: true, mensaje: 'Guard reseteado. Ya podés testear.' } }];"
+      },
+      "id": "node-reset-009",
+      "name": "Reset Guard (solo pruebas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 520]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.htmlcsstoimage.com/api/v1/convert",
+        "authentication": "basicAuth",
+        "genericAuthType": "basicAuth",
+        "basicAuth": {
+          "user": "01KSFPZ4PYH7WHF7DND92CKYZE",
+          "password": "019e5f6f-92de-7afd-a8a2-045500dc3538"
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ url: 'https://raw.githubusercontent.com/tijuanatipu-ctrl/almanaque-biodinamico/main/BIODINAMICO%20WEB/almanaque_biodinamico.html?ig=1&day=' + $node['Datos del día'].json.day, viewport_width: 1000, viewport_height: 1250 }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "node-screenshot-003",
+      "name": "Screenshot (htmlcsstoimage)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1160, 300],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloudinary.com/v1_1/dswpdeego/image/upload",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ file: $node['Screenshot (htmlcsstoimage)'].json.url, upload_preset: 'ml_default', folder: 'almanaque' }) }}"
+      },
+      "id": "node-cloudinary-008",
+      "name": "Subir a Cloudinary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1400, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://graph.facebook.com/v19.0/' + $node['Obtener Consejo Agrícola'].json.ig_user_id + '/media' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ image_url: $json.secure_url, caption: $node['Obtener Consejo Agrícola'].json.caption, access_token: $node['Obtener Consejo Agrícola'].json.page_token }) }}",
+        "options": {}
+      },
+      "id": "node-ig-upload-004",
+      "name": "IG Subir imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1640, 300]
+    },
+    {
+      "parameters": { "amount": 3, "unit": "seconds" },
+      "id": "node-wait-005",
+      "name": "Esperar 3s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1880, 300],
+      "webhookId": "almanaque-wait-v5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://graph.facebook.com/v19.0/' + $node['Obtener Consejo Agrícola'].json.ig_user_id + '/media_publish' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ creation_id: $node['IG Subir imagen'].json.id, access_token: $node['Obtener Consejo Agrícola'].json.page_token }) }}",
+        "options": {}
+      },
+      "id": "node-publish-006",
+      "name": "IG Publicar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2120, 300]
+    }
+  ],
+  "connections": {
+    "Todos los días 9am": { "main": [[{ "node": "Datos del día", "type": "main", "index": 0 }]] },
+    "Datos del día": { "main": [[{ "node": "Obtener Consejo Agrícola", "type": "main", "index": 0 }]] },
+    "Obtener Consejo Agrícola": { "main": [[{ "node": "Guard: ya publicado hoy", "type": "main", "index": 0 }]] },
+    "Guard: ya publicado hoy": { "main": [[{ "node": "Screenshot (htmlcsstoimage)", "type": "main", "index": 0 }]] },
+    "Screenshot (htmlcsstoimage)": { "main": [[{ "node": "Subir a Cloudinary", "type": "main", "index": 0 }]] },
+    "Subir a Cloudinary": { "main": [[{ "node": "IG Subir imagen", "type": "main", "index": 0 }]] },
+    "IG Subir imagen": { "main": [[{ "node": "Esperar 3s", "type": "main", "index": 0 }]] },
+    "Esperar 3s": { "main": [[{ "node": "IG Publicar", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "almanaque" }, { "name": "instagram" }]
+}
