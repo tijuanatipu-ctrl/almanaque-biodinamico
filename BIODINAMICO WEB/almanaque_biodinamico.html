@@ -641,11 +641,11 @@ const JUNIO_2026 = {
   18:{tipo:'hoja', signo:'Cáncer → Leo @17h', vent:'hasta las 17hs',
       tip:'Hojas (Cáncer) hasta 17hs. Frutos (Leo, Fuego) desde 17hs. LA activa. Mañana: cosechar hojas frescas (mejor en LA). Tarde: cosecha frutos.'},
   19:{tipo:'fruto', signo:'Leo', vent:'todo el día',
-      tip:'Día de Frutos (Fuego). ⚠ RAYADO: Nodo Ascendente NA @15hs. Período desfavorable ~9hs (5h antes + 4h después: 10-19hs). Evitar siembras/trasplantes 10-19hs. LA activa. Cosechar frutos para semilla: mañana o noche.'},
+      tip:'Día de Frutos (Fuego). ⚠ NA:i10h - NA:f19h. ⚠ NAES:i21h - NAES:f23:59h. LA activa. Período desfavorable NA: 10-19hs. Período desfavorable NAES: 21h-23:59h. Cosechar frutos para semilla: mañana o noche.'},
   20:{tipo:'fruto', signo:'Leo', vent:'restringido',
-      tip:'Día de Frutos (Leo). ⚠ RAYADO: Nodo Ascendente en Escorpio (NAE) @22hs. Período desfavorable 21h día 19 a 11h día 21 (14h aprox). LA activa pero restringida por NAE. Evitar trabajos agrícolas importantes 21h-11h. Observar y planificar.'},
+      tip:'Día de Frutos (Leo). ⚠ NAES:i0h - NAES:f23:59h. LA activa pero restringida por NAES. Período desfavorable NAES: 0-23:59hs. Evitar trabajos agrícolas importantes. Observar y planificar.'},
   21:{tipo:'fruto', signo:'Leo → Virgo @7h', vent:'hasta las 7hs',
-      tip:'Frutos (Leo) hasta 7hs. Raíces (Virgo, Tierra) desde 7hs. ☉ Sol en Géminis (SOGE). LA activa. Mañana: cosechar frutos. Día: laborear suelo, trasplantar raíces.'},
+      tip:'Frutos (Leo) hasta 7hs. Raíces (Virgo, Tierra) desde 7hs. ⚠ NAES:i0h - NAES:f11h. ☉ SOGE. LA activa. Período desfavorable NAES: 0-11hs. Mañana: cosechar frutos después de 11hs. Día: laborear suelo, trasplantar raíces.'},
   22:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
       tip:'Día de Raíces (Tierra). Luna ascendente ↑ activa. Excelente: laborear, compostar, cosechar raíces, trabajar tierra, injertos radicales. Atardecer: cosechar raíces para conserva.'},
   23:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
@@ -1923,13 +1923,25 @@ function extractLunarEvents(tip){
   const naFMatch=t.match(/\bNA\s*:?f(\d{1,2})\s*h/i);
   if(naFMatch) {if(events.na) events.na.fin=naFMatch[1]; else events.na={fin:naFMatch[1]};}
 
-  // Nodo Descendente en Escorpio (NDES)
-  const ndesMatch=t.match(/\bNDES\s*:?(\d{1,2})\s*h/i);
-  if(ndesMatch) events.ndes={hora:ndesMatch[1]};
+  // Nodo Descendente en Escorpio (NDES) con inicio/fin
+  const ndesMatch=t.match(/\bNDES\s*:?i(\d{1,2})\s*h/i);
+  if(ndesMatch) events.ndes={inicio:ndesMatch[1]};
+  const ndesFMatch=t.match(/\bNDES\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
+  if(ndesFMatch) {if(events.ndes) events.ndes.fin=ndesFMatch[1]+(ndesFMatch[2]?':'+ndesFMatch[2]:''); else events.ndes={fin:ndesFMatch[1]+(ndesFMatch[2]?':'+ndesFMatch[2]:'')};}
 
-  // Nodo Ascendente en Escorpio (NAES)
-  const naesMatch=t.match(/\bNAES\s*:?(\d{1,2})\s*h/i);
-  if(naesMatch) events.naes={hora:naesMatch[1]};
+  // Nodo Ascendente en Escorpio (NAES) con inicio/fin
+  const naesMatch=t.match(/\bNAES\s*:?i(\d{1,2})\s*h/i);
+  if(naesMatch) events.naes={inicio:naesMatch[1]};
+  const naesFMatch=t.match(/\bNAES\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
+  if(naesFMatch) {if(events.naes) events.naes.fin=naesFMatch[1]+(naesFMatch[2]?':'+naesFMatch[2]:''); else events.naes={fin:naesFMatch[1]+(naesFMatch[2]?':'+naesFMatch[2]:'')};}
+
+  // Nodo Descendente genérico (NDES sin constelación) solo hora
+  const ndesSimpleMatch=t.match(/\bNDES\s*:?(\d{1,2})\s*h(?!\s*[-:])/i);
+  if(ndesSimpleMatch && !events.ndes) events.ndes={hora:ndesSimpleMatch[1]};
+
+  // Nodo Ascendente genérico (NAES sin constelación) solo hora
+  const naesSimpleMatch=t.match(/\bNAES\s*:?(\d{1,2})\s*h(?!\s*[-:])/i);
+  if(naesSimpleMatch && !events.naes) events.naes={hora:naesSimpleMatch[1]};
 
   // Sol en (SOGE)
   const soleMatch=t.match(/SOL\s*en\s+(\w+)|SO(\w{2})/i);
@@ -2164,8 +2176,8 @@ function render(date){
       ${lunarEvents.pg?`📍 PG ${lunarEvents.pg.inicio}hs-${lunarEvents.pg.fin}hs<br>`:''}
       ${lunarEvents.nd?`☋ ND ${lunarEvents.nd.inicio}hs${lunarEvents.nd.fin?'-'+lunarEvents.nd.fin+'hs':''}<br>`:''}
       ${lunarEvents.na?`☊ NA ${lunarEvents.na.inicio}hs${lunarEvents.na.fin?'-'+lunarEvents.na.fin+'hs':''}<br>`:''}
-      ${lunarEvents.ndes?`☋ NDES ${lunarEvents.ndes.hora}hs<br>`:''}
-      ${lunarEvents.naes?`☊ NAES ${lunarEvents.naes.hora}hs<br>`:''}
+      ${lunarEvents.ndes?`☋ NDES ${lunarEvents.ndes.inicio?lunarEvents.ndes.inicio+'hs':''}-${lunarEvents.ndes.fin?lunarEvents.ndes.fin+'hs':lunarEvents.ndes.hora+'hs'}<br>`:''}
+      ${lunarEvents.naes?`☊ NAES ${lunarEvents.naes.inicio?lunarEvents.naes.inicio+'hs':''}-${lunarEvents.naes.fin?lunarEvents.naes.fin+'hs':lunarEvents.naes.hora+'hs'}<br>`:''}
       ${lunarEvents.ecve?`⭐ ECVE ${lunarEvents.ecve.inicio}hs-${lunarEvents.ecve.fin}hs<br>`:''}
       ${lunarEvents.sol?`☉ SOL en ${lunarEvents.sol}<br>`:''}
     </div>
