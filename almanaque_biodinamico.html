@@ -1881,8 +1881,9 @@ function getTransicion(year, month, day){
 // ── RAYADOS — períodos desfavorables ─────────────────────────────────────────
 function isRayado(tip){
   const t=(tip||'').toLowerCase();
-  return t.includes('eclipse')||t.includes('perigeo')||
-    (t.includes('nodo')&&(t.includes('ascendente de')||t.includes('descendente de')));
+  return t.includes('período desfavorable')||t.includes('periodo desfavorable')||
+         t.includes('eclipse')||t.includes('perigeo')||
+         (t.includes('nodo')&&(t.includes('ascendente de')||t.includes('descendente de')||t.includes(':i')||t.includes(':f')));
 }
 function getRayadoEvento(tip){
   const t=tip||'';
