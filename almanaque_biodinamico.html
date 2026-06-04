@@ -2109,49 +2109,55 @@ function render(date){
       </div>`;
   const consejoBio = CONSEJOS[tipo][(day-1) % CONSEJOS[tipo].length];
 
-  // Extraer eventos para mostrar en consejos
+  // Extraer eventos y consejos para mostrar
   const eventosTexto=(()=>{
     const eventos=[];
-    if(tip.match(/LD\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/LD\s*:?(\d{1,2})\s*h/i);
-      eventos.push(`🌙 Luna Descendente ${m[1]}hs`);
+
+    if(tip.match(/\bLD\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bLD\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`🌙 Luna Descendente ${m[1]}hs — Trasplante, poda, abonados, roturación`);
     }
-    if(tip.match(/LA\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/LA\s*:?(\d{1,2})\s*h/i);
-      eventos.push(`🌙 Luna Ascendente ${m[1]}hs`);
+    if(tip.match(/\bLA\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bLA\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`🌙 Luna Ascendente ${m[1]}hs — Corte de flores, cosecha de hojas, injertos`);
     }
-    if(tip.match(/LN\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/LN\s*:?(\d{1,2})\s*h/i);
-      eventos.push(`🌑 Luna Nueva ${m[1]}hs`);
+    if(tip.match(/\bLN\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bLN\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`🌑 Luna Nueva ${m[1]}hs — Renovación, inicio de proyectos`);
     }
-    if(tip.match(/LL\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/LL\s*:?(\d{1,2})\s*h/i);
-      eventos.push(`🌕 Luna Llena ${m[1]}hs`);
+    if(tip.match(/\bLL\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bLL\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`🌕 Luna Llena ${m[1]}hs — Óptimo para siembras (2-3 días antes)`);
     }
-    if(tip.match(/AG\s*:?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/AG\s*:?(\d{1,2})\s*h/i);
-      eventos.push(`📍 Apogeo ${m[1]}hs`);
+    if(tip.match(/\bAG\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bAG\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`📍 Apogeo ${m[1]}hs — Energía lunar alta`);
     }
-    if(tip.match(/PG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i)) {
-      const m=tip.match(/PG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
-      eventos.push(`📍 Perigeo ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs`);
+    if(tip.match(/\bPG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i)) {
+      const m=tip.match(/\bPG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
+      eventos.push(`📍 Perigeo ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs — NO apto: alto riesgo de plagas y hongos`);
     }
-    if(tip.match(/ND\s*:?i(\d{1,2})\s*h.*?ND\s*:?f(\d{1,2})\s*h/i)) {
-      const m=tip.match(/ND\s*:?i(\d{1,2})\s*h.*?ND\s*:?f(\d{1,2})\s*h/i);
-      eventos.push(`☋ Nodo Descendente ${m[1]}hs-${m[2]}hs`);
+    if(tip.match(/\bND\s*:?i(\d{1,2})\s*h.*?ND\s*:?f(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bND\s*:?i(\d{1,2})\s*h.*?ND\s*:?f(\d{1,2})\s*h/i);
+      eventos.push(`☋ Nodo Descendente ${m[1]}hs-${m[2]}hs — DESFAVORABLE`);
     }
-    if(tip.match(/NA\s*:?i(\d{1,2})\s*h.*?NA\s*:?f(\d{1,2})\s*h/i)) {
-      const m=tip.match(/NA\s*:?i(\d{1,2})\s*h.*?NA\s*:?f(\d{1,2})\s*h/i);
-      eventos.push(`☊ Nodo Ascendente ${m[1]}hs-${m[2]}hs`);
+    if(tip.match(/\bNA\s*:?i(\d{1,2})\s*h.*?NA\s*:?f(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bNA\s*:?i(\d{1,2})\s*h.*?NA\s*:?f(\d{1,2})\s*h/i);
+      eventos.push(`☊ Nodo Ascendente ${m[1]}hs-${m[2]}hs — DESFAVORABLE`);
     }
-    if(tip.match(/NAME\s*:?i(\d{1,2})\s*h.*?NAME\s*:?f(\d{1,2}):?(\d{2})?\s*h/i)) {
-      const m=tip.match(/NAME\s*:?i(\d{1,2})\s*h.*?NAME\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
-      eventos.push(`☊ NA-Mercurio ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs`);
+    if(tip.match(/\bNAME\s*:?i(\d{1,2})\s*h.*?NAME\s*:?f(\d{1,2}):?(\d{2})?\s*h/i)) {
+      const m=tip.match(/\bNAME\s*:?i(\d{1,2})\s*h.*?NAME\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
+      eventos.push(`☊ NA-Mercurio ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs — DESFAVORABLE (14hs)`);
     }
-    if(tip.match(/SOGE|Sol\s+en\s+(\w+)/i)) {
-      eventos.push(`☉ Sol en Géminis`);
+    if(tip.match(/\bECVE\s*:?i(\d{1,2})\s*h.*?ECVE\s*:?f(\d{1,2})\s*h/i)) {
+      const m=tip.match(/\bECVE\s*:?i(\d{1,2})\s*h.*?ECVE\s*:?f(\d{1,2})\s*h/i);
+      eventos.push(`⭐ Eclipse Venus ${m[1]}hs-${m[2]}hs — DESFAVORABLE`);
     }
-    return eventos.length > 0 ? eventos.join(' · ') : '';
+    if(tip.match(/\bSOGE|Sol\s+en\s+Géminis/i)) {
+      eventos.push(`☉ Sol en Géminis — Período de comunicación`);
+    }
+
+    return eventos.length > 0 ? eventos.join('<br>') : '';
   })();
 
   document.getElementById('card').innerHTML=`
