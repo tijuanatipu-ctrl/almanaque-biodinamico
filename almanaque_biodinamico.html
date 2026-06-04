@@ -617,7 +617,7 @@ const JUNIO_2026 = {
   6: {tipo:'raiz', signo:'Capricornio → Acuario @16h', vent:'hasta las 16hs',
       tip:'Raíces (Capricornio) hasta 16hs. Flores (Acuario, Aire) desde 16hs. LD activa. Mañana-tarde: raíces. Atardecer: cortar flores.'},
   7: {tipo:'flor', signo:'Acuario', vent:'restringido',
-      tip:'Día de Flores (Aire). ⚠ RAYADO: Nodo Descendente ND @4hs. Período desfavorable 4-13hs (9h). Evitar siembras/trasplantes 4-13hs. Cortar flores: mañana (antes 4h) o noche.'},
+      tip:'Día de Flores (Aire). ⚠ RAYADO: Nodo Descendente ND @4hs. Período desfavorable 23h día 6 a 8h día 7 (9h). Evitar siembras/trasplantes en ese período. Cortar flores: mañana (antes 8h) o noche (desde 20h).'},
   8: {tipo:'flor', signo:'Acuario → Piscis @15h', vent:'hasta las 15hs',
       tip:'Flores (Acuario) hasta 15hs. Hojas (Piscis, Agua) desde 15hs. LD activa. Mañana: cortar flores, aromáticas (mejor duración en LD). Tarde: riego hojas.'},
   9: {tipo:'hoja', signo:'Piscis', vent:'restringido',
@@ -643,7 +643,7 @@ const JUNIO_2026 = {
   19:{tipo:'fruto', signo:'Leo', vent:'todo el día',
       tip:'Día de Frutos (Fuego). ⚠ RAYADO: Nodo Ascendente NA @15hs. Período desfavorable ~9hs (5h antes + 4h después: 10-19hs). Evitar siembras/trasplantes 10-19hs. LA activa. Cosechar frutos para semilla: mañana o noche.'},
   20:{tipo:'fruto', signo:'Leo', vent:'restringido',
-      tip:'Día de Frutos (Leo). ⚠ RAYADO: Nodo Ascendente en Escorpio (NAE). Período desfavorable ~14h. LA activa pero restringida por NA. Evitar trabajos agrícolas importantes. Observar y planificar.'},
+      tip:'Día de Frutos (Leo). ⚠ RAYADO: Nodo Ascendente en Escorpio (NAE) @22hs. Período desfavorable 21h día 19 a 11h día 21 (14h aprox). LA activa pero restringida por NAE. Evitar trabajos agrícolas importantes 21h-11h. Observar y planificar.'},
   21:{tipo:'fruto', signo:'Leo → Virgo @7h', vent:'hasta las 7hs',
       tip:'Frutos (Leo) hasta 7hs. Raíces (Virgo, Tierra) desde 7hs. ☉ Sol en Géminis (SOGE). LA activa. Mañana: cosechar frutos. Día: laborear suelo, trasplantar raíces.'},
   22:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
@@ -1894,6 +1894,16 @@ function getRayadoEvento(tip){
   if(nod) return nod[0];
   return null;
 }
+function getRayadoPeriodo(tip){
+  const t=tip||'';
+  // Buscar patrón "Período desfavorable XXX a XXX"
+  const per=t.match(/período\s+desfavorable\s+([^.]+)/i);
+  if(per) return per[1].trim();
+  // Buscar patrón "~XXh" o "XXh"
+  const hrs=t.match(/(\d{1,2}(?:[–\-]\d{1,2})?(?:h|hs)?)/i);
+  if(hrs) return hrs[1];
+  return null;
+}
 
 // ── ZODIAC GLYPHS ─────────────────────────────────────────────────────────────
 const ZODIAC_GLYPH={
@@ -2054,8 +2064,10 @@ function render(date){
   const isDefaultLoc=(userLoc.name===LOC_DEFAULT.name);
   const rayado=isRayado(tip);
   const rayadoEvento=rayado?getRayadoEvento(tip):null;
+  const rayadoPeriodo=rayado?getRayadoPeriodo(tip):null;
   const rayadoHtml=rayado?`<div class="rayado-wrap">
     <div class="rayado-ttl">⚠ Momento restrictivo${rayadoEvento?' · '+rayadoEvento:''}</div>
+    ${rayadoPeriodo?`<div style="color:#ff4444; font-weight:bold; margin-top:4px; font-size:12px;">📍 Período desfavorable: ${rayadoPeriodo}</div>`:''}
     <div class="rayado-sub">Evitar siembras, trasplantes y trabajos intensos con la tierra. Ideal para desmalezar o podar lo que se quiere debilitar.</div>
   </div>`:'';
   const ventInline=fmtVentInline(vent);
@@ -2105,7 +2117,7 @@ function render(date){
     <div class="moon-wrap">
       <span class="moon-em">${mp.em}</span>
       <div class="moon-txt">
-        <span class="moon-sign">Luna en ${addGlyphs(signo.replace(/@[\d\-–]+\s*hs/i,'').replace(/\s+$/,''))}</span><br>
+        <span class="moon-sign">Luna en ${addGlyphs(signo.split('→')[0].replace(/@[\d\-–]+\s*hs/i,'').trim())}</span><br>
         <span class="moon-bar" style="--p:${mp.ill}%"></span>${mp.ph} · Día ${mp.day}<br>
         <span class="moon-asc-ctx ${asc?'asc':'desc'}">${asc?'↑ Ascendente — cosechar · sembrar · podar':'↓ Descendente — trasplantar · abonar · compostar'}</span>
       </div>
