@@ -1872,8 +1872,8 @@ function getTransicion(year, month, day){
   const tipo2=SIGN_TO_TIPO[s2];
   if(!tipo2) return null;
 
-  // Extraer hora de transición: "@6-7hs" → "6–7 hs"
-  const horaM=signo.match(/@([\d\-–]+)\s*hs/i);
+  // Extraer hora de transición: "@6-7hs" o "@20h" → "6–7 hs" o "20 hs"
+  const horaM=signo.match(/@([\d\-–]+)\s*hs?/i);
   const hora=horaM ? horaM[1].replace('-','–')+' hs' : null;
   return {tipo1, tipo2, hora};
 }
@@ -2109,55 +2109,100 @@ function render(date){
       </div>`;
   const consejoBio = CONSEJOS[tipo][(day-1) % CONSEJOS[tipo].length];
 
-  // Extraer eventos y consejos para mostrar
-  const eventosTexto=(()=>{
-    const eventos=[];
+  // Generar consejo personalizado para horticultor
+  const hortAdvice=(()=>{
+    const iconMap={hoja:'🌿',fruto:'🍎',raiz:'🥕',flor:'🌸'};
+    const descMap={
+      hoja:'hojas y verduras',
+      fruto:'frutos',
+      raiz:'raíces y tubérculos',
+      flor:'flores y aromáticas'
+    };
 
-    if(tip.match(/\bLD\s*[@:]?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bLD\s*[@:]?(\d{1,2})\s*h/i);
-      eventos.push(`🌙 Luna Descendente ${m[1]}hs — Trasplante, poda, abonados, roturación`);
-    }
-    if(tip.match(/\bLA\s*[@:]?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bLA\s*[@:]?(\d{1,2})\s*h/i);
-      eventos.push(`🌙 Luna Ascendente ${m[1]}hs — Corte de flores, cosecha de hojas, injertos`);
-    }
-    if(tip.match(/\bLN\s*[@:]?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bLN\s*[@:]?(\d{1,2})\s*h/i);
-      eventos.push(`🌑 Luna Nueva ${m[1]}hs — Renovación, inicio de proyectos`);
-    }
-    if(tip.match(/\bLL\s*[@:]?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bLL\s*[@:]?(\d{1,2})\s*h/i);
-      eventos.push(`🌕 Luna Llena ${m[1]}hs — Óptimo para siembras (2-3 días antes)`);
-    }
-    if(tip.match(/\bAG\s*[@:]?(\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bAG\s*[@:]?(\d{1,2})\s*h/i);
-      eventos.push(`📍 Apogeo ${m[1]}hs — Energía lunar alta`);
-    }
-    if(tip.match(/\bPG\s*[:i](\d{1,2})\s*h.*?PG\s*[:f](\d{1,2}):?(\d{2})?\s*h/i)) {
-      const m=tip.match(/\bPG\s*[:i](\d{1,2})\s*h.*?PG\s*[:f](\d{1,2}):?(\d{2})?\s*h/i);
-      eventos.push(`📍 Perigeo ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs — NO apto: alto riesgo de plagas y hongos`);
-    }
-    if(tip.match(/\bND\s*[:i](\d{1,2})\s*h.*?ND\s*[:f](\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bND\s*[:i](\d{1,2})\s*h.*?ND\s*[:f](\d{1,2})\s*h/i);
-      eventos.push(`☋ Nodo Descendente ${m[1]}hs-${m[2]}hs — DESFAVORABLE`);
-    }
-    if(tip.match(/\bNA\s*[:i](\d{1,2})\s*h.*?NA\s*[:f](\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bNA\s*[:i](\d{1,2})\s*h.*?NA\s*[:f](\d{1,2})\s*h/i);
-      eventos.push(`☊ Nodo Ascendente ${m[1]}hs-${m[2]}hs — DESFAVORABLE`);
-    }
-    if(tip.match(/\bNAME\s*[:i](\d{1,2})\s*h.*?NAME\s*[:f](\d{1,2}):?(\d{2})?\s*h/i)) {
-      const m=tip.match(/\bNAME\s*[:i](\d{1,2})\s*h.*?NAME\s*[:f](\d{1,2}):?(\d{2})?\s*h/i);
-      eventos.push(`☊ NA-Mercurio ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs — DESFAVORABLE (14hs)`);
-    }
-    if(tip.match(/\bECVE\s*[:i](\d{1,2})\s*h.*?ECVE\s*[:f](\d{1,2})\s*h/i)) {
-      const m=tip.match(/\bECVE\s*[:i](\d{1,2})\s*h.*?ECVE\s*[:f](\d{1,2})\s*h/i);
-      eventos.push(`⭐ Eclipse Venus ${m[1]}hs-${m[2]}hs — DESFAVORABLE`);
-    }
-    if(tip.match(/\bSOGE|Sol\s+en\s+Géminis/i)) {
-      eventos.push(`☉ Sol en Géminis — Período de comunicación`);
+    const tipo1=tipo;
+    const icon1=iconMap[tipo1]||'🌱';
+    const desc1=descMap[tipo1]||'plantas';
+    const plantasMencionadas=new Set();
+
+    let advice=`Es un buen día para trabajar con ${desc1} ${icon1}. `;
+
+    // Detectar fase lunar del AABDA si está disponible
+    let phaseActual=mp.ph;
+    if(tip.match(/\bLN\b|Luna Nueva/i)) phaseActual='Nueva';
+    else if(tip.match(/\bLL\b|Luna Llena/i)) phaseActual='Llena';
+    else if(tip.match(/\bLD\b|Luna Descendente/i) && phaseActual!=='Nueva') phaseActual='Menguante';
+    else if(tip.match(/\bLA\b|Luna Ascendente/i) && phaseActual!=='Nueva' && phaseActual!=='Llena') phaseActual='Creciente';
+
+    // Información sobre la fase lunar
+    if(phaseActual==='Menguante') {
+      advice+=`La <strong>luna menguante</strong> es ideal para labores de mantenimiento: trasplantar plantas con raíz desnuda, podar lo que querés debilitar, abonar y preparar la tierra. La savia baja, las raíces se fortalecen. `;
+    } else if(phaseActual==='Creciente') {
+      advice+=`En <strong>luna creciente</strong> la energía sube: las plantas crecen rápido y vigorosas, pero son más tiernas y susceptibles a plagas. Ideal para sembrar, pero requiere vigilancia. `;
+    } else if(phaseActual==='Llena') {
+      advice+=`La <strong>luna llena</strong> concentra la máxima energía: es el momento óptimo para siembras de plantas que querés que crezcan vigorosas, para cosechar lo más sabroso, y para trabajos con hierbas aromáticas (máxima concentración de aceites). `;
+    } else if(phaseActual==='Nueva') {
+      advice+=`Con <strong>luna nueva</strong>, la energía se renueva: es tiempo de nuevos inicios, limpiar lo viejo, eliminar plagas e insectos, y prepararse para sembrar en los días siguientes. Evita sembrar directamente en luna nueva. `;
     }
 
-    return eventos.length > 0 ? eventos.join('<br>') : '';
+    // Información sobre luna ascendente/descendente
+    if(asc) {
+      advice+=`La <strong>luna ascendente</strong> favorece cosechar, cortar malezas e injertos.`;
+    } else {
+      advice+=`La <strong>luna descendente</strong> favorece trasplantes, podas y trabajos con abono.`;
+    }
+
+    // Si hay transición
+    if(trans) {
+      const tipo2=trans.tipo2;
+      const icon2=iconMap[tipo2]||'🌱';
+      const desc2=descMap[tipo2]||'plantas';
+      advice+=` Transición a las <strong>${trans.hora}</strong>: la mañana es para ${desc1}, después cambias al trabajo con ${desc2} ${icon2}.`;
+    }
+
+    // Agregar qué se puede hacer
+    const dayPlants=sea[tipo1]||{p:[],h:[]};
+    let plantasInfo='';
+    const h1=dayPlants.h?dayPlants.h.filter(p=>!plantasMencionadas.has(p)):[];
+    const p1=dayPlants.p?dayPlants.p.filter(p=>!plantasMencionadas.has(p)):[];
+
+    if(h1.length>0) {
+      h1.forEach(p=>plantasMencionadas.add(p));
+      plantasInfo+=` Puedes cosechar <strong>${h1.join(', ')}</strong>.`;
+    }
+    if(p1.length>0) {
+      p1.forEach(p=>plantasMencionadas.add(p));
+      plantasInfo+=` O preparar para sembrar <strong>${p1.join(', ')}</strong>.`;
+    }
+    advice+=plantasInfo;
+
+    // Si hay transición, agregar lo del segundo tipo (sin repetir plantas)
+    if(trans) {
+      const dayPlants2=sea[trans.tipo2]||{p:[],h:[]};
+      const h2=dayPlants2.h?dayPlants2.h.filter(p=>!plantasMencionadas.has(p)):[];
+      const p2=dayPlants2.p?dayPlants2.p.filter(p=>!plantasMencionadas.has(p)):[];
+
+      if(h2.length>0 || p2.length>0) {
+        advice+=` Después de la transición,`;
+        if(h2.length>0) {
+          h2.forEach(p=>plantasMencionadas.add(p));
+          advice+=` puedes cosechar <strong>${h2.join(', ')}</strong>`;
+          if(p2.length>0) advice+=` o preparar`;
+        }
+        if(p2.length>0) {
+          p2.forEach(p=>plantasMencionadas.add(p));
+          advice+=` sembrar <strong>${p2.join(', ')}</strong>`;
+        }
+        advice+=`.`;
+      }
+    }
+
+    // Detectar períodos desfavorables
+    if(tip.match(/período\s+desfavorable\s+([^\n\.]+)/i)) {
+      const m=tip.match(/período\s+desfavorable\s+([^\n\.]+)/i);
+      advice+=` <span style="color:red;"><strong>⚠️ Atención: período desfavorable ${m[1].trim()}. Evita trabajos intensos en ese horario.</strong></span>`;
+    }
+
+    return advice;
   })();
 
   document.getElementById('card').innerHTML=`
@@ -2223,16 +2268,29 @@ function render(date){
     <div class="div-line"></div>
 
     <div class="crops-wrap">
-      ${(()=>{ const m=mergeCrops(sc);
-        return `<div class="crops-ttl">Plantas del día</div>
-        <div class="crops-val">${renderCrops(m.crops)}</div>
-        ${m.nota?`<div class="crops-nota">${m.nota}</div>`:''}`;
+      ${(()=>{
+        const icon1=TC[tipo].icon||'🌱';
+        if(trans) {
+          const m1=mergeCrops(sc);
+          const m2=mergeCrops(sea[trans.tipo2]||{p:[],h:[]});
+          const icon2=TC[trans.tipo2].icon||'🌱';
+          return `<div class="crops-ttl">Plantas del día</div>
+            <div style="font-size:13px;line-height:1.5">
+              <div style="margin-bottom:8px"><span style="font-size:16px;margin-right:6px">${icon1}</span>(hasta ${trans.hora}): ${renderCrops(m1.crops)}</div>
+              <div><span style="font-size:16px;margin-right:6px">${icon2}</span>(desde ${trans.hora}): ${renderCrops(m2.crops)}</div>
+            </div>`;
+        } else {
+          const m=mergeCrops(sc);
+          const cropsHtml=renderCrops(m.crops);
+          return `<div class="crops-ttl">Plantas del día</div>
+            <div style="font-size:13px"><span style="font-size:16px;margin-right:6px">${icon1}</span>${cropsHtml}${m.nota?` <em style="color:#aaa;font-size:9px">(${m.nota})</em>`:''}</div>`;
+        }
       })()}
     </div>
 
     <div class="tip-wrap">
-      <div class="tip-ttl">Eventos del día</div>
-      <div class="tip-body">${eventosTexto || 'Sin eventos especiales'}</div>
+      <div class="tip-ttl">Consejo Agrícola</div>
+      <div class="tip-body">${hortAdvice}</div>
     </div>
 
     ${miniCal(year,mon,day,TODAY)}
