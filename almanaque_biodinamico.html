@@ -1866,11 +1866,11 @@ function getTransicion(year, month, day){
   if(!tipo1) return null;
 
   // Extraer constelación final después de →
-  const afterArrow=signo.slice(ai+1);
+  const afterArrow=signo.slice(ai+1).trim();
   const s2M=afterArrow.match(/^([A-ZÁáÉéÍíÓóÚú\w]+)/);
   const s2=s2M?s2M[1]:'';
   const tipo2=SIGN_TO_TIPO[s2];
-  if(!tipo2||tipo2===tipo1) return null;
+  if(!tipo2) return null;
 
   // Extraer hora de transición: "@6-7hs" → "6–7 hs"
   const horaM=signo.match(/@([\d\-–]+)\s*hs/i);
