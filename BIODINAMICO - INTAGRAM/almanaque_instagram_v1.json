@@ -1,0 +1,124 @@
+{
+  "name": "Almanaque Biodinámico → Instagram",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }]
+        }
+      },
+      "id": "node-schedule-001",
+      "name": "Todos los días 9am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── DATOS BIODINÁMICOS DEL DÍA ──────────────────────────────────────────\nconst today = new Date();\nconst day  = today.getDate();\nconst mon  = today.getMonth();      // 0-indexed\nconst year = today.getFullYear();\nconst dow  = today.getDay();\nconst monNum = mon + 1;\n\nconst DIAS  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];\nconst MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',\n               'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];\n\n// ── Cálculo signo lunar (zodíaco sidéreo) ──────────────────────────────────\nfunction moonSign(date) {\n  const J2000 = new Date('2000-01-01T12:00:00Z').getTime();\n  const days  = (date.getTime() - J2000) / 86400000;\n  const L_tropical = (218.316 + 13.176396 * days) % 360;\n  const L_sidereal  = ((L_tropical - 23.85) % 360 + 360) % 360;\n  const SIGNS = [\n    {sign:'Aries',      tipo:'fruto'},\n    {sign:'Tauro',      tipo:'raiz'},\n    {sign:'Géminis',    tipo:'flor'},\n    {sign:'Cáncer',     tipo:'hoja'},\n    {sign:'Leo',        tipo:'fruto'},\n    {sign:'Virgo',      tipo:'raiz'},\n    {sign:'Libra',      tipo:'flor'},\n    {sign:'Escorpio',   tipo:'hoja'},\n    {sign:'Sagitario',  tipo:'fruto'},\n    {sign:'Capricornio',tipo:'raiz'},\n    {sign:'Acuario',    tipo:'flor'},\n    {sign:'Piscis',     tipo:'hoja'},\n  ];\n  return SIGNS[Math.floor(L_sidereal / 30) % 12];\n}\n\n// ── Fase lunar ─────────────────────────────────────────────────────────────\nfunction moonPhase(date) {\n  const REF = new Date('2000-01-06T18:14:00Z').getTime();\n  const frac = (((date.getTime() - REF) % (29.530589*86400000)) + (29.530589*86400000)) % (29.530589*86400000) / (29.530589*86400000);\n  if(frac < 0.03 || frac > 0.97) return 'Luna Nueva 🌑';\n  if(frac < 0.22) return 'Luna Creciente 🌒';\n  if(frac < 0.28) return 'Cuarto Creciente 🌓';\n  if(frac < 0.47) return 'Luna Gibosa 🌔';\n  if(frac < 0.53) return 'Luna Llena 🌕';\n  if(frac < 0.72) return 'Luna Gibosa Menguante 🌖';\n  if(frac < 0.78) return 'Cuarto Menguante 🌗';\n  return 'Luna Menguante 🌘';\n}\n\n// ── Cultivos por mes ───────────────────────────────────────────────────────\nconst SEASONAL = {\n  1:  {fruto:{p:['Tomates','Zapallos','Pepinos','Maíz'],      h:['Tomates','Zapallos','Pepinos','Maíz']},\n       raiz: {p:['Cebollas','Ajos','Puerros'],                h:['Cebollas','Ajos','Puerros','Papas']},\n       hoja: {p:['Lechugas','Albahaca','Rúcula'],             h:['Lechugas','Albahaca','Rúcula']},\n       flor: {p:['Girasoles','Caléndulas'],                   h:['Lavanda','Romero','Orégano']}},\n  2:  {fruto:{p:['Tomates','Zapallos','Pepinos'],             h:['Tomates','Zapallos','Pepinos','Maíz']},\n       raiz: {p:['Zanahorias','Remolachas','Cebollas'],       h:['Cebollas','Ajos','Puerros','Papas']},\n       hoja: {p:['Lechugas','Espinacas','Rúcula'],            h:['Lechugas','Espinacas','Acelgas']},\n       flor: {p:['Caléndulas'],                               h:['Caléndulas','Orégano','Manzanilla']}},\n  3:  {fruto:{p:['Zapallitos','Pepinos'],                     h:['Tomates','Zapallos','Pepinos','Maíz']},\n       raiz: {p:['Zanahorias','Remolachas','Cebollas','Ajos'],h:['Cebollas','Ajos','Zanahorias','Remolachas']},\n       hoja: {p:['Lechugas','Espinacas','Acelgas','Kale'],    h:['Lechugas','Espinacas','Acelgas']},\n       flor: {p:['Manzanilla','Caléndulas'],                  h:['Orégano','Caléndulas','Manzanilla']}},\n  4:  {fruto:{p:['Arvejas','Habas'],                         h:['Tomates','Zapallos','Pepinos']},\n       raiz: {p:['Zanahorias','Remolachas','Cebollas','Ajos'],h:['Cebollas','Ajos','Zanahorias','Remolachas']},\n       hoja: {p:['Lechugas','Acelgas','Espinacas','Kale'],    h:['Acelgas','Espinacas','Lechugas']},\n       flor: {p:['Manzanilla','Caléndulas','Lavanda'],        h:['Orégano','Manzanilla','Caléndulas']}},\n  5:  {fruto:{p:['Arvejas','Habas'],                         h:['Zapallos','Pepinos']},\n       raiz: {p:['Zanahorias','Remolachas','Cebollas','Ajos','Puerros'],h:['Remolachas','Zanahorias','Puerros','Cebollas']},\n       hoja: {p:['Lechugas','Acelgas','Espinacas','Kale','Rúcula'],h:['Acelgas','Espinacas','Lechugas','Kale']},\n       flor: {p:['Manzanilla','Caléndulas','Lavanda','Romero'],h:['Orégano','Manzanilla','Caléndulas']}},\n  6:  {fruto:{p:['Arvejas','Habas'],                         h:['Arvejas','Habas']},\n       raiz: {p:['Cebollas','Ajos','Puerros'],               h:['Cebollas','Ajos','Puerros','Nabos']},\n       hoja: {p:['Espinacas','Acelgas','Kale'],              h:['Espinacas','Acelgas','Kale']},\n       flor: {p:['Lavanda','Romero'],                        h:['Lavanda','Romero','Tomillo']}},\n  7:  {fruto:{p:['Arvejas','Habas'],                         h:['Arvejas','Habas']},\n       raiz: {p:['Zanahorias','Remolachas','Puerros'],       h:['Cebollas','Ajos','Puerros','Nabos']},\n       hoja: {p:['Espinacas','Acelgas','Kale','Rúcula'],     h:['Espinacas','Acelgas','Kale']},\n       flor: {p:['Lavanda','Romero','Tomillo'],              h:['Lavanda','Romero','Tomillo']}},\n  8:  {fruto:{p:['Tomates','Zapallos'],                      h:['Arvejas','Habas']},\n       raiz: {p:['Zanahorias','Remolachas','Nabos'],         h:['Zanahorias','Remolachas','Nabos']},\n       hoja: {p:['Lechugas','Espinacas','Rúcula'],           h:['Espinacas','Acelgas','Kale']},\n       flor: {p:['Caléndulas','Lavanda'],                    h:['Lavanda','Romero','Tomillo']}},\n  9:  {fruto:{p:['Tomates','Zapallos','Pepinos','Zapallitos'],h:['Tomates','Zapallos','Pepinos']},\n       raiz: {p:['Zanahorias','Remolachas','Rábanos'],       h:['Zanahorias','Remolachas','Nabos']},\n       hoja: {p:['Lechugas','Rúcula','Espinacas'],           h:['Lechugas','Espinacas']},\n       flor: {p:['Caléndulas','Girasoles'],                  h:['Caléndulas','Lavanda']}},\n  10: {fruto:{p:['Tomates','Zapallos','Pepinos','Maíz'],     h:['Tomates','Zapallos','Pepinos','Maíz']},\n       raiz: {p:['Zanahorias','Remolachas','Rábanos'],       h:['Zanahorias','Remolachas','Rábanos']},\n       hoja: {p:['Lechugas','Rúcula','Albahaca'],            h:['Lechugas','Rúcula','Albahaca']},\n       flor: {p:['Girasoles','Caléndulas'],                  h:['Caléndulas','Lavanda']}},\n  11: {fruto:{p:['Tomates','Zapallos','Pepinos','Maíz','Porotos'],h:['Tomates','Zapallos','Pepinos','Maíz']},\n       raiz: {p:['Cebollas','Rábanos'],                      h:['Cebollas','Rábanos','Zanahorias']},\n       hoja: {p:['Lechugas','Rúcula','Albahaca'],            h:['Lechugas','Rúcula','Albahaca']},\n       flor: {p:['Caléndulas','Albahaca'],                   h:['Caléndulas','Lavanda','Manzanilla']}},\n  12: {fruto:{p:['Porotos','Maíz'],                          h:['Tomates','Zapallos','Pepinos','Maíz']},\n       raiz: {p:['Rábanos','Cebollas'],                      h:['Cebollas','Remolachas','Zanahorias']},\n       hoja: {p:['Lechugas','Rúcula'],                       h:['Lechugas','Rúcula','Albahaca']},\n       flor: {p:[],                                          h:['Caléndulas','Lavanda']}},\n};\n\nconst TC = {\n  fruto:{icon:'🍎', lbl:'Día de FRUTOS'},\n  raiz: {icon:'🥕', lbl:'Día de RAÍCES'},\n  flor: {icon:'🌼', lbl:'Día de FLORES'},\n  hoja: {icon:'🌿', lbl:'Día de HOJAS'},\n};\n\nconst ms    = moonSign(today);\nconst tipo  = ms.tipo;\nconst signo = ms.sign;\nconst sea   = SEASONAL[monNum] || SEASONAL[5];\nconst sc    = sea[tipo] || {p:[], h:[]};\nconst sembrar  = sc.p.length ? sc.p.join(', ') : '—';\nconst cosechar = sc.h.length ? sc.h.join(', ') : '—';\nconst tc       = TC[tipo];\nconst fase     = moonPhase(today);\n\n// ── Caption para Instagram ─────────────────────────────────────────────────\nconst caption =\n`${tc.icon} ${tc.lbl.toUpperCase()} · ${DIAS[dow]} ${day} de ${MESES[mon]}\n\n🌙 Luna en ${signo} · ${fase}\n\n🌱 Sembrar hoy: ${sembrar}\n🌾 Cosechar hoy: ${cosechar}\n\n🌿 Almanaque biodinámico para el Hemisferio Sur.\n\n#biodinamica #huertobiodinamico #luna #lunabiodinamica #almanaque #calendariobiodinamicoargentino #argentina #huerto #permacultura #agroecologia #organico #jardín #lunallena #siembra`;\n\nreturn [{ json: { caption, tipo, signo, fase, sembrar, cosechar,\n  fecha: `${day}/${monNum}/${year}`,\n  ig_user_id: '17841429539202533'\n} }];"
+      },
+      "id": "node-code-002",
+      "name": "Datos del día",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hcti.io/v1/image",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic MDFLU0ZQWjRQWUg3V0hGN0RORDkyQ0tZWkU6MDE5ZTVmNmYtOTJkZS03YWZkLWE4YTItMDQ1NTAwZGMzNTM4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"url\":\"https://tijuanatipu-ctrl.github.io/almanaque-biodinamico/almanaque_biodinamico.html\",\"viewport_width\":1000,\"viewport_height\":1250,\"device_scale_factor\":1.08}",
+        "options": {}
+      },
+      "id": "node-screenshot-003",
+      "name": "Capturar almanaque",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $node[\"Datos del día\"].json.ig_user_id }}/media",
+        "sendBody": true,
+        "contentType": "form",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "image_url",    "value": "={{ $json.url }}" },
+            { "name": "caption",      "value": "={{ $node[\"Datos del día\"].json.caption }}" },
+            { "name": "access_token", "value": "EAAOHttPyRi4BRmvirK0ER7PUM3ydMItvbyKzkbosvCZByBsCN5lXTcpo0jqiiHvkhzKxZBfshXZBpTb5jdmVi17YXF2sp4MrmTGomBzBwWnP0Vq3KbYd7jwpiB2uD8DfHJe9T71SZAHvtaTLaRktPsJe3ZAYzPsVcFwFGLxbWJ9HOIfrGg3EZAP0xU5XARQS5pbHwFz6TAEFl1TAk1N8VFpeUz049SW3AlAcpY8r6Wra1K7JCt606AFiIZD" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-ig-container-004",
+      "name": "IG Crear container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "node-wait-005",
+      "name": "Esperar 5s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1140, 300],
+      "webhookId": "almanaque-wait"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $node[\"Datos del día\"].json.ig_user_id }}/media_publish",
+        "sendBody": true,
+        "contentType": "form",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "creation_id",  "value": "={{ $node[\"IG Crear container\"].json.id }}" },
+            { "name": "access_token", "value": "EAAOHttPyRi4BRmvirK0ER7PUM3ydMItvbyKzkbosvCZByBsCN5lXTcpo0jqiiHvkhzKxZBfshXZBpTb5jdmVi17YXF2sp4MrmTGomBzBwWnP0Vq3KbYd7jwpiB2uD8DfHJe9T71SZAHvtaTLaRktPsJe3ZAYzPsVcFwFGLxbWJ9HOIfrGg3EZAP0xU5XARQS5pbHwFz6TAEFl1TAk1N8VFpeUz049SW3AlAcpY8r6Wra1K7JCt606AFiIZD" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-ig-publish-006",
+      "name": "IG Publicar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1360, 300]
+    }
+  ],
+  "connections": {
+    "Todos los días 9am": {
+      "main": [[{ "node": "Datos del día", "type": "main", "index": 0 }]]
+    },
+    "Datos del día": {
+      "main": [[{ "node": "Capturar almanaque", "type": "main", "index": 0 }]]
+    },
+    "Capturar almanaque": {
+      "main": [[{ "node": "IG Crear container", "type": "main", "index": 0 }]]
+    },
+    "IG Crear container": {
+      "main": [[{ "node": "Esperar 5s", "type": "main", "index": 0 }]]
+    },
+    "Esperar 5s": {
+      "main": [[{ "node": "IG Publicar", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "almanaque" }, { "name": "instagram" }]
+}

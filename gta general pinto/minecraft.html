@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>General Pinto — Minecraft</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#050a05; overflow:hidden; font-family:'Nunito',sans-serif; }
+
+#canvas {
+    display:block;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+    cursor:crosshair;
+}
+
+/* ── Crosshair ── */
+#crosshair { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:20; }
+#crosshair::before, #crosshair::after {
+    content:''; position:absolute; background:rgba(255,255,255,0.75);
+}
+#crosshair::before { width:22px; height:2px; top:-1px; left:-11px; }
+#crosshair::after  { width:2px; height:22px; top:-11px; left:-1px; }
+
+/* ── Header ── */
+.mc-hdr {
+    position:fixed; top:0; left:0; right:0;
+    background:linear-gradient(to bottom,rgba(0,0,0,0.82),transparent);
+    padding:12px 18px 38px; z-index:100; pointer-events:none;
+}
+.mc-hdr h1 {
+    font-size:.95rem; font-weight:900; color:#1fc71f; letter-spacing:3px;
+    text-transform:uppercase; text-shadow:0 0 12px rgba(31,199,31,.6);
+    display:flex; align-items:center; gap:7px;
+}
+.mc-hdr p { font-size:.62rem; color:rgba(255,255,255,.35); letter-spacing:1px; margin-top:2px; }
+
+/* ── Botones ── */
+.mc-btn {
+    position:fixed; z-index:110; pointer-events:all;
+    background:rgba(0,0,0,.72); border:1.5px solid rgba(31,199,31,.4);
+    border-radius:8px; color:#1fc71f; font-family:'Nunito',sans-serif;
+    font-size:.7rem; font-weight:900; letter-spacing:1px; padding:7px 13px;
+    cursor:pointer; backdrop-filter:blur(6px); text-transform:uppercase; transition:background .2s;
+}
+.mc-btn:hover { background:rgba(31,199,31,.12); }
+#btn-sv { top:14px; right:20px; }
+#btn-3d { top:14px; right:140px; }
+
+/* ── Loading ── */
+#loading {
+    position:fixed; inset:0; z-index:500;
+    background:#030a03;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+}
+#loading h2 { color:#1fc71f; font-size:1.4rem; letter-spacing:3px; text-transform:uppercase; }
+#loading p  { color:rgba(255,255,255,.4); font-size:.78rem; max-width:320px; text-align:center; line-height:1.5; }
+.mc-bar-wrap { width:280px; height:20px; background:#0d200d; border:2px solid #1fc71f; border-radius:3px; overflow:hidden; }
+.mc-bar { height:100%; background:#1fc71f; width:0%; transition:width .25s; box-shadow:0 0 10px rgba(31,199,31,.6); }
+
+/* ── Click to play ── */
+#ctp {
+    position:fixed; bottom:58px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,.78); border:2px solid rgba(31,199,31,.6);
+    border-radius:10px; padding:10px 26px;
+    color:#1fc71f; font-weight:900; font-size:.85rem; letter-spacing:2px;
+    z-index:110; pointer-events:all; cursor:pointer;
+    animation:blink 1.4s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+#ctp.hidden { display:none; }
+
+/* ── Hints ── */
+#hint {
+    position:fixed; bottom:18px; right:18px; z-index:100;
+    color:rgba(255,255,255,.28); font-size:.6rem; text-align:right; line-height:1.9; pointer-events:none;
+}
+
+/* ── Panel comercio ── */
+#panel {
+    position:fixed; bottom:-220px; left:50%; transform:translateX(-50%);
+    width:min(300px,88vw);
+    background:rgba(3,12,3,.96); border:1.5px solid #1fc71f;
+    border-bottom:none; border-radius:12px 12px 0 0;
+    padding:14px 18px 24px; z-index:200; transition:bottom .3s;
+    backdrop-filter:blur(12px); pointer-events:all;
+}
+#panel.visible { bottom:0; }
+#panel h3  { color:#1fc71f; font-size:.95rem; margin-bottom:3px; }
+#panel-dir { color:#444; font-size:.72rem; margin-bottom:10px; }
+.p-btn {
+    display:inline-block; padding:7px 12px; border-radius:7px;
+    text-decoration:none; font-size:.72rem; font-weight:700; margin:2px;
+}
+.p-phone    { background:#141420; color:#fff; border:1px solid #333; }
+.p-anunciar { background:#1fc71f; color:#000; }
+.p-close    { position:absolute; top:10px; right:12px; background:none; border:none; color:#444; cursor:pointer; font-size:1rem; }
+.p-close:hover { color:#fff; }
+
+/* ── Tooltip de bloque ── */
+#tooltip {
+    position:fixed; top:56px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,.7); border:1px solid rgba(31,199,31,.4);
+    border-radius:7px; padding:5px 14px;
+    color:#1fc71f; font-size:.7rem; font-weight:800; letter-spacing:1px;
+    z-index:100; pointer-events:none; opacity:0; transition:opacity .2s;
+}
+#tooltip.visible { opacity:1; }
+
+/* ── Pixel ratio selector ── */
+#px-select {
+    position:fixed; bottom:18px; left:18px; z-index:110;
+    display:flex; gap:6px; pointer-events:all;
+}
+.px-btn {
+    background:rgba(0,0,0,.6); border:1px solid rgba(31,199,31,.3);
+    border-radius:6px; color:rgba(255,255,255,.5); font-family:'Nunito',sans-serif;
+    font-size:.6rem; font-weight:800; padding:4px 10px; cursor:pointer;
+}
+.px-btn.active { border-color:#1fc71f; color:#1fc71f; }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+    <svg width="54" height="54" viewBox="0 0 54 54" style="filter:drop-shadow(0 0 16px #1fc71f);animation:spin 4s linear infinite">
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+        <polygon points="27,2 52,27 27,52 2,27" fill="#1fc71f" opacity=".9"/>
+        <polygon points="27,2 52,27 27,28" fill="#14a014"/>
+        <polygon points="27,2 2,27 27,28" fill="#25e025" opacity=".85"/>
+        <polygon points="27,8 27,28 40,27" fill="rgba(255,255,255,.2)"/>
+    </svg>
+    <h2>Generando mundo…</h2>
+    <div class="mc-bar-wrap"><div class="mc-bar" id="bar"></div></div>
+    <p id="ld-msg">Conectando con OpenStreetMap…</p>
+</div>
+
+<!-- Canvas -->
+<canvas id="canvas"></canvas>
+
+<!-- HUD -->
+<div class="mc-hdr">
+    <h1>
+        <svg width="15" height="15" viewBox="0 0 54 54">
+            <polygon points="27,2 52,27 27,52 2,27" fill="#1fc71f" opacity=".9"/>
+            <polygon points="27,2 52,27 27,28" fill="#14a014"/>
+            <polygon points="27,2 2,27 27,28" fill="#25e025" opacity=".85"/>
+        </svg>
+        General Pinto
+    </h1>
+    <p>Modo Minecraft · Fotos Reales</p>
+</div>
+
+<button class="mc-btn" id="btn-sv" onclick="location.href='index.html'">🚶 Street View</button>
+<button class="mc-btn" id="btn-3d" onclick="location.href='mapa3d.html'">🗺 Mapa 3D</button>
+
+<div id="crosshair"></div>
+<div id="ctp" onclick="lockMouse()">🖱 CLICK PARA JUGAR</div>
+<div id="tooltip"></div>
+
+<div id="hint">
+    WASD — mover<br>
+    MOUSE — mirar<br>
+    ESPACIO — saltar<br>
+    CLICK — interactuar<br>
+    ESC — soltar cursor
+</div>
+
+<div id="px-select">
+    <button class="px-btn" onclick="setPixels(.15)">MUY PIXEL</button>
+    <button class="px-btn active" onclick="setPixels(.22)">PIXEL</button>
+    <button class="px-btn" onclick="setPixels(.45)">HD</button>
+</div>
+
+<!-- Panel -->
+<div id="panel">
+    <button class="p-close" onclick="cerrarPanel()">✕</button>
+    <h3 id="p-nombre"></h3>
+    <p  id="panel-dir"></p>
+    <div id="p-btns"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════
+const SV_KEY      = "AIzaSyDS-i56aB57KNVA36Y5E-IHU-h8Ns8lXX4";
+const WA_CONTACTO = "541125328861";
+const ORIGIN_LAT  = -34.7644;
+const ORIGIN_LNG  = -61.8908;
+const BLOCK_M     = 5;         // metros por unidad Three.js
+const LAT_M       = 110540;
+const LNG_M       = 111320 * Math.cos(ORIGIN_LAT * Math.PI / 180);
+const MAX_SV_EDIF = 24;        // máx edificios con foto real (cuidar créditos)
+
+let pixelScale = .22;
+
+const comerciosDatos = [
+    { nombre:"Casa Cantora", dir:"Av. Mitre 185", tel:"02356420008",
+      lat:-34.7680167, lng:-61.8913835, activo:true },
+    { nombre:"Local Felisa", dir:"San Martín 300", tel:"02356405048",
+      lat:-34.7669158, lng:-61.8927301, activo:true },
+    { lat:-34.7630, lng:-61.8895, dir:"Belgrano 240",  activo:false },
+    { lat:-34.7660, lng:-61.8925, dir:"Rivadavia 185", activo:false },
+    { lat:-34.7638, lng:-61.8935, dir:"Av. Mitre 380", activo:false },
+    { lat:-34.7625, lng:-61.8910, dir:"España 155",    activo:false },
+];
+
+// ═══════════════════════════════════════════════════
+//  THREE.JS — SCENE
+// ═══════════════════════════════════════════════════
+const canvas   = document.getElementById("canvas");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:false });
+renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type    = THREE.BasicShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a1a0a);
+scene.fog = new THREE.Fog(0x0a1a0a, 55, 170);
+
+const camera = new THREE.PerspectiveCamera(72, 1, 0.05, 250);
+camera.position.set(0, 1.75, 0);
+
+// Luces
+scene.add(new THREE.AmbientLight(0x224422, 1.4));
+const sun = new THREE.DirectionalLight(0x88ffaa, 2.0);
+sun.position.set(40, 80, 30);
+sun.castShadow = true;
+sun.shadow.mapSize.set(512, 512);
+scene.add(sun);
+
+// ── Resize ──
+function resize() {
+    const w = Math.max(1, Math.floor(window.innerWidth  * pixelScale));
+    const h = Math.max(1, Math.floor(window.innerHeight * pixelScale));
+    renderer.setSize(w, h, false);
+    canvas.style.width  = window.innerWidth  + "px";
+    canvas.style.height = window.innerHeight + "px";
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+}
+function setPixels(v) {
+    pixelScale = v;
+    document.querySelectorAll(".px-btn").forEach(b => b.classList.remove("active"));
+    event.target.classList.add("active");
+    resize();
+}
+resize();
+window.addEventListener("resize", resize);
+
+// ═══════════════════════════════════════════════════
+//  UTILIDADES
+// ═══════════════════════════════════════════════════
+function geoToXZ(lat, lng) {
+    return {
+        x: (lng - ORIGIN_LNG) * LNG_M / BLOCK_M,
+        z:-(lat - ORIGIN_LAT) * LAT_M / BLOCK_M,
+    };
+}
+
+// Heading (grados) desde (lat,lng) hacia el centro del mapa
+function headingHaciaCentro(lat, lng) {
+    const dLat = ORIGIN_LAT - lat;
+    const dLng = (ORIGIN_LNG - lng) * Math.cos(lat * Math.PI / 180);
+    return ((Math.atan2(dLng, dLat) * 180 / Math.PI) + 360) % 360;
+}
+
+// ═══════════════════════════════════════════════════
+//  CARGA DE TEXTURA STREET VIEW
+// ═══════════════════════════════════════════════════
+const loader = new THREE.TextureLoader();
+
+function svUrl(lat, lng, heading, size = 256) {
+    return `https://maps.googleapis.com/maps/api/streetview`
+         + `?size=${size}x${size}&location=${lat},${lng}`
+         + `&heading=${Math.round(heading)}&pitch=5&fov=90`
+         + `&key=${SV_KEY}`;
+}
+
+async function cargarTextura(url) {
+    return new Promise(resolve => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+            const tex = new THREE.Texture(img);
+            tex.needsUpdate = true;
+            resolve(tex);
+        };
+        img.onerror = () => resolve(null);
+        img.src = url;
+    });
+}
+
+// ═══════════════════════════════════════════════════
+//  CREACIÓN DE BLOQUES
+// ═══════════════════════════════════════════════════
+const matSolida = (color) => new THREE.MeshLambertMaterial({ color });
+
+function crearEdificio(x, z, w, d, h, texSide, colorFallback, rotY = 0) {
+    const geo = new THREE.BoxGeometry(w, h, d);
+
+    const matLado = texSide
+        ? new THREE.MeshLambertMaterial({ map: texSide })
+        : matSolida(colorFallback);
+    const matTecho = matSolida(0x222228);
+    const matPiso  = matSolida(0x111116);
+
+    // orden BoxGeometry: +X, -X, +Y, -Y, +Z, -Z
+    const mats = [ matLado, matLado, matTecho, matPiso, matLado, matLado ];
+    const mesh = new THREE.Mesh(geo, mats);
+    mesh.position.set(x, h / 2, z);
+    mesh.rotation.y = rotY;
+    mesh.castShadow    = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+    return mesh;
+}
+
+// ═══════════════════════════════════════════════════
+//  CARGAR MUNDO OSM
+// ═══════════════════════════════════════════════════
+function setProgress(pct, msg) {
+    document.getElementById("bar").style.width = pct + "%";
+    if (msg) document.getElementById("ld-msg").textContent = msg;
+}
+
+async function cargarMundo() {
+    setProgress(5, "Conectando con OpenStreetMap…");
+
+    const R = 0.007; // ~800 m
+    const s = ORIGIN_LAT - R, n = ORIGIN_LAT + R;
+    const w = ORIGIN_LNG - R / Math.cos(ORIGIN_LAT * Math.PI/180);
+    const e = ORIGIN_LNG + R / Math.cos(ORIGIN_LAT * Math.PI/180);
+
+    const q = `[out:json][timeout:30];(
+      way["building"](${s},${w},${n},${e});
+      way["highway"~"^(primary|secondary|tertiary|residential|unclassified|service)$"](${s},${w},${n},${e});
+    );out body geom;`;
+
+    let data = { elements: [] };
+    try {
+        const r = await fetch("https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(q));
+        data = await r.json();
+    } catch(e) {
+        setProgress(35, "Sin conexión — usando mapa base.");
+        await new Promise(r => setTimeout(r, 800));
+    }
+
+    setProgress(30, "Construyendo el terreno…");
+
+    // ── Piso base ──
+    const piso = new THREE.Mesh(
+        new THREE.PlaneGeometry(600, 600, 60, 60),
+        new THREE.MeshLambertMaterial({ color: 0x1e4a10 })
+    );
+    piso.rotation.x = -Math.PI / 2;
+    piso.receiveShadow = true;
+    scene.add(piso);
+
+    // Patrón de cesped alternado
+    for (let ix = -25; ix <= 25; ix += 2) {
+        for (let iz = -25; iz <= 25; iz += 2) {
+            const mesh = new THREE.Mesh(
+                new THREE.BoxGeometry(4.8, .12, 4.8),
+                matSolida(0x17420d)
+            );
+            mesh.position.set(ix * 5 + (Math.random()-.5)*1.5, .06, iz * 5 + (Math.random()-.5)*1.5);
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+        }
+    }
+
+    setProgress(45, "Trazando calles…");
+
+    const roads = data.elements.filter(e => e.tags?.highway && e.geometry);
+    roads.forEach(r => {
+        const nodes = r.geometry;
+        for (let i = 0; i < nodes.length - 1; i++) {
+            const a = geoToXZ(nodes[i].lat, nodes[i].lon);
+            const b = geoToXZ(nodes[i+1].lat, nodes[i+1].lon);
+            const dx = b.x - a.x, dz = b.z - a.z;
+            const len = Math.sqrt(dx*dx + dz*dz);
+            if (len < .05) continue;
+            const seg = new THREE.Mesh(
+                new THREE.BoxGeometry(r.tags.highway === "primary" ? 2 : 1.4, .14, len),
+                matSolida(0x111116)
+            );
+            seg.position.set((a.x+b.x)/2, .07, (a.z+b.z)/2);
+            seg.rotation.y = Math.atan2(dx, dz);
+            seg.receiveShadow = true;
+            scene.add(seg);
+        }
+    });
+
+    setProgress(58, "Levantando edificios con fotos reales…");
+
+    const buildings = data.elements.filter(e => e.tags?.building && e.geometry?.length > 2);
+
+    // Ordenar por distancia al centro (los más cercanos primero → reciben foto real)
+    buildings.sort((a, b) => {
+        const ca = a.geometry.reduce((s,n) => ({lat:s.lat+n.lat,lon:s.lon+n.lon}), {lat:0,lon:0});
+        const cb = b.geometry.reduce((s,n) => ({lat:s.lat+n.lat,lon:s.lon+n.lon}), {lat:0,lon:0});
+        const na = a.geometry.length, nb = b.geometry.length;
+        const dA = Math.hypot((ca.lat/na - ORIGIN_LAT)*LAT_M, (ca.lon/na - ORIGIN_LNG)*LNG_M);
+        const dB = Math.hypot((cb.lat/nb - ORIGIN_LAT)*LAT_M, (cb.lon/nb - ORIGIN_LNG)*LNG_M);
+        return dA - dB;
+    });
+
+    let svCount = 0;
+
+    for (let i = 0; i < buildings.length; i++) {
+        const b = buildings[i];
+        const nodes = b.geometry;
+
+        let minLat=Infinity, maxLat=-Infinity, minLng=Infinity, maxLng=-Infinity;
+        nodes.forEach(n => {
+            minLat=Math.min(minLat,n.lat); maxLat=Math.max(maxLat,n.lat);
+            minLng=Math.min(minLng,n.lon); maxLng=Math.max(maxLng,n.lon);
+        });
+        const cLat = (minLat+maxLat)/2, cLng = (minLng+maxLng)/2;
+        const p = geoToXZ(cLat, cLng);
+
+        const wM = (maxLng-minLng) * LNG_M;
+        const dM = (maxLat-minLat) * LAT_M;
+        const bw  = Math.max(.6, wM/BLOCK_M);
+        const bd  = Math.max(.6, dM/BLOCK_M);
+        const tipo = b.tags?.building || "yes";
+        const niveles = parseInt(b.tags?.["building:levels"]) ||
+                        (tipo==="apartments" ? 3 : tipo==="commercial" ? 2 : 1);
+        const bh = Math.max(1.2, niveles * 1.6);
+
+        const heading = headingHaciaCentro(cLat, cLng);
+        const colorFallback = tipo==="commercial" ? 0x2a3040 : tipo==="apartments" ? 0x303545 : 0x3a3028;
+
+        let textura = null;
+        if (svCount < MAX_SV_EDIF) {
+            // Posición ligeramente fuera del edificio hacia el centro (punto en la calle)
+            const distM = Math.max(10, Math.min(wM, dM) / 2 + 12);
+            const brRad = heading * Math.PI / 180;
+            const svLat = cLat + Math.cos(brRad) * distM / LAT_M;
+            const svLng = cLng + Math.sin(brRad) * distM / LNG_M;
+
+            textura = await cargarTextura(svUrl(svLat, svLng, (heading + 180) % 360));
+            svCount++;
+            setProgress(58 + Math.round((svCount / MAX_SV_EDIF) * 35),
+                `Descargando foto ${svCount}/${MAX_SV_EDIF}…`);
+        }
+
+        // Rotar el mesh para que la cara +Z quede "de frente a la calle"
+        // En nuestro sistema: +Z apunta al sur, la rotación Y apunta la cara al heading
+        const rotY = ((heading + 180) % 360) * Math.PI / 180;
+
+        crearEdificio(p.x, p.z, bw, bd, bh, textura, colorFallback, rotY);
+    }
+
+    setProgress(95, "Colocando comercios…");
+
+    // ── Comercios — beacon verde ──
+    comerciosDatos.forEach(c => {
+        const p = geoToXZ(c.lat, c.lng);
+        const h = c.activo ? 2.8 : 1.5;
+        const col = c.activo ? 0x1fc71f : 0x1a3a1a;
+
+        // Bloque base
+        const base = new THREE.Mesh(
+            new THREE.BoxGeometry(1.4, h, 1.4),
+            matSolida(col)
+        );
+        base.position.set(p.x, h/2, p.z);
+        base.castShadow = true;
+        scene.add(base);
+
+        // Rayo de luz (beacon)
+        if (c.activo) {
+            const beam = new THREE.Mesh(
+                new THREE.BoxGeometry(.25, 20, .25),
+                new THREE.MeshBasicMaterial({ color:0x1fc71f, transparent:true, opacity:.35 })
+            );
+            beam.position.set(p.x, h + 10, p.z);
+            scene.add(beam);
+        }
+
+        // Caja de colisión invisible para raycasting
+        const hitbox = new THREE.Mesh(
+            new THREE.BoxGeometry(2, h + 20, 2),
+            new THREE.MeshBasicMaterial({ visible:false, transparent:true, opacity:0 })
+        );
+        hitbox.position.set(p.x, (h+20)/2, p.z);
+        hitbox.userData.comercio = c;
+        scene.add(hitbox);
+        clickables.push(hitbox);
+    });
+
+    setProgress(100, "¡Listo! Hacé clic para jugar.");
+    await new Promise(r => setTimeout(r, 500));
+    document.getElementById("loading").style.display = "none";
+}
+
+// ═══════════════════════════════════════════════════
+//  NAVEGACIÓN — PRIMERA PERSONA
+// ═══════════════════════════════════════════════════
+const player = { pos: new THREE.Vector3(0, 1.75, 0), yaw:0, pitch:0, velY:0, grounded:true };
+const keys = {};
+let locked = false;
+
+document.addEventListener("keydown", e => {
+    keys[e.code] = true;
+    if (e.code === "Escape") { document.exitPointerLock(); }
+});
+document.addEventListener("keyup", e => { keys[e.code] = false; });
+
+function lockMouse() { canvas.requestPointerLock(); }
+
+document.addEventListener("pointerlockchange", () => {
+    locked = document.pointerLockElement === canvas;
+    document.getElementById("ctp").classList.toggle("hidden", locked);
+});
+
+document.addEventListener("mousemove", e => {
+    if (!locked) return;
+    player.yaw   -= e.movementX * .002;
+    player.pitch -= e.movementY * .002;
+    player.pitch  = Math.max(-1.35, Math.min(1.35, player.pitch));
+});
+
+const SPEED = .11, GRAVITY = -.018, JUMP = .17;
+
+function tick() {
+    if (!locked) return;
+    const fwd  = keys.KeyW || keys.ArrowUp;
+    const bwd  = keys.KeyS || keys.ArrowDown;
+    const left = keys.KeyA || keys.ArrowLeft;
+    const rgt  = keys.KeyD || keys.ArrowRight;
+
+    const dir = new THREE.Vector3(
+        (rgt ? 1 : 0) - (left ? 1 : 0),
+        0,
+        (bwd ? 1 : 0) - (fwd ? 1 : 0)
+    ).normalize().multiplyScalar(SPEED).applyEuler(new THREE.Euler(0, player.yaw, 0));
+
+    player.pos.add(dir);
+    player.velY += GRAVITY;
+    player.pos.y += player.velY;
+
+    if (player.pos.y <= 1.75) {
+        player.pos.y = 1.75;
+        player.velY  = 0;
+        player.grounded = true;
+    }
+    if (keys.Space && player.grounded) {
+        player.velY     = JUMP;
+        player.grounded = false;
+    }
+
+    camera.position.copy(player.pos);
+    camera.rotation.order = "YXZ";
+    camera.rotation.y = player.yaw;
+    camera.rotation.x = player.pitch;
+}
+
+// ═══════════════════════════════════════════════════
+//  RAYCASTING
+// ═══════════════════════════════════════════════════
+const raycaster  = new THREE.Raycaster();
+const clickables = [];
+const tooltip    = document.getElementById("tooltip");
+
+canvas.addEventListener("click", () => {
+    if (!locked) return;
+    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+    const hits = raycaster.intersectObjects(clickables);
+    if (hits.length > 0 && hits[0].distance < 18) {
+        abrirPanel(hits[0].object.userData.comercio);
+    }
+});
+
+// Mostrar tooltip al apuntar comercio
+function actualizarTooltip() {
+    if (!locked) { tooltip.classList.remove("visible"); return; }
+    raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+    const hits = raycaster.intersectObjects(clickables);
+    if (hits.length > 0 && hits[0].distance < 18) {
+        const c = hits[0].object.userData.comercio;
+        tooltip.textContent = c.activo
+            ? `📍 ${c.nombre} — click para ver`
+            : `📍 ${c.dir} — disponible`;
+        tooltip.classList.add("visible");
+    } else {
+        tooltip.classList.remove("visible");
+    }
+}
+
+function abrirPanel(c) {
+    document.getElementById("p-nombre").textContent  = c.activo ? c.nombre : "¿Tu negocio acá?";
+    document.getElementById("panel-dir").textContent = "📍 " + c.dir;
+    let html = "";
+    if (c.activo) {
+        if (c.tel) html += `<a class="p-btn p-phone" href="tel:${c.tel}">📞 ${c.tel}</a>`;
+    } else {
+        const msg = encodeURIComponent("Hola! Quiero anunciar en el Tour de General Pinto — " + c.dir);
+        html = `<a class="p-btn p-anunciar" href="https://wa.me/${WA_CONTACTO}?text=${msg}" target="_blank">📣 Anunciate aquí</a>`;
+    }
+    document.getElementById("p-btns").innerHTML = html;
+    document.getElementById("panel").classList.add("visible");
+    document.exitPointerLock();
+}
+
+function cerrarPanel() { document.getElementById("panel").classList.remove("visible"); }
+
+// ═══════════════════════════════════════════════════
+//  RENDER LOOP
+// ═══════════════════════════════════════════════════
+function loop() {
+    requestAnimationFrame(loop);
+    tick();
+    actualizarTooltip();
+    renderer.render(scene, camera);
+}
+
+// ═══════════════════════════════════════════════════
+//  INICIO
+// ═══════════════════════════════════════════════════
+cargarMundo().then(() => loop());
+</script>
+</body>
+</html>

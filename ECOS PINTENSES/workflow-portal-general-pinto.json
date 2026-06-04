@@ -1,0 +1,520 @@
+{
+  "name": "Portal General Pinto - Publicador de Noticias",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "node-telegram-trigger",
+      "name": "Telegram: Recibir Mensaje",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "portal-general-pinto",
+      "credentials": {
+        "telegramApi": {
+          "id": "cred-telegram",
+          "name": "Telegram Bot - Portal GP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $input.first().json.message;\n\nlet contentType = 'text';\nlet rawContent = '';\nlet photoFileId = null;\nlet caption = msg.caption || '';\n\nif (msg.text) {\n  const urlRegex = /(https?:\\/\\/[^\\s]+)/g;\n  const urls = msg.text.match(urlRegex);\n  if (urls && urls.length > 0) {\n    contentType = 'url';\n    rawContent = urls[0];\n  } else {\n    contentType = 'text';\n    rawContent = msg.text;\n  }\n} else if (msg.photo) {\n  contentType = 'photo';\n  photoFileId = msg.photo[msg.photo.length - 1].file_id;\n  rawContent = caption;\n} else if (msg.caption) {\n  const urlRegex = /(https?:\\/\\/[^\\s]+)/g;\n  const urls = msg.caption.match(urlRegex);\n  if (urls) {\n    contentType = 'url';\n    rawContent = urls[0];\n  } else {\n    contentType = 'text';\n    rawContent = msg.caption;\n  }\n}\n\nreturn [{\n  json: {\n    contentType,\n    rawContent,\n    photoFileId,\n    caption,\n    chatId: msg.chat.id,\n    messageId: msg.message_id\n  }\n}];"
+      },
+      "id": "node-detector",
+      "name": "Detectar Tipo de Contenido",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "⏳ Procesando tu noticia... aguardá un momento.",
+        "additionalFields": {}
+      },
+      "id": "node-telegram-processing",
+      "name": "Telegram: Notificar Procesando",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [460, 500],
+      "credentials": {
+        "telegramApi": {
+          "id": "cred-telegram",
+          "name": "Telegram Bot - Portal GP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.contentType }}",
+                    "rightValue": "url",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "URL"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.contentType }}",
+                    "rightValue": "photo",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Photo"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.contentType }}",
+                    "rightValue": "text",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-router",
+      "name": "Router de Contenido",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.rawContent }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "fullResponse": false
+            }
+          },
+          "timeout": 30000,
+          "headers": {
+            "values": [
+              {
+                "name": "User-Agent",
+                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+              }
+            ]
+          }
+        }
+      },
+      "id": "node-scraper",
+      "name": "Scrapear Noticia Web",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 160]
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.data || String($input.first().json);\nconst sourceUrl = $('Router de Contenido').first().json.rawContent;\nconst chatId = $('Router de Contenido').first().json.chatId;\n\nfunction stripHtml(html) {\n  if (typeof html !== 'string') html = String(html);\n  html = html.replace(/<script[\\s\\S]*?<\\/script>/gi, '');\n  html = html.replace(/<style[\\s\\S]*?<\\/style>/gi, '');\n  html = html.replace(/<nav[\\s\\S]*?<\\/nav>/gi, '');\n  html = html.replace(/<header[\\s\\S]*?<\\/header>/gi, '');\n  html = html.replace(/<footer[\\s\\S]*?<\\/footer>/gi, '');\n\n  const titleMatch = html.match(/<title[^>]*>([^<]+)<\\/title>/i);\n  const title = titleMatch ? titleMatch[1].trim() : '';\n\n  const descMatch = html.match(/<meta[^>]*name=[\"']description[\"'][^>]*content=[\"']([^\"']+)[\"']/i) ||\n                    html.match(/<meta[^>]*content=[\"']([^\"']+)[\"'][^>]*name=[\"']description[\"']/i);\n  const metaDesc = descMatch ? descMatch[1].trim() : '';\n\n  const ogImageMatch = html.match(/<meta[^>]*property=[\"']og:image[\"'][^>]*content=[\"']([^\"']+)[\"']/i) ||\n                       html.match(/<meta[^>]*content=[\"']([^\"']+)[\"'][^>]*property=[\"']og:image[\"']/i);\n  const featuredImage = ogImageMatch ? ogImageMatch[1].trim() : '';\n\n  const paragraphs = (html.match(/<p[^>]*>[\\s\\S]*?<\\/p>/gi) || [])\n    .map(p => p.replace(/<[^>]+>/g, '').trim())\n    .filter(p => p.length > 40)\n    .slice(0, 8);\n\n  return { title, metaDesc, bodyText: paragraphs.join('\\n\\n'), featuredImage };\n}\n\nconst extracted = stripHtml(html);\n\nlet source = 'General';\nif (sourceUrl.includes('distritointerior')) source = 'Distrito Interior';\nelse if (sourceUrl.includes('diariodemocracia')) source = 'Diario Democracia';\nelse if (sourceUrl.includes('facebook.com')) source = 'Facebook';\nelse if (sourceUrl.includes('infobae')) source = 'Infobae';\nelse if (sourceUrl.includes('clarin')) source = 'Clarín';\n\nreturn [{\n  json: {\n    title: extracted.title,\n    metaDesc: extracted.metaDesc,\n    bodyText: extracted.bodyText,\n    featuredImage: extracted.featuredImage,\n    sourceUrl,\n    source,\n    rawNewsText: `TÍTULO: ${extracted.title}\\n\\nDESCRIPCIÓN: ${extracted.metaDesc}\\n\\nCONTENIDO:\\n${extracted.bodyText}`,\n    chatId,\n    contentType: 'url'\n  }\n}];"
+      },
+      "id": "node-extract-html",
+      "name": "Extraer Texto del HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 160]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.telegram.org/bot{{ $credentials.telegramApi.accessToken }}/getFile?file_id={{ $json.photoFileId }}",
+        "options": {}
+      },
+      "id": "node-get-file",
+      "name": "Obtener URL de Foto Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fileData = $input.first().json;\nconst routerData = $('Router de Contenido').first().json;\n\nconst filePath = fileData.result?.file_path || '';\nconst photoUrl = `https://api.telegram.org/file/bot{{ TU_BOT_TOKEN }}/${filePath}`;\n\nreturn [{\n  json: {\n    title: routerData.caption || 'Noticia enviada por Telegram',\n    metaDesc: routerData.caption || '',\n    bodyText: routerData.caption || '',\n    featuredImage: photoUrl,\n    externalPhotoUrl: photoUrl,\n    source: 'WhatsApp / Telegram',\n    sourceUrl: '',\n    rawNewsText: routerData.caption || 'Ver imagen adjunta',\n    chatId: routerData.chatId,\n    contentType: 'photo'\n  }\n}];"
+      },
+      "id": "node-prepare-photo",
+      "name": "Preparar Datos de Foto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nreturn [{\n  json: {\n    title: data.rawContent.substring(0, 100),\n    metaDesc: '',\n    bodyText: data.rawContent,\n    featuredImage: '',\n    source: 'Redacción propia',\n    sourceUrl: '',\n    rawNewsText: data.rawContent,\n    chatId: data.chatId,\n    contentType: 'text'\n  }\n}];"
+      },
+      "id": "node-prepare-text",
+      "name": "Preparar Texto Plano",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 440]
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "output": "input1"
+      },
+      "id": "node-merge",
+      "name": "Unificar Contenido",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.httpHeaderAuth.value }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o\",\n  \"max_tokens\": 1500,\n  \"response_format\": { \"type\": \"json_object\" },\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Eres el redactor de 'Portal General Pinto', un medio digital local de la ciudad de General Pinto, provincia de Buenos Aires, Argentina. Siempre respondés con JSON válido únicamente, sin markdown ni explicaciones.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Reescribí la siguiente noticia para publicarla en redes sociales.\\n\\nFuente: {{ $json.source }}\\nURL: {{ $json.sourceUrl }}\\n\\nCONTENIDO:\\n{{ $json.rawNewsText }}\\n\\nDevolvé exactamente este JSON:\\n{\\n  \\\"titulo\\\": \\\"Título atractivo y local, máximo 80 caracteres\\\",\\n  \\\"copete\\\": \\\"Bajada de 1-2 oraciones que resume la noticia, máximo 150 caracteres\\\",\\n  \\\"cuerpo\\\": \\\"Desarrollo en 3-4 párrafos, lenguaje accesible para vecinos de General Pinto. Máximo 400 palabras.\\\",\\n  \\\"caption_instagram\\\": \\\"Post Instagram: emoji + texto 100 palabras + salto de línea + hashtags. Incluir #GeneralPinto #BsAs #Argentina\\\",\\n  \\\"caption_facebook\\\": \\\"Post Facebook: informativo y conversacional, 150 palabras, tono cercano al vecino de General Pinto\\\",\\n  \\\"caption_tiktok\\\": \\\"Caption TikTok: directo y con gancho, máximo 120 caracteres + hashtags trending en español\\\",\\n  \\\"prompt_imagen\\\": \\\"Image prompt in English for DALL-E 3: photorealistic professional news photo related to the story. No text in image. Argentine context. Max 80 words.\\\",\\n  \\\"categoria\\\": \\\"Una de: Política, Economía, Sociedad, Deportes, Cultura, Salud, Seguridad, Ambiente, Educación, Tecnología\\\",\\n  \\\"hashtags\\\": [\\\"hashtag1\\\", \\\"hashtag2\\\", \\\"hashtag3\\\", \\\"hashtag4\\\", \\\"hashtag5\\\"]\\\n}\"\n    }\n  ]\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "node-gpt",
+      "name": "GPT-4o - Reescribir Noticia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cred-openai",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const gptResponse = $input.first().json;\nconst previousData = $('Unificar Contenido').first().json;\n\nlet newsData = {};\ntry {\n  const content = gptResponse.choices[0].message.content;\n  newsData = JSON.parse(content);\n} catch(e) {\n  newsData = {\n    titulo: previousData.title || 'Noticia de General Pinto',\n    copete: previousData.metaDesc || '',\n    cuerpo: previousData.bodyText || previousData.rawNewsText || '',\n    caption_instagram: `📰 ${previousData.title}\\n\\n${previousData.metaDesc}\\n\\n#GeneralPinto #Noticias #BsAs`,\n    caption_facebook: `${previousData.title}\\n\\n${(previousData.bodyText || '').substring(0, 300)}`,\n    caption_tiktok: `🗞️ ${(previousData.title || '').substring(0, 100)} #GeneralPinto #Noticias`,\n    prompt_imagen: `Professional news photo related to: ${previousData.title}. Argentina, photorealistic style.`,\n    categoria: 'Sociedad',\n    hashtags: ['GeneralPinto', 'Noticias', 'BsAs', 'Argentina']\n  };\n}\n\nreturn [{\n  json: {\n    ...newsData,\n    featuredImage: previousData.featuredImage || '',\n    externalPhotoUrl: previousData.externalPhotoUrl || '',\n    sourceUrl: previousData.sourceUrl || '',\n    source: previousData.source || '',\n    chatId: previousData.chatId,\n    contentType: previousData.contentType,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "node-parse-gpt",
+      "name": "Procesar Respuesta GPT-4o",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.contentType }}",
+              "rightValue": "photo",
+              "operator": { "type": "string", "operation": "notEquals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-check-needs-image",
+      "name": "¿Necesita Generar Imagen?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.httpHeaderAuth.value }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"dall-e-3\",\n  \"prompt\": \"{{ $json.prompt_imagen }}\",\n  \"n\": 1,\n  \"size\": \"1024x1024\",\n  \"quality\": \"standard\",\n  \"style\": \"natural\"\n}",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "id": "node-dalle",
+      "name": "DALL-E: Generar Imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2220, 180],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cred-openai",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const allInputs = $input.all();\nconst gptData = $('Procesar Respuesta GPT-4o').first().json;\n\nlet generatedImageUrl = '';\nfor (const item of allInputs) {\n  if (item.json?.data?.[0]?.url) {\n    generatedImageUrl = item.json.data[0].url;\n    break;\n  }\n}\n\nconst finalImageUrl = generatedImageUrl || \n                      gptData.externalPhotoUrl || \n                      gptData.featuredImage || \n                      '';\n\nreturn [{\n  json: {\n    ...gptData,\n    finalImageUrl,\n    imageSource: generatedImageUrl ? 'dall-e' : (gptData.externalPhotoUrl ? 'telegram' : 'article')\n  }\n}];"
+      },
+      "id": "node-merge-image",
+      "name": "Unificar Imagen Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "=TU_BLOTATO_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"TU_INSTAGRAM_ACCOUNT_ID_EN_BLOTATO\",\n    \"content\": {\n      \"text\": {{ JSON.stringify($json.caption_instagram) }},\n      \"mediaUrls\": [\"{{ $json.finalImageUrl }}\"],\n      \"platform\": \"instagram\"\n    },\n    \"target\": {\n      \"targetType\": \"instagram\"\n    }\n  }\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-blotato-ig",
+      "name": "Blotato: Publicar Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2660, 160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "=TU_BLOTATO_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"TU_FACEBOOK_ACCOUNT_ID_EN_BLOTATO\",\n    \"content\": {\n      \"text\": {{ JSON.stringify($json.caption_facebook) }},\n      \"mediaUrls\": [\"{{ $json.finalImageUrl }}\"],\n      \"platform\": \"facebook\"\n    },\n    \"target\": {\n      \"targetType\": \"facebook\"\n    }\n  }\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-blotato-fb",
+      "name": "Blotato: Publicar Facebook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2660, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "=TU_BLOTATO_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post\": {\n    \"accountId\": \"TU_TIKTOK_ACCOUNT_ID_EN_BLOTATO\",\n    \"content\": {\n      \"text\": {{ JSON.stringify($json.caption_tiktok) }},\n      \"mediaUrls\": [\"{{ $json.finalImageUrl }}\"],\n      \"platform\": \"tiktok\"\n    },\n    \"target\": {\n      \"targetType\": \"tiktok\"\n    }\n  }\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-blotato-tt",
+      "name": "Blotato: Publicar TikTok",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2660, 440]
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "output": "input1"
+      },
+      "id": "node-merge-results",
+      "name": "Esperar Publicaciones",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [2900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const newsData = $('Unificar Imagen Final').first().json;\nconst igResult = $('Blotato: Publicar Instagram').first().json;\nconst fbResult = $('Blotato: Publicar Facebook').first().json;\nconst ttResult = $('Blotato: Publicar TikTok').first().json;\n\nconst igOk = igResult?.id || igResult?.success ? '✅ Instagram: Publicado' : '❌ Instagram: Error';\nconst fbOk = fbResult?.id || fbResult?.success ? '✅ Facebook: Publicado' : '❌ Facebook: Error';\nconst ttOk = ttResult?.id || ttResult?.success ? '✅ TikTok: Publicado' : '❌ TikTok: Error';\n\nconst hora = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });\n\nconst msg = `🗞️ *Portal General Pinto*\\n\\n📰 *${newsData.titulo}*\\n📂 ${newsData.categoria} · ${newsData.source}\\n\\n*Publicado en:*\\n${igOk}\\n${fbOk}\\n${ttOk}\\n\\n⏰ ${hora}`;\n\nreturn [{\n  json: {\n    chatId: newsData.chatId,\n    message: msg\n  }\n}];"
+      },
+      "id": "node-prepare-confirm",
+      "name": "Preparar Confirmación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3120, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "node-telegram-confirm",
+      "name": "Telegram: Confirmar Publicación",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [3340, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "cred-telegram",
+          "name": "Telegram Bot - Portal GP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram: Recibir Mensaje": {
+      "main": [[
+        { "node": "Detectar Tipo de Contenido", "type": "main", "index": 0 }
+      ]]
+    },
+    "Detectar Tipo de Contenido": {
+      "main": [[
+        { "node": "Telegram: Notificar Procesando", "type": "main", "index": 0 },
+        { "node": "Router de Contenido", "type": "main", "index": 0 }
+      ]]
+    },
+    "Router de Contenido": {
+      "main": [
+        [{ "node": "Scrapear Noticia Web", "type": "main", "index": 0 }],
+        [{ "node": "Obtener URL de Foto Telegram", "type": "main", "index": 0 }],
+        [{ "node": "Preparar Texto Plano", "type": "main", "index": 0 }]
+      ]
+    },
+    "Scrapear Noticia Web": {
+      "main": [[{ "node": "Extraer Texto del HTML", "type": "main", "index": 0 }]]
+    },
+    "Extraer Texto del HTML": {
+      "main": [[{ "node": "Unificar Contenido", "type": "main", "index": 0 }]]
+    },
+    "Obtener URL de Foto Telegram": {
+      "main": [[{ "node": "Preparar Datos de Foto", "type": "main", "index": 0 }]]
+    },
+    "Preparar Datos de Foto": {
+      "main": [[{ "node": "Unificar Contenido", "type": "main", "index": 1 }]]
+    },
+    "Preparar Texto Plano": {
+      "main": [[{ "node": "Unificar Contenido", "type": "main", "index": 2 }]]
+    },
+    "Unificar Contenido": {
+      "main": [[{ "node": "GPT-4o - Reescribir Noticia", "type": "main", "index": 0 }]]
+    },
+    "GPT-4o - Reescribir Noticia": {
+      "main": [[{ "node": "Procesar Respuesta GPT-4o", "type": "main", "index": 0 }]]
+    },
+    "Procesar Respuesta GPT-4o": {
+      "main": [[{ "node": "¿Necesita Generar Imagen?", "type": "main", "index": 0 }]]
+    },
+    "¿Necesita Generar Imagen?": {
+      "main": [
+        [{ "node": "DALL-E: Generar Imagen", "type": "main", "index": 0 }],
+        [{ "node": "Unificar Imagen Final", "type": "main", "index": 1 }]
+      ]
+    },
+    "DALL-E: Generar Imagen": {
+      "main": [[{ "node": "Unificar Imagen Final", "type": "main", "index": 0 }]]
+    },
+    "Unificar Imagen Final": {
+      "main": [[
+        { "node": "Blotato: Publicar Instagram", "type": "main", "index": 0 },
+        { "node": "Blotato: Publicar Facebook", "type": "main", "index": 0 },
+        { "node": "Blotato: Publicar TikTok", "type": "main", "index": 0 }
+      ]]
+    },
+    "Blotato: Publicar Instagram": {
+      "main": [[{ "node": "Esperar Publicaciones", "type": "main", "index": 0 }]]
+    },
+    "Blotato: Publicar Facebook": {
+      "main": [[{ "node": "Esperar Publicaciones", "type": "main", "index": 1 }]]
+    },
+    "Blotato: Publicar TikTok": {
+      "main": [[{ "node": "Esperar Publicaciones", "type": "main", "index": 2 }]]
+    },
+    "Esperar Publicaciones": {
+      "main": [[{ "node": "Preparar Confirmación", "type": "main", "index": 0 }]]
+    },
+    "Preparar Confirmación": {
+      "main": [[{ "node": "Telegram: Confirmar Publicación", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "tags": ["portal", "noticias", "general-pinto", "blotato", "instagram", "facebook", "tiktok"]
+}

@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elige Tu Propia Aventura — Huerta Agroecológica</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+:root{
+  --soil:#2e1f0f;--bark:#5c3d2e;--leaf:#3d7a52;--leaf-light:#5aab78;
+  --sun:#e8b84b;--sky:#9fd3c7;--parchment:#f5e6c8;--parchment-dark:#dcc89a;
+  --text:#2c1810;--text-light:#5c3d2e;--warn:#c0392b;--warn-bg:#fdf0ee;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Lora',Georgia,serif;background:var(--soil);
+  background-image:radial-gradient(ellipse at 10% 90%,rgba(61,122,82,.18) 0%,transparent 55%),
+    radial-gradient(ellipse at 90% 10%,rgba(232,184,75,.12) 0%,transparent 55%);
+  color:var(--text);min-height:100vh;}
+#app{max-width:860px;margin:0 auto;padding:22px 14px;min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;}
+.screen{display:none;}
+.screen.active{display:block;animation:fadeIn .7s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HERO ── */
+.hero{text-align:center;margin-bottom:26px;}
+.hero .emoji-h{font-size:4rem;display:block;filter:drop-shadow(0 4px 12px rgba(232,184,75,.5));margin-bottom:8px;}
+.hero h1{font-family:'Cinzel',serif;color:var(--sun);font-size:clamp(1.3rem,5vw,2.1rem);
+  letter-spacing:2px;text-shadow:0 3px 10px rgba(0,0,0,.6);margin-bottom:6px;}
+.hero p{color:var(--sky);font-style:italic;font-size:.98rem;}
+
+/* ── PANEL ── */
+.panel{background:var(--parchment);border-radius:18px;padding:28px;
+  box-shadow:0 10px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.2);
+  border:2px solid var(--parchment-dark);margin-bottom:18px;}
+.panel h2{font-family:'Cinzel',serif;color:var(--bark);font-size:1.2rem;
+  border-bottom:2px solid var(--parchment-dark);padding-bottom:10px;margin-bottom:20px;}
+
+/* ── FORM ── */
+.form-group{margin-bottom:18px;}
+label{display:block;font-weight:600;color:var(--text);margin-bottom:6px;font-size:.94rem;}
+input[type=text],input[type=number]{width:100%;padding:11px 15px;
+  border:2px solid var(--parchment-dark);border-radius:10px;background:#fff;
+  font-family:'Lora',serif;font-size:1rem;color:var(--text);transition:border-color .2s;}
+input:focus{outline:none;border-color:var(--leaf);}
+.radio-group{display:flex;gap:10px;flex-wrap:wrap;}
+.radio-option{flex:1;min-width:85px;}
+.radio-option input{display:none;}
+.radio-option label{display:block;padding:10px 10px;border:2px solid var(--parchment-dark);
+  border-radius:10px;text-align:center;cursor:pointer;transition:all .2s;
+  background:#fff;font-weight:400;}
+.radio-option input:checked+label{background:var(--leaf);color:#fff;border-color:var(--leaf);}
+
+/* ── BUTTONS ── */
+.btn{display:inline-block;padding:13px 22px;border:none;border-radius:10px;
+  font-family:'Lora',serif;font-size:1rem;font-weight:600;cursor:pointer;
+  transition:all .2s;text-align:center;}
+.btn-primary{background:var(--leaf);color:#fff;width:100%;font-size:1.05rem;
+  padding:15px;box-shadow:0 4px 14px rgba(61,122,82,.45);}
+.btn-primary:hover{background:var(--leaf-light);transform:translateY(-2px);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-secondary{background:var(--parchment-dark);color:var(--text);}
+.btn-secondary:hover{background:var(--bark);color:#fff;}
+.btn-gold{background:var(--sun);color:var(--soil);font-weight:700;}
+.btn-gold:hover{background:#f0c85a;transform:translateY(-2px);}
+
+/* ── ADVENTURE CARDS ── */
+.adv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:13px;margin-top:10px;}
+.adv-card{background:#fff;border:3px solid var(--parchment-dark);border-radius:14px;
+  padding:22px 12px;text-align:center;cursor:pointer;transition:all .25s;
+  position:relative;overflow:hidden;}
+.adv-card:not(.locked):hover{border-color:var(--leaf);transform:translateY(-5px);
+  box-shadow:0 10px 24px rgba(0,0,0,.18);}
+.adv-card.locked{opacity:.55;cursor:not-allowed;}
+.adv-card .icon{font-size:2.8rem;display:block;margin-bottom:10px;}
+.adv-card h3{font-family:'Cinzel',serif;font-size:.88rem;color:var(--bark);margin-bottom:5px;}
+.adv-card p{font-size:.77rem;color:var(--text-light);font-style:italic;line-height:1.4;}
+.badge{position:absolute;top:10px;right:-22px;background:var(--bark);color:#fff;
+  font-size:.6rem;padding:3px 28px;transform:rotate(35deg);letter-spacing:1px;}
+
+/* ── HUD ── */
+.hud{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  background:rgba(0,0,0,.35);border-radius:12px;padding:9px 15px;margin-bottom:10px;
+  font-size:.82rem;color:var(--sky);}
+.hud .pname{font-weight:700;color:var(--sun);}
+.prog-track{background:rgba(255,255,255,.12);border-radius:10px;height:6px;margin-bottom:10px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--leaf),var(--sun));border-radius:10px;transition:width .6s ease;}
+.scores{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px;}
+.score-chip{background:rgba(0,0,0,.28);border-radius:8px;padding:5px 11px;
+  font-size:.78rem;color:var(--parchment);display:flex;align-items:center;gap:5px;}
+.score-chip .v{font-weight:700;color:var(--sun);letter-spacing:1px;}
+
+/* ── NARRATIVE ── */
+.scene-hdr{display:flex;align-items:center;gap:13px;margin-bottom:14px;}
+.scene-hdr .icon{font-size:2.6rem;filter:drop-shadow(0 2px 5px rgba(0,0,0,.4));flex-shrink:0;}
+.scene-hdr h2{font-family:'Cinzel',serif;color:var(--sun);font-size:clamp(.95rem,4vw,1.3rem);
+  text-shadow:0 2px 8px rgba(0,0,0,.5);line-height:1.2;}
+.narrative{background:var(--parchment);border-radius:13px;padding:24px;margin-bottom:14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.3);border-left:5px solid var(--leaf);line-height:1.85;}
+.narrative .simg{font-size:4rem;text-align:center;display:block;margin-bottom:16px;
+  line-height:1;filter:drop-shadow(0 3px 7px rgba(0,0,0,.2));}
+.narrative p{color:var(--text);font-size:1rem;margin-bottom:10px;}
+.narrative p:last-child{margin-bottom:0;}
+.eco-box{background:rgba(61,122,82,.11);border-left:3px solid var(--leaf);
+  padding:10px 15px;border-radius:0 9px 9px 0;margin:12px 0;font-style:italic;color:#2c5f3f;}
+.bad-box{background:rgba(192,57,43,.09);border-left:3px solid var(--warn);
+  padding:10px 15px;border-radius:0 9px 9px 0;margin:12px 0;font-style:italic;color:#7b1e15;}
+.tip-box{background:rgba(232,184,75,.12);border-left:3px solid var(--sun);
+  padding:10px 15px;border-radius:0 9px 9px 0;margin:12px 0;font-style:italic;color:#6b4e00;}
+.know-box{border-radius:11px;padding:13px 16px;margin-bottom:14px;
+  border:2px solid rgba(232,184,75,.35);background:rgba(232,184,75,.08);}
+.know-box h4{color:var(--sun);font-family:'Cinzel',serif;font-size:.8rem;margin-bottom:6px;letter-spacing:1px;}
+.know-box p{color:#d4c090;font-size:.86rem;line-height:1.65;}
+.choices{display:flex;flex-direction:column;gap:10px;}
+.choice-btn{background:var(--parchment);border:2px solid var(--parchment-dark);
+  border-radius:11px;padding:14px 18px;text-align:left;cursor:pointer;
+  transition:all .22s;font-family:'Lora',serif;font-size:.96rem;
+  color:var(--text);line-height:1.5;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.choice-btn.eco{border-left:4px solid var(--leaf);}
+.choice-btn.chem{border-left:4px solid #e74c3c;}
+.choice-btn:hover{border-color:var(--leaf);background:#f0faf4;transform:translateX(5px);}
+.choice-btn.chem:hover{border-color:#e74c3c;background:var(--warn-bg);}
+.choice-btn .ci{font-size:1.2rem;margin-right:8px;}
+.tag{display:inline-block;font-size:.62rem;font-weight:700;padding:1px 7px;
+  border-radius:20px;margin-left:7px;vertical-align:middle;font-family:sans-serif;letter-spacing:.5px;}
+.tag-eco{background:rgba(61,122,82,.18);color:#2d6b42;}
+.tag-chem{background:rgba(192,57,43,.15);color:var(--warn);}
+
+/* ══════════════════════════════════════
+   CROP SELECTION
+══════════════════════════════════════ */
+.crop-select-header{margin-bottom:14px;}
+.crop-select-header p{color:var(--text);font-size:.94rem;line-height:1.7;margin-bottom:10px;}
+.sel-bar{background:var(--parchment);border-radius:12px;padding:13px 17px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  border:2px solid var(--parchment-dark);margin-bottom:13px;}
+.sel-count{font-weight:600;color:var(--bark);font-size:.9rem;}
+.sel-btn{padding:11px 22px;font-size:.93rem;width:auto;}
+.crop-grid-ui{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px;margin-bottom:14px;}
+.crop-card-ui{background:#fff;border:2px solid var(--parchment-dark);border-radius:12px;
+  padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;position:relative;user-select:none;}
+.crop-card-ui:hover{border-color:var(--leaf);transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.12);}
+.crop-card-ui.selected{border-color:var(--leaf);background:#edfaf3;box-shadow:0 0 0 3px rgba(61,122,82,.22);}
+.crop-card-ui .ce{font-size:2.1rem;display:block;line-height:1;margin-bottom:6px;}
+.crop-card-ui h4{font-size:.78rem;color:var(--bark);font-family:'Cinzel',serif;margin-bottom:5px;line-height:1.2;}
+.crop-card-ui .attrs{display:flex;justify-content:center;gap:3px;flex-wrap:wrap;}
+.attr{font-size:.62rem;padding:1px 5px;border-radius:8px;white-space:nowrap;}
+.attr-full{background:#fff3cd;color:#856404;}
+.attr-mixed{background:#d4edda;color:#155724;}
+.attr-shade{background:#cce5ff;color:#004085;}
+.attr-water-a{background:#d1ecf1;color:#0c5460;}
+.attr-fixer{background:#d4edda;color:#155724;font-weight:700;}
+.attr-repel{background:#fce4ec;color:#880e4f;font-weight:700;}
+.attr-consumer{background:#fff3cd;color:#856404;}
+.sel-badge{position:absolute;top:-7px;right:-7px;background:var(--leaf);color:#fff;
+  font-size:.7rem;width:20px;height:20px;border-radius:50%;
+  display:none;align-items:center;justify-content:center;font-weight:700;}
+.crop-card-ui.selected .sel-badge{display:flex;}
+
+.combo-panel{border-radius:11px;padding:13px 15px;margin-bottom:13px;min-height:44px;}
+.combo-panel.has-content{background:rgba(61,122,82,.08);border:1px solid rgba(61,122,82,.25);}
+.combo-panel h4{font-size:.78rem;color:var(--leaf);margin-bottom:8px;font-family:'Cinzel',serif;letter-spacing:1px;}
+.combo-pill{display:inline-block;border-radius:20px;padding:3px 10px;font-size:.76rem;margin:3px;}
+.pill-good{background:#d4edda;color:#155724;}
+.pill-bad{background:#f8d7da;color:#721c24;}
+.nitrogen-bar{margin-top:8px;font-size:.8rem;color:var(--text-light);}
+.nitrogen-bar span{font-weight:700;}
+
+/* ══════════════════════════════════════
+   PLANTING MAP
+══════════════════════════════════════ */
+.planting-layout{display:grid;grid-template-columns:1fr;gap:14px;}
+@media(min-width:620px){.planting-layout{grid-template-columns:1fr 260px;}}
+
+.plot-wrapper{background:#e8f5e9;border:3px solid #81c784;border-radius:16px;padding:14px;}
+.zone-row{margin-bottom:10px;}
+.zone-label{display:flex;align-items:center;gap:7px;font-size:.76rem;font-weight:700;
+  margin-bottom:7px;padding:4px 10px;border-radius:7px;width:fit-content;}
+.zlabel-solar{background:#fff8e1;color:#e65100;}
+.zlabel-mixta{background:#e8f5e9;color:#2e7d32;}
+.zlabel-sombra{background:#e0f2f1;color:#00695c;}
+.zlabel-borde{background:#fce4ec;color:#880e4f;}
+.zone-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.plot-slot{aspect-ratio:1;border:2px dashed rgba(0,0,0,.2);border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;position:relative;min-height:62px;
+  font-size:.6rem;color:rgba(0,0,0,.3);text-align:center;padding:4px;}
+.plot-slot.z-solar{background:rgba(255,248,225,.75);}
+.plot-slot.z-mixta{background:rgba(232,245,233,.75);}
+.plot-slot.z-sombra{background:rgba(224,242,241,.75);}
+.plot-slot.z-borde{background:rgba(252,228,236,.75);}
+.plot-slot:hover:not(.occupied){border-color:var(--leaf);background:rgba(61,122,82,.13);}
+.plot-slot.active-target{border:2px solid var(--leaf);animation:gpulse 1s infinite;}
+.plot-slot.occupied{cursor:default;}
+.plot-slot.occupied:hover{border-color:rgba(0,0,0,.2);}
+.plot-slot.wrong-zone{border-color:#f57f17;}
+.plot-slot .slot-em{font-size:1.9rem;display:block;line-height:1;}
+.plot-slot .slot-nm{font-size:.58rem;font-weight:600;color:var(--bark);line-height:1.2;margin-top:2px;}
+.slot-ind{position:absolute;top:1px;right:1px;font-size:.9rem;line-height:1;}
+.slot-del{position:absolute;bottom:1px;right:2px;font-size:.65rem;color:#999;
+  cursor:pointer;background:rgba(255,255,255,.8);border-radius:4px;padding:0 3px;display:none;}
+.plot-slot.occupied:hover .slot-del{display:block;}
+@keyframes gpulse{0%,100%{box-shadow:0 0 0 0 rgba(61,122,82,.4)}50%{box-shadow:0 0 0 5px rgba(61,122,82,0)}}
+
+/* Palette */
+.palette-box{background:var(--parchment);border-radius:13px;padding:13px;
+  border:2px solid var(--parchment-dark);}
+.palette-box h4{font-family:'Cinzel',serif;font-size:.8rem;color:var(--bark);
+  margin-bottom:10px;letter-spacing:1px;}
+.palette-crops{display:flex;flex-direction:row;flex-wrap:wrap;gap:7px;}
+@media(min-width:620px){.palette-crops{flex-direction:column;gap:6px;}}
+.pal-crop{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;
+  cursor:pointer;border:2px solid transparent;transition:all .2s;background:#fff;}
+.pal-crop:hover:not(.placed){border-color:var(--leaf);}
+.pal-crop.active-crop{border-color:var(--sun);background:#fff8e1;
+  box-shadow:0 0 0 3px rgba(232,184,75,.3);}
+.pal-crop.placed{opacity:.4;cursor:not-allowed;text-decoration:line-through;}
+.pal-crop .pe{font-size:1.5rem;flex-shrink:0;}
+.pal-crop .pn{font-size:.78rem;color:var(--bark);}
+.pal-crop .pz{font-size:.62rem;color:var(--text-light);}
+
+.feed-panel{background:rgba(232,184,75,.09);border:1px solid rgba(232,184,75,.3);
+  border-radius:11px;padding:12px;margin-top:12px;min-height:48px;font-size:.83rem;
+  color:#5a4000;line-height:1.65;}
+.feed-panel strong{color:var(--leaf);}
+.feed-panel .combo-found{display:block;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06);}
+.feed-panel .combo-found:last-child{border-bottom:none;}
+.warn-zone-msg{color:var(--warn);font-size:.8rem;margin-top:6px;}
+
+.planting-actions{display:flex;gap:10px;margin-top:13px;flex-wrap:wrap;}
+
+/* ── ENDING ── */
+.end-wrap{text-align:center;}
+.end-wrap .end-icon{font-size:5.5rem;display:block;margin-bottom:12px;}
+.end-wrap h2{font-family:'Cinzel',serif;color:var(--sun);font-size:1.7rem;margin-bottom:9px;}
+.end-stars{font-size:2rem;margin:8px 0 16px;}
+.end-wrap p{color:var(--text);line-height:1.8;font-size:.98rem;margin-bottom:14px;}
+.learned-box{background:rgba(61,122,82,.12);border:1px solid rgba(61,122,82,.3);
+  border-radius:12px;padding:16px 20px;text-align:left;margin:16px 0;}
+.learned-box h4{font-family:'Cinzel',serif;color:var(--leaf-light);margin-bottom:10px;font-size:.88rem;letter-spacing:1px;}
+.learned-box ul{list-style:none;padding:0;}
+.learned-box li{color:var(--parchment);padding:4px 0;font-size:.86rem;line-height:1.5;}
+.learned-box li::before{content:'🌱 ';}
+.end-btns{display:flex;gap:11px;flex-wrap:wrap;margin-top:18px;justify-content:center;}
+
+@media(max-width:560px){
+  .panel{padding:17px;}.narrative{padding:17px;}
+  .adv-grid{grid-template-columns:1fr 1fr;}
+  .crop-grid-ui{grid-template-columns:repeat(3,1fr);}
+  .zone-slots{grid-template-columns:repeat(4,1fr);}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ INTRO ══ -->
+<div id="s-intro" class="screen active">
+  <div class="hero"><span class="emoji-h">🌿</span>
+    <h1>Elige Tu Propia Aventura</h1>
+    <p>Un viaje de aprendizaje, naturaleza y descubrimiento</p>
+  </div>
+  <div class="panel">
+    <h2>¿Quién eres, viajero/a?</h2>
+    <div class="form-group">
+      <label for="p-name">Tu nombre</label>
+      <input type="text" id="p-name" placeholder="Escribe tu nombre..." maxlength="28">
+    </div>
+    <div class="form-group">
+      <label for="p-age">Tu edad</label>
+      <input type="number" id="p-age" placeholder="Ej: 25" min="6" max="99">
+    </div>
+    <div class="form-group">
+      <label>¿Cómo te identificás?</label>
+      <div class="radio-group">
+        <div class="radio-option"><input type="radio" name="gender" id="g-m" value="m"><label for="g-m">♂ Hombre</label></div>
+        <div class="radio-option"><input type="radio" name="gender" id="g-f" value="f"><label for="g-f">♀ Mujer</label></div>
+        <div class="radio-option"><input type="radio" name="gender" id="g-x" value="x"><label for="g-x">⚧ No binario</label></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="goSelect()">Continuar →</button>
+  </div>
+</div>
+
+<!-- ══ SELECCIÓN ══ -->
+<div id="s-select" class="screen">
+  <div class="hero"><h1 id="welcome-h">¡Bienvenido/a!</h1><p>¿Qué aventura te llama hoy?</p></div>
+  <div class="adv-grid">
+    <div class="adv-card" onclick="startGame()">
+      <span class="icon">🌱</span><h3>La Huerta</h3>
+      <p>Aprendé a cultivar agroecológicamente y descubrí el poder del suelo vivo</p>
+    </div>
+    <div class="adv-card locked"><div class="badge">PRONTO</div>
+      <span class="icon">🌊</span><h3>El Río</h3><p>Explorá y protegé un ecosistema acuático en peligro</p>
+    </div>
+    <div class="adv-card locked"><div class="badge">PRONTO</div>
+      <span class="icon">🐝</span><h3>El Colmenar</h3><p>Cuidá abejas y salvá la polinización de tu región</p>
+    </div>
+    <div class="adv-card locked"><div class="badge">PRONTO</div>
+      <span class="icon">🌳</span><h3>Bosque Nativo</h3><p>Restaurá un bosque amenazado por el avance humano</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ JUEGO ══ -->
+<div id="s-game" class="screen">
+  <div class="hud">
+    <span>🧑 <span class="pname" id="hud-name"></span></span>
+    <span>🌱 La Huerta Agroecológica</span>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+  <div class="scores" id="scores"></div>
+  <div class="scene-hdr"><span class="icon" id="sc-icon">🌿</span><h2 id="sc-title"></h2></div>
+
+  <!-- Narrative mode -->
+  <div id="narrative-mode">
+    <div class="narrative" id="narrative"></div>
+    <div class="know-box" id="kbox" style="display:none"><h4>💡 SABÍAS QUE...</h4><p id="ktext"></p></div>
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <!-- Crop selection mode -->
+  <div id="crop-mode" style="display:none">
+    <div class="panel">
+      <div class="crop-select-header">
+        <p>Elegí entre <strong>4 y 8 cultivos</strong> para tu huerta. Combiná bien: cada planta tiene compañeras que la ayudan y enemigos que la perjudican.</p>
+      </div>
+      <div class="sel-bar">
+        <span class="sel-count" id="sel-count">0 cultivos seleccionados (mín. 4)</span>
+        <button class="btn btn-primary sel-btn" id="sel-next-btn" onclick="goPlanting()" disabled>Ver plano de siembra →</button>
+      </div>
+      <div class="combo-panel" id="combo-panel"></div>
+      <div class="crop-grid-ui" id="crop-grid-ui"></div>
+    </div>
+  </div>
+
+  <!-- Planting map mode -->
+  <div id="planting-mode" style="display:none">
+    <div class="panel" style="padding:18px">
+      <h2>📐 Diseñá tu plano de siembra</h2>
+      <p style="font-size:.9rem;color:var(--text-light);margin-bottom:14px">
+        Seleccioná un cultivo de la paleta y hacé clic en una zona del plano para ubicarlo.
+        Fijate en las zonas de sol y en las combinaciones que se forman.
+      </p>
+      <div class="planting-layout">
+        <div>
+          <div class="plot-wrapper" id="plot-wrapper"></div>
+          <div class="feed-panel" id="feed-panel">Seleccioná un cultivo de la paleta para empezar a diseñar tu huerta.</div>
+          <div class="planting-actions">
+            <button class="btn btn-secondary" onclick="resetPlanting()">↺ Reiniciar plano</button>
+            <button class="btn btn-primary" id="planting-done-btn" onclick="finalizePlanting()" disabled style="width:auto;flex:1">
+              Confirmar diseño →
+            </button>
+          </div>
+        </div>
+        <div class="palette-box">
+          <h4>🌱 TUS CULTIVOS</h4>
+          <div class="palette-crops" id="palette-crops"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FINAL ══ -->
+<div id="s-end" class="screen">
+  <div class="panel">
+    <div class="end-wrap">
+      <span class="end-icon" id="end-icon"></span>
+      <h2 id="end-title"></h2>
+      <div class="end-stars" id="end-stars"></div>
+      <p id="end-desc"></p>
+      <div class="learned-box">
+        <h4>📚 LO QUE APRENDISTE EN ESTA AVENTURA</h4>
+        <ul id="learned-list"></ul>
+      </div>
+      <div class="end-btns">
+        <button class="btn btn-gold" onclick="startGame()">🔄 Jugar de nuevo</button>
+        <button class="btn btn-secondary" onclick="goSelectFromEnd()">🗺️ Otra aventura</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+<script>
+// ══════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════
+const P = { name:'', pronoun:'x', score:{ soil:0, bio:0, harvest:0 }, flags:{}, learned:[] };
+const GARDEN = { selected:[], placed:{}, activeCrop:null, combosFound:[], bonuses:{soil:0,bio:0,harvest:0} };
+
+// ══════════════════════════════════════════
+// CROPS DATABASE
+// ══════════════════════════════════════════
+const CROPS_DB = {
+  tomate: {
+    emoji:'🍅', name:'Tomate',
+    sun:'full', water:'medio', nitrogen:'consumer',
+    idealZone:'solar', season:'Primavera-Verano',
+    companions:['albahaca','calendula','zanahoria','perejil','cebolla'],
+    enemies:['hinojo'],
+    tip:'Compañero del albahaca y la caléndula. Regá siempre al pie, nunca mojes las hojas.'
+  },
+  pimiento: {
+    emoji:'🌶️', name:'Pimiento',
+    sun:'full', water:'bajo', nitrogen:'consumer',
+    idealZone:'solar', season:'Verano',
+    companions:['albahaca','calendula','zanahoria'],
+    enemies:[],
+    tip:'Ama el calor intenso. Ideal junto al tomate: comparten compañeros y condiciones.'
+  },
+  zapallito: {
+    emoji:'🥒', name:'Zapallito',
+    sun:'full', water:'alto', nitrogen:'consumer',
+    idealZone:'solar', season:'Primavera-Verano',
+    companions:['maiz','poroto','calendula'],
+    enemies:[],
+    tip:'Sus hojas enormes actúan como mulch vivo: cubren el suelo y evitan la evaporación.'
+  },
+  maiz: {
+    emoji:'🌽', name:'Maíz',
+    sun:'full', water:'medio', nitrogen:'neutral',
+    idealZone:'solar', season:'Verano',
+    companions:['poroto','zapallito','pepino'],
+    enemies:['tomate'],
+    tip:'Tutor natural para el poroto. Ponelo al norte de las plantas bajas para no darles sombra.'
+  },
+  poroto: {
+    emoji:'🫘', name:'Poroto / Judía',
+    sun:'mixed', water:'medio', nitrogen:'fixer',
+    idealZone:'mixta', season:'Primavera-Verano',
+    companions:['maiz','zapallito','zanahoria','lechuga','pepino'],
+    enemies:['cebolla'],
+    tip:'FIJADOR DE NITRÓGENO: sus raíces capturan N₂ del aire y lo donan al suelo para sus vecinas.'
+  },
+  zanahoria: {
+    emoji:'🥕', name:'Zanahoria',
+    sun:'mixed', water:'bajo', nitrogen:'neutral',
+    idealZone:'mixta', season:'Primavera-Otoño',
+    companions:['tomate','poroto','lechuga','cebolla','perejil'],
+    enemies:[],
+    tip:'Sus raíces profundas aflojan el suelo compactado. Gran aliada del tomate.'
+  },
+  lechuga: {
+    emoji:'🥬', name:'Lechuga',
+    sun:'shade', water:'alto', nitrogen:'neutral',
+    idealZone:'sombra', season:'Primavera-Otoño',
+    companions:['zanahoria','poroto','calendula','perejil'],
+    enemies:[],
+    tip:'Compañera universal. Agradece algo de sombra: sin sol del mediodía dura más tiempo.'
+  },
+  espinaca: {
+    emoji:'🍃', name:'Espinaca',
+    sun:'shade', water:'medio', nitrogen:'neutral',
+    idealZone:'sombra', season:'Otoño-Invierno',
+    companions:['poroto','ajo','apio'],
+    enemies:[],
+    tip:'Perfecta para estaciones frías. En verano se espiga (florece) muy rápido.'
+  },
+  calendula: {
+    emoji:'🌸', name:'Caléndula',
+    sun:'full', water:'bajo', nitrogen:'repellent',
+    idealZone:'borde', season:'Todo el año',
+    companions:['tomate','pimiento','zanahoria','poroto','lechuga'],
+    enemies:[],
+    tip:'GUARDIANA DE LA HUERTA: repele nematodos, atrae mariquitas. Va bien con absolutamente todo.'
+  },
+  albahaca: {
+    emoji:'🌿', name:'Albahaca',
+    sun:'full', water:'medio', nitrogen:'repellent',
+    idealZone:'borde', season:'Primavera-Verano',
+    companions:['tomate','pimiento','pepino'],
+    enemies:['salvia'],
+    tip:'Repele mosca blanca y pulgón negro. La dupla tomate + albahaca es la más clásica de la huerta.'
+  },
+  brocoli: {
+    emoji:'🥦', name:'Brócoli',
+    sun:'mixed', water:'medio', nitrogen:'consumer',
+    idealZone:'mixta', season:'Otoño-Invierno',
+    companions:['calendula','cebolla','apio'],
+    enemies:['tomate','poroto'],
+    tip:'Prospera en frío. Rotarlo con leguminosas la siguiente temporada repone el nitrógeno que consumió.'
+  },
+  cebolla: {
+    emoji:'🧅', name:'Cebolla',
+    sun:'full', water:'bajo', nitrogen:'neutral',
+    idealZone:'solar', season:'Otoño-Invierno',
+    companions:['zanahoria','tomate','lechuga'],
+    enemies:['poroto'],
+    tip:'Repele la mosca de la zanahoria. Evitá ponerla cerca del poroto: inhibe la fijación de nitrógeno.'
+  },
+  perejil: {
+    emoji:'🌱', name:'Perejil',
+    sun:'mixed', water:'medio', nitrogen:'neutral',
+    idealZone:'borde', season:'Todo el año',
+    companions:['tomate','zanahoria','lechuga'],
+    enemies:[],
+    tip:'Atrae avispas parasitoides que controlan orugas. Dejá que alguna planta florezca.'
+  },
+  girasol: {
+    emoji:'🌻', name:'Girasol',
+    sun:'full', water:'bajo', nitrogen:'neutral',
+    idealZone:'borde', season:'Primavera-Verano',
+    companions:['pepino','zapallito'],
+    enemies:['poroto'],
+    tip:'Planta trampa: los pulgones lo prefieren, protegiéndo al resto de la huerta.'
+  }
+};
+
+// ══════════════════════════════════════════
+// COMBOS DE COMPAÑERAS
+// ══════════════════════════════════════════
+const COMBOS = [
+  { crops:['tomate','albahaca'], type:'good',
+    label:'🍅 Tomate + 🌿 Albahaca',
+    reason:'La dupla más famosa: la albahaca repele mosca blanca y pulgón. Se potencian mutuamente.',
+    fx:{bio:1} },
+  { crops:['tomate','calendula'], type:'good',
+    label:'🍅 Tomate + 🌸 Caléndula',
+    reason:'La caléndula atrae mariquitas (comen pulgones) y sus raíces repelen nematodos del tomate.',
+    fx:{bio:1} },
+  { crops:['maiz','poroto'], type:'good',
+    label:'🌽 Maíz + 🫘 Poroto',
+    reason:'El maíz da soporte al poroto, el poroto fija nitrógeno que beneficia al maíz. Parte de las Tres Hermanas.',
+    fx:{soil:1,bio:1} },
+  { crops:['maiz','poroto','zapallito'], type:'good',
+    label:'🌽🫘🥒 ¡LAS TRES HERMANAS!',
+    reason:'Técnica ancestral de los pueblos originarios americanos: maíz + poroto + zapallito. Se sostienen, se alimentan y se protegen mutuamente.',
+    fx:{soil:1,bio:2,harvest:1} },
+  { crops:['zanahoria','cebolla'], type:'good',
+    label:'🥕 Zanahoria + 🧅 Cebolla',
+    reason:'La cebolla repele la mosca de la zanahoria. La zanahoria ahueca el suelo para que la cebolla bulbe mejor.',
+    fx:{bio:1} },
+  { crops:['zanahoria','tomate'], type:'good',
+    label:'🥕 Zanahoria + 🍅 Tomate',
+    reason:'La zanahoria activa la microbiota alrededor de las raíces del tomate con sus exudados radiculares.',
+    fx:{soil:1} },
+  { crops:['poroto','zanahoria'], type:'good',
+    label:'🫘 Poroto + 🥕 Zanahoria',
+    reason:'El poroto fija nitrógeno que la zanahoria aprovecha. La zanahoria afloja el suelo donde el poroto radica.',
+    fx:{soil:1} },
+  { crops:['lechuga','zanahoria'], type:'good',
+    label:'🥬 Lechuga + 🥕 Zanahoria',
+    reason:'Combinación clásica: se turnan en profundidad (raíz superficial vs profunda) sin competir.',
+    fx:{harvest:1} },
+  { crops:['calendula','zanahoria'], type:'good',
+    label:'🌸 Caléndula + 🥕 Zanahoria',
+    reason:'Las raíces de la caléndula repelen los nematodos que atacan las raíces de la zanahoria.',
+    fx:{bio:1} },
+  { crops:['albahaca','pimiento'], type:'good',
+    label:'🌿 Albahaca + 🌶️ Pimiento',
+    reason:'La albahaca repele los pulgones del pimiento y atrae polinizadores que mejoran la fructificación.',
+    fx:{bio:1} },
+  // MALAS
+  { crops:['poroto','cebolla'], type:'bad',
+    label:'🫘 Poroto ✗ 🧅 Cebolla',
+    reason:'La cebolla inhibe la bacteria Rhizobium que vive en las raíces del poroto y fija nitrógeno. Se perjudican mutuamente.',
+    fx:{soil:-1} },
+  { crops:['maiz','tomate'], type:'bad',
+    label:'🌽 Maíz ✗ 🍅 Tomate',
+    reason:'Compiten por nutrientes pesados y el maíz puede sombrear al tomate. Mantenerlos separados.',
+    fx:{harvest:-1} },
+  { crops:['brocoli','tomate'], type:'bad',
+    label:'🥦 Brócoli ✗ 🍅 Tomate',
+    reason:'El brócoli libera sustancias alelopáticas que inhiben el crecimiento del tomate.',
+    fx:{harvest:-1} },
+  { crops:['brocoli','poroto'], type:'bad',
+    label:'🥦 Brócoli ✗ 🫘 Poroto',
+    reason:'Las brassicas (brócoli, repollo) y las leguminosas (poroto) se inhiben mutuamente.',
+    fx:{soil:-1} }
+];
+
+// Zona → etiqueta
+const ZONE_INFO = {
+  solar: { label:'☀️ Zona Solar',   desc:'8+ hs de sol directo',  cssSlot:'z-solar',  cssLabel:'zlabel-solar' },
+  mixta: { label:'🌤️ Zona Mixta',   desc:'4-6 hs de sol',         cssSlot:'z-mixta',  cssLabel:'zlabel-mixta' },
+  sombra:{ label:'🌿 Zona de Sombra',desc:'2-4 hs de sol',        cssSlot:'z-sombra', cssLabel:'zlabel-sombra'},
+  borde: { label:'🌸 Bordes',       desc:'Plantas compañeras',    cssSlot:'z-borde',  cssLabel:'zlabel-borde' }
+};
+
+// ══════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+
+function goSelect(){
+  const name=document.getElementById('p-name').value.trim();
+  const age=parseInt(document.getElementById('p-age').value);
+  const g=document.querySelector('input[name="gender"]:checked');
+  if(!name){alert('Por favor ingresá tu nombre.');return;}
+  if(!age||age<6||age>99){alert('Ingresá una edad válida.');return;}
+  if(!g){alert('Elegí una opción.');return;}
+  P.name=name; P.pronoun=g.value;
+  const greet={m:'¡Bienvenido',f:'¡Bienvenida',x:'¡Bienvenide'}[P.pronoun];
+  document.getElementById('welcome-h').textContent=greet+', '+P.name+'!';
+  show('s-select');
+}
+
+function goSelectFromEnd(){ show('s-select'); }
+
+function startGame(){
+  P.score={soil:0,bio:0,harvest:0}; P.flags={}; P.learned=[];
+  GARDEN.selected=[]; GARDEN.placed={}; GARDEN.activeCrop=null; GARDEN.combosFound=[]; GARDEN.bonuses={soil:0,bio:0,harvest:0};
+  document.getElementById('hud-name').textContent=P.name;
+  show('s-game');
+  setMode('narrative');
+  loadScene('inicio');
+}
+
+function setMode(mode){
+  document.getElementById('narrative-mode').style.display = mode==='narrative'?'block':'none';
+  document.getElementById('crop-mode').style.display      = mode==='crop'   ?'block':'none';
+  document.getElementById('planting-mode').style.display  = mode==='planting'?'block':'none';
+}
+
+// ══════════════════════════════════════════
+// ESCENAS NARRATIVAS
+// ══════════════════════════════════════════
+function loadScene(id){
+  const sc=SCENES[id]; if(!sc){console.error('Scene not found:',id);return;}
+  setMode('narrative');
+  document.getElementById('prog').style.width=(sc.prog||0)+'%';
+  document.getElementById('sc-icon').textContent=sc.icon||'🌿';
+  document.getElementById('sc-title').textContent=sc.title||'';
+  updateScores();
+  // Narrative
+  const nb=document.getElementById('narrative'); nb.innerHTML='';
+  if(sc.img) nb.innerHTML+=`<span class="simg">${sc.img}</span>`;
+  (sc.text||[]).forEach(t=>{
+    if(t.startsWith('[eco]'))      nb.innerHTML+=`<div class="eco-box">${t.slice(5)}</div>`;
+    else if(t.startsWith('[bad]')) nb.innerHTML+=`<div class="bad-box">${t.slice(5)}</div>`;
+    else if(t.startsWith('[tip]')) nb.innerHTML+=`<div class="tip-box">${t.slice(5)}</div>`;
+    else                           nb.innerHTML+=`<p>${t}</p>`;
+  });
+  // Knowledge
+  const kb=document.getElementById('kbox');
+  if(sc.know){kb.style.display='block';document.getElementById('ktext').textContent=sc.know;if(!P.learned.includes(sc.know))P.learned.push(sc.know);}
+  else kb.style.display='none';
+  // Choices
+  const cb=document.getElementById('choices'); cb.innerHTML='';
+  (sc.choices||[]).forEach(c=>{
+    if(c.if&&!P.flags[c.if])return;
+    if(c.ifNot&&P.flags[c.ifNot])return;
+    const btn=document.createElement('button');
+    const tc=c.type==='eco'?'eco':c.type==='chem'?'chem':'';
+    const tag=c.type==='eco'?`<span class="tag tag-eco">♻️ AGROECOLÓGICO</span>`:c.type==='chem'?`<span class="tag tag-chem">⚗️ QUÍMICA</span>`:'';
+    btn.className=`choice-btn ${tc}`;
+    btn.innerHTML=`<span class="ci">${c.icon||'▶'}</span>${c.text}${tag}`;
+    btn.onclick=()=>pick(c);
+    cb.appendChild(btn);
+  });
+}
+
+function pick(choice){
+  if(choice.fx){
+    const f=choice.fx;
+    if(f.soil)    P.score.soil   =clamp((P.score.soil   ||0)+f.soil,   -3,3);
+    if(f.bio)     P.score.bio    =clamp((P.score.bio    ||0)+f.bio,    -3,3);
+    if(f.harvest) P.score.harvest=clamp((P.score.harvest||0)+f.harvest,-3,3);
+    if(f.flag)    P.flags[f.flag]=true;
+  }
+  if(choice.next==='crop-select') openCropSelect();
+  else if(choice.next==='end')    showEnd();
+  else loadScene(choice.next);
+}
+
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+
+function updateScores(){
+  const bar=v=>{let r='';const n=Math.max(0,Math.min(3,v));for(let i=0;i<3;i++)r+=i<n?'▰':'▱';return r;};
+  document.getElementById('scores').innerHTML=
+    `<div class="score-chip">🌍 Suelo <span class="v">${bar(P.score.soil)}</span></div>`+
+    `<div class="score-chip">🦋 Biodiversidad <span class="v">${bar(P.score.bio)}</span></div>`+
+    `<div class="score-chip">🥕 Cosecha <span class="v">${bar(P.score.harvest)}</span></div>`;
+}
+
+// ══════════════════════════════════════════
+// CROP SELECTION
+// ══════════════════════════════════════════
+function openCropSelect(){
+  setMode('crop');
+  document.getElementById('sc-icon').textContent='🛒';
+  document.getElementById('sc-title').textContent='Elegí tus cultivos';
+  document.getElementById('prog').style.width='50%';
+  updateScores();
+  GARDEN.selected=[];
+  buildCropGrid();
+  updateSelBar();
+}
+
+function buildCropGrid(){
+  const grid=document.getElementById('crop-grid-ui'); grid.innerHTML='';
+  Object.entries(CROPS_DB).forEach(([id,c])=>{
+    const sunClass={'full':'attr-full','mixed':'attr-mixed','shade':'attr-shade'}[c.sun]||'attr-mixed';
+    const sunLabel={'full':'☀️ Sol pleno','mixed':'🌤️ Sol parcial','shade':'🌿 Sombra'}[c.sun];
+    const waterLabel={'alto':'💧💧 Riego alto','medio':'💧 Riego medio','bajo':'☁️ Riego bajo'}[c.water];
+    let extraAttr='';
+    if(c.nitrogen==='fixer')     extraAttr=`<span class="attr attr-fixer">🌿 Fija N</span>`;
+    if(c.nitrogen==='repellent') extraAttr=`<span class="attr attr-repel">🛡️ Repelente</span>`;
+    if(c.nitrogen==='consumer')  extraAttr=`<span class="attr attr-consumer">Consumidor N</span>`;
+    const div=document.createElement('div');
+    div.className='crop-card-ui'; div.dataset.id=id;
+    div.innerHTML=`<div class="sel-badge">✓</div><span class="ce">${c.emoji}</span><h4>${c.name}</h4>
+      <div class="attrs">
+        <span class="attr ${sunClass}">${sunLabel}</span>
+        <span class="attr attr-water-a">${waterLabel}</span>
+        ${extraAttr}
+      </div>`;
+    div.onclick=()=>toggleCrop(id);
+    div.title=c.tip;
+    grid.appendChild(div);
+  });
+}
+
+function toggleCrop(id){
+  const idx=GARDEN.selected.indexOf(id);
+  if(idx===-1){
+    if(GARDEN.selected.length>=8){alert('Máximo 8 cultivos. Quitá uno para agregar otro.');return;}
+    GARDEN.selected.push(id);
+  } else {
+    GARDEN.selected.splice(idx,1);
+  }
+  document.querySelectorAll('.crop-card-ui').forEach(el=>{
+    el.classList.toggle('selected', GARDEN.selected.includes(el.dataset.id));
+  });
+  updateSelBar();
+  updateComboPanel();
+}
+
+function updateSelBar(){
+  const n=GARDEN.selected.length;
+  const ok=n>=4;
+  document.getElementById('sel-count').textContent=
+    n===0?'0 cultivos seleccionados (mín. 4)':
+    n<4?`${n} cultivos — elegí ${4-n} más`:
+    `${n} cultivos seleccionados ✓`;
+  document.getElementById('sel-next-btn').disabled=!ok;
+}
+
+function updateComboPanel(){
+  const panel=document.getElementById('combo-panel');
+  if(GARDEN.selected.length<2){panel.innerHTML='';panel.className='combo-panel';return;}
+  const goods=[],bads=[];
+  COMBOS.forEach(combo=>{
+    const matches=combo.crops.every(c=>GARDEN.selected.includes(c));
+    if(matches){ if(combo.type==='good')goods.push(combo); else bads.push(combo); }
+  });
+  // Check single-pair combos too (not in COMBOS list, but in companions)
+  GARDEN.selected.forEach(id=>{
+    const c=CROPS_DB[id];
+    GARDEN.selected.forEach(id2=>{
+      if(id2===id)return;
+      if(c.companions.includes(id2)){
+        const alreadyFound=goods.some(g=>g.crops.length===2&&g.crops.includes(id)&&g.crops.includes(id2));
+        const inCOMBOS=COMBOS.some(co=>co.type==='good'&&co.crops.includes(id)&&co.crops.includes(id2));
+        if(!alreadyFound&&!inCOMBOS){
+          goods.push({label:`${CROPS_DB[id].emoji} ${CROPS_DB[id].name} + ${CROPS_DB[id2].emoji} ${CROPS_DB[id2].name}`,
+            reason:'Buenas compañeras de cultivo.'});
+        }
+      }
+    });
+  });
+  // Nitrogen balance
+  const fixers=GARDEN.selected.filter(id=>CROPS_DB[id].nitrogen==='fixer').length;
+  const consumers=GARDEN.selected.filter(id=>CROPS_DB[id].nitrogen==='consumer').length;
+  let nitrogenMsg='';
+  if(fixers===0&&consumers>0) nitrogenMsg=`<div class="nitrogen-bar">⚠️ Sin fijadores de nitrógeno. Considerá incluir <strong>poroto/judía</strong> para enriquecer el suelo naturalmente.</div>`;
+  else if(fixers>0) nitrogenMsg=`<div class="nitrogen-bar">✅ Tenés <span>${fixers} fijador${fixers>1?'es':''} de nitrógeno</span> para ${consumers} consumidor${consumers!==1?'es':''}. ¡Balance saludable!</div>`;
+  let html='';
+  if(goods.length)html+=goods.slice(0,4).map(g=>`<span class="combo-pill pill-good">✓ ${g.label}</span>`).join('');
+  if(bads.length) html+=bads.map(b=>`<span class="combo-pill pill-bad">✗ ${b.label}</span>`).join('');
+  if(html||nitrogenMsg){
+    panel.className='combo-panel has-content';
+    panel.innerHTML=`<h4>🔗 COMBINACIONES DETECTADAS</h4>${html}${nitrogenMsg}`;
+  } else {
+    panel.innerHTML='';panel.className='combo-panel';
+  }
+}
+
+function goPlanting(){
+  if(GARDEN.selected.length<4){alert('Seleccioná al menos 4 cultivos.');return;}
+  buildPlantingMap();
+  setMode('planting');
+  document.getElementById('sc-icon').textContent='📐';
+  document.getElementById('sc-title').textContent='Plano de siembra';
+  document.getElementById('prog').style.width='60%';
+}
+
+// ══════════════════════════════════════════
+// PLANTING MAP
+// ══════════════════════════════════════════
+const ZONES_ORDER=['solar','mixta','sombra','borde'];
+const SLOTS_PER_ZONE=4;
+
+function buildPlantingMap(){
+  GARDEN.placed={}; GARDEN.activeCrop=null;
+  const wrapper=document.getElementById('plot-wrapper'); wrapper.innerHTML='';
+  ZONES_ORDER.forEach(zId=>{
+    const zi=ZONE_INFO[zId];
+    const row=document.createElement('div'); row.className='zone-row';
+    row.innerHTML=`<div class="zone-label ${zi.cssLabel}">${zi.label} <span style="font-weight:400;font-size:.7rem">${zi.desc}</span></div>`;
+    const slotsDiv=document.createElement('div'); slotsDiv.className='zone-slots';
+    for(let i=0;i<SLOTS_PER_ZONE;i++){
+      const slotId=`${zId}-${i}`;
+      const slot=document.createElement('div');
+      slot.className=`plot-slot ${zi.cssSlot}`; slot.id=`slot-${slotId}`;
+      slot.innerHTML=`<span style="font-size:.55rem;opacity:.5">vacío</span>`;
+      slot.onclick=()=>clickSlot(slotId);
+      slotsDiv.appendChild(slot);
+    }
+    row.appendChild(slotsDiv); wrapper.appendChild(row);
+  });
+  buildPalette();
+  updateFeedPanel();
+  checkDoneBtn();
+}
+
+function buildPalette(){
+  const pal=document.getElementById('palette-crops'); pal.innerHTML='';
+  GARDEN.selected.forEach(id=>{
+    const c=CROPS_DB[id];
+    const zLabel={'solar':'☀️ Zona Solar','mixta':'🌤️ Zona Mixta','sombra':'🌿 Sombra','borde':'🌸 Borde'}[c.idealZone]||'';
+    const div=document.createElement('div');
+    div.className='pal-crop'; div.id=`pal-${id}`;
+    div.innerHTML=`<span class="pe">${c.emoji}</span><div><div class="pn">${c.name}</div><div class="pz">Ideal: ${zLabel}</div></div>`;
+    div.onclick=()=>activateCrop(id);
+    pal.appendChild(div);
+  });
+}
+
+function activateCrop(id){
+  if(isPlaced(id))return;
+  GARDEN.activeCrop=id;
+  document.querySelectorAll('.pal-crop').forEach(el=>el.classList.remove('active-crop'));
+  document.getElementById(`pal-${id}`)?.classList.add('active-crop');
+  highlightTargetSlots();
+  document.getElementById('feed-panel').innerHTML=
+    `<strong>${CROPS_DB[id].emoji} ${CROPS_DB[id].name}</strong> seleccionado — hacé clic en una zona del plano para ubicarlo.<br>
+     <em style="font-size:.8rem">${CROPS_DB[id].tip}</em>`;
+}
+
+function highlightTargetSlots(){
+  document.querySelectorAll('.plot-slot').forEach(el=>{
+    el.classList.remove('active-target');
+    if(!GARDEN.placed[el.id.replace('slot-','')]&&GARDEN.activeCrop) el.classList.add('active-target');
+  });
+}
+
+function clickSlot(slotId){
+  if(GARDEN.placed[slotId]){
+    // Remove
+    const cropId=GARDEN.placed[slotId];
+    delete GARDEN.placed[slotId];
+    renderSlot(slotId,null);
+    document.getElementById(`pal-${cropId}`)?.classList.remove('placed');
+    updateAllZoneIndicators();
+    updateFeedPanel();
+    checkDoneBtn();
+    highlightTargetSlots();
+    return;
+  }
+  if(!GARDEN.activeCrop)return;
+  GARDEN.placed[slotId]=GARDEN.activeCrop;
+  renderSlot(slotId,GARDEN.activeCrop);
+  document.getElementById(`pal-${GARDEN.activeCrop}`)?.classList.add('placed');
+  const prevCrop=GARDEN.activeCrop;
+  GARDEN.activeCrop=null;
+  document.querySelectorAll('.pal-crop').forEach(el=>el.classList.remove('active-crop'));
+  document.querySelectorAll('.plot-slot').forEach(el=>el.classList.remove('active-target'));
+  updateAllZoneIndicators();
+  updateFeedPanel(slotId, prevCrop);
+  checkDoneBtn();
+}
+
+function isPlaced(id){ return Object.values(GARDEN.placed).includes(id); }
+
+function renderSlot(slotId, cropId){
+  const el=document.getElementById(`slot-${slotId}`);
+  if(!el)return;
+  if(!cropId){
+    el.innerHTML=`<span style="font-size:.55rem;opacity:.5">vacío</span>`;
+    el.classList.remove('occupied','wrong-zone');
+    return;
+  }
+  const c=CROPS_DB[cropId];
+  const zone=slotId.split('-')[0];
+  const wrongZone=c.idealZone!==zone;
+  el.innerHTML=`<span class="slot-em">${c.emoji}</span><span class="slot-nm">${c.name}</span>`+
+    (wrongZone?`<span class="slot-ind" title="Zona no ideal">⚠️</span>`:'<span class="slot-ind" title="Zona ideal">✅</span>')+
+    `<span class="slot-del" onclick="event.stopPropagation();clickSlot('${slotId}')">✕</span>`;
+  el.classList.toggle('occupied',true);
+  el.classList.toggle('wrong-zone',wrongZone);
+}
+
+function updateAllZoneIndicators(){
+  Object.entries(GARDEN.placed).forEach(([sid,cid])=>renderSlot(sid,cid));
+}
+
+function updateFeedPanel(lastSlotId, lastCropId){
+  const placed=Object.entries(GARDEN.placed);
+  if(placed.length===0){
+    document.getElementById('feed-panel').textContent='Seleccioná un cultivo de la paleta para empezar a diseñar tu huerta.';
+    return;
+  }
+  const placedIds=placed.map(([,id])=>id);
+  const combosFound=[];
+  COMBOS.forEach(combo=>{
+    if(combo.type==='good'&&combo.crops.every(c=>placedIds.includes(c))) combosFound.push(combo);
+  });
+  // Find pairs from companions not in COMBOS
+  const extraPairs=[];
+  placedIds.forEach((id,i)=>{
+    placedIds.slice(i+1).forEach(id2=>{
+      const inCombos=COMBOS.some(co=>co.crops.includes(id)&&co.crops.includes(id2));
+      if(!inCombos&&CROPS_DB[id].companions.includes(id2)){
+        extraPairs.push(`${CROPS_DB[id].emoji} ${CROPS_DB[id].name} + ${CROPS_DB[id2].emoji} ${CROPS_DB[id2].name}`);
+      }
+    });
+  });
+  const badCombos=[];
+  COMBOS.forEach(combo=>{
+    if(combo.type==='bad'&&combo.crops.every(c=>placedIds.includes(c))) badCombos.push(combo);
+  });
+  const wrongZones=placed.filter(([sid,cid])=>CROPS_DB[cid].idealZone!==sid.split('-')[0]);
+  let html='';
+  if(combosFound.length){
+    html+=combosFound.map(co=>`<div class="combo-found">💚 <strong>${co.label}</strong><br><em style="font-size:.78rem">${co.reason}</em></div>`).join('');
+  }
+  if(extraPairs.length){
+    html+=extraPairs.map(p=>`<div class="combo-found">💚 ${p}</div>`).join('');
+  }
+  if(badCombos.length){
+    html+=badCombos.map(co=>`<div class="combo-found" style="border-left:3px solid #e74c3c;padding-left:8px">❌ <strong>${co.label}</strong><br><em style="font-size:.78rem">${co.reason}</em></div>`).join('');
+  }
+  if(wrongZones.length){
+    html+=`<div class="warn-zone-msg">⚠️ ${wrongZones.map(([,id])=>CROPS_DB[id].name).join(', ')} en zona no ideal — pueden crecer pero con menor rendimiento.</div>`;
+  }
+  if(!html) html=`<span style="color:#888">${placed.length} cultivo${placed.length!==1?'s':''} ubicado${placed.length!==1?'s':''}. Seguí colocando más.</span>`;
+  document.getElementById('feed-panel').innerHTML=html;
+  GARDEN.combosFound=combosFound;
+}
+
+function checkDoneBtn(){
+  const total=Object.keys(GARDEN.placed).length;
+  const btn=document.getElementById('planting-done-btn');
+  btn.disabled=total<GARDEN.selected.length;
+  if(total>0&&total<GARDEN.selected.length){
+    btn.textContent=`Ubicá ${GARDEN.selected.length-total} cultivo${GARDEN.selected.length-total!==1?'s':''} más →`;
+  } else if(total>=GARDEN.selected.length){
+    btn.textContent='Confirmar diseño →';
+  }
+}
+
+function resetPlanting(){
+  GARDEN.placed={}; GARDEN.activeCrop=null;
+  buildPlantingMap();
+}
+
+function finalizePlanting(){
+  // Calculate bonuses from planting
+  const placedIds=Object.values(GARDEN.placed);
+  // Combos bonus
+  GARDEN.combosFound.forEach(c=>{if(c.fx){['soil','bio','harvest'].forEach(k=>{if(c.fx[k])GARDEN.bonuses[k]=(GARDEN.bonuses[k]||0)+c.fx[k];});}});
+  // Bad combos penalty
+  COMBOS.forEach(combo=>{
+    if(combo.type==='bad'&&combo.crops.every(c=>placedIds.includes(c))&&combo.fx){
+      ['soil','bio','harvest'].forEach(k=>{if(combo.fx[k])GARDEN.bonuses[k]=(GARDEN.bonuses[k]||0)+combo.fx[k];});
+    }
+  });
+  // Nitrogen fixer bonus
+  if(placedIds.some(id=>CROPS_DB[id]?.nitrogen==='fixer')) GARDEN.bonuses.soil=(GARDEN.bonuses.soil||0)+1;
+  // Repellent bonus
+  if(placedIds.some(id=>CROPS_DB[id]?.nitrogen==='repellent')) GARDEN.bonuses.bio=(GARDEN.bonuses.bio||0)+1;
+  // Apply bonuses
+  ['soil','bio','harvest'].forEach(k=>{P.score[k]=clamp((P.score[k]||0)+(GARDEN.bonuses[k]||0),-3,3);});
+  // Register knowledge
+  GARDEN.combosFound.forEach(c=>{if(!P.learned.includes(c.label+': '+c.reason))P.learned.push(c.reason);});
+  // Save flag
+  P.flags.planting_done=true;
+  // Go to next scene
+  loadScene('post_plano');
+}
+
+// ══════════════════════════════════════════
+// FINAL
+// ══════════════════════════════════════════
+function showEnd(){
+  const t=P.score.soil+P.score.bio+P.score.harvest;
+  let icon,title,stars,desc;
+  if(t>=7){
+    icon='🏆🌻';title='¡Huerta en Flor!';stars='⭐⭐⭐';
+    desc=`${P.name} transformó un baldío en una huerta agroecológica que es el orgullo del barrio. El suelo está vivo y fértil, las plantas crecen sanas sin químicos, la biodiversidad explota. Demostraste que producir alimentos en armonía con la naturaleza es posible, productivo y profundamente satisfactorio.`;
+  } else if(t>=4){
+    icon='🌿✨';title='Huerta en Camino';stars='⭐⭐';
+    desc=`${P.name} aprendió muchísimo esta primera temporada. Hubo aciertos y errores, pero cada uno fue una lección. El suelo está mejorando, y con lo aprendido sobre agroecología, la próxima temporada será mucho más rica.`;
+  } else {
+    icon='🌱💪';title='Primera Temporada Difícil';stars='⭐';
+    desc=`${P.name} enfrentó una temporada complicada, con algunas decisiones basadas en la química que afectaron el suelo y la biodiversidad. Pero esa experiencia es invaluable: ahora sabés por qué la agroecología requiere observación, paciencia y respeto por los ciclos naturales.`;
+  }
+  document.getElementById('end-icon').textContent=icon;
+  document.getElementById('end-title').textContent=title;
+  document.getElementById('end-stars').textContent=stars;
+  document.getElementById('end-desc').textContent=desc;
+  document.getElementById('learned-list').innerHTML=P.learned.slice(0,10).map(l=>`<li>${l}</li>`).join('');
+  show('s-end');
+}
+
+// ══════════════════════════════════════════
+// ESCENAS
+// ══════════════════════════════════════════
+const SCENES = {
+
+inicio:{icon:'🌅',title:'Un terreno, una posibilidad',prog:5,img:'🏚️🌾🌄',
+  text:['Unos familiares te dejaron un terreno de 200 m² en las afueras del pueblo. Está abandonado hace años: pasto alto, algunas plantas silvestres, los restos de una vieja parra en el fondo.',
+    'Es primavera. El suelo está seco y compactado. Un hornero canta en algún rincón. Tenés ganas de convertirlo en una huerta agroecológica. ¿Por dónde empezar?',
+    '[tip]Lo que decidas ahora marcará toda la aventura.'],
+  know:'La primavera es ideal para iniciar una huerta: el suelo se calienta, las heladas quedaron atrás y las lluvias ayudan al establecimiento de las plantas.',
+  choices:[
+    {icon:'👣',text:'Caminar despacio por el terreno y observar antes de hacer nada',type:'eco',fx:{soil:1,flag:'observo'},next:'observar'},
+    {icon:'📱',text:'Buscar información sobre agroecología antes de empezar',type:'eco',fx:{soil:1,bio:1,flag:'informado'},next:'investigar'},
+    {icon:'🧪',text:'Ir directo a comprar herbicida para limpiar el terreno rápido',type:'chem',fx:{flag:'impulsivo'},next:'herbicida'}
+  ]},
+
+observar:{icon:'🔍',title:'El arte de observar',prog:14,img:'🌾🪱🌿',
+  text:['Caminás despacio. Ves plantas espontáneas: ortigas (señal de nitrógeno en el suelo), verdolaga (comestible), malváceas. Son pistas.',
+    'En el rincón donde se acumularon hojas secas... ¡lombrices! Una señal de vida. El centro del terreno está duro y compactado. La zona norte recibe sol todo el día.',
+    '[eco]Observar antes de actuar es la primera lección de la agroecología: el terreno ya te está contando lo que necesitás saber.'],
+  know:'Las lombrices son indicadoras de suelo vivo. Procesan materia orgánica, crean canales de aireación y sus deyecciones son el mejor fertilizante natural. Un suelo sin lombrices es un suelo enfermo.',
+  choices:[
+    {icon:'🧪',text:'Analizar la composición y calidad del suelo en profundidad',type:'eco',fx:{soil:1},next:'analizar'},
+    {icon:'📐',text:'Hacer un plano del espacio con zonas de sol, agua y sombra',type:'eco',fx:{bio:1,flag:'planifico'},next:'planificar'}
+  ]},
+
+investigar:{icon:'📚',title:'Aprender antes de actuar',prog:14,img:'📖🌿💡',
+  text:['Pasás unos días leyendo. Descubrís la agroecología: producir alimentos trabajando CON la naturaleza, no contra ella.',
+    'Lo que más te impacta: los agroquímicos matan la biología del suelo —bacterias, hongos micorrízicos, lombrices— que es el verdadero motor de la fertilidad.',
+    '[eco]Con estos conocimientos, llegás al terreno con ojos nuevos.'],
+  know:'La agroecología aplica principios ecológicos a la producción de alimentos. Elimina la dependencia de insumos externos y construye fertilidad de forma acumulativa: cada año el suelo mejora.',
+  choices:[{icon:'👣',text:'Ir al terreno a observarlo con tus nuevos conocimientos',type:'eco',fx:{soil:1},next:'observar'}]},
+
+herbicida:{icon:'☠️',title:'La tentación del atajo químico',prog:10,img:'🧪☠️💀',
+  text:['Aplicás herbicida sistémico. En dos semanas, todo está amarillo y muerto. Prolijo, sí.',
+    'Al cavar, la sorpresa: el suelo parece de plástico. Sin lombrices, sin bichos, sin vida. Solo tierra gris y compacta.',
+    '[bad]El herbicida eliminó las "malezas" pero también destruyó los microorganismos del suelo —el verdadero motor de la fertilidad. Ahora el suelo es dependiente de fertilizantes externos para que algo crezca.',
+    '[tip]En la agricultura química cada solución crea el siguiente problema: herbicida → suelo muerto → fertilizante → resistencia → más herbicida. Una rueda difícil de salir.'],
+  know:'El glifosato y otros herbicidas sistémicos afectan la microbiota del suelo. Estudios muestran que un suelo tratado puede tardar años en recuperar su diversidad microbiana natural.',
+  choices:[{icon:'🤝',text:'Cambiar de camino: aprender a recuperar el suelo de forma natural',type:'eco',fx:{soil:1},next:'analizar'}]},
+
+analizar:{icon:'🌍',title:'El suelo tiene secretos',prog:24,img:'🔬🪱🌱',
+  text:['Hacés pruebas caseras: la del barro (textura), la del vinagre (calcio), la del frasco con agua (composición). Resultado: franco-arcilloso, algo de calcio, pero muy poca materia orgánica.',
+    'El color marrón claro cuando debería ser casi negro. El problema principal: compactación y falta de vida.',
+    '[eco]La tierra necesita ser revitalizada. La pregunta es: ¿con química o con vida?'],
+  know:'El color oscuro del suelo indica humus (materia orgánica descompuesta). Un suelo rico en humus retiene 10 veces más agua que uno degradado y libera nutrientes de forma sostenida y equilibrada.',
+  choices:[
+    {icon:'♻️',text:'Hacer compost: transformar residuos orgánicos en "oro negro"',type:'eco',fx:{soil:2,flag:'compost'},next:'compost'},
+    {icon:'🍵',text:'Hacer biofertilizantes caseros: purín de ortiga y compost líquido',type:'eco',fx:{soil:2,bio:1,flag:'bio'},next:'biofert'},
+    {icon:'🧪',text:'Comprar fertilizante NPK en la ferretería: más rápido',type:'chem',fx:{soil:-1,flag:'quimico'},next:'npk'}
+  ]},
+
+planificar:{icon:'📐',title:'Diseño con conciencia',prog:22,img:'🗺️☀️🌿',
+  text:['Dibujás un plano. Según las horas de sol:',
+    '☀️ <strong>Zona solar (8+ hs):</strong> tomates, pimientos, zapallitos, maíz',
+    '🌤️ <strong>Zona mixta (4-6 hs):</strong> zanahorias, porotos, brócoli, cebollas',
+    '🌿 <strong>Zona de sombra (2-4 hs):</strong> lechugas, espinacas, perejil, menta',
+    '🌸 <strong>Bordes:</strong> caléndulas, albahaca, girasoles (plantas compañeras y repelentes)',
+    '[eco]Un buen diseño previene problemas antes de que ocurran. La permacultura llama a esto "observar y actuar en consecuencia".'],
+  know:'La permacultura diseña sistemas inspirados en ecosistemas naturales. Su lema: cada planta en el lugar correcto, aprovechando la energía del sol y el agua sin esfuerzo extra.',
+  choices:[{icon:'🌍',text:'Analizar el suelo antes de plantar',type:'eco',fx:{soil:1},next:'analizar'}]},
+
+compost:{icon:'♻️',title:'El arte del compostaje',prog:34,img:'🍂🥦🪱',
+  text:['Construís una compostera con listones de madera. La clave: capas alternadas.',
+    '<strong>CAFÉ (carbono/seco):</strong> hojas secas, paja, cartón, ramas trituradas.',
+    '<strong>VERDE (nitrógeno/húmedo):</strong> restos de cocina, pasto cortado, ortigas frescas.',
+    'Regás para mantener la humedad "como esponja exprimida". Cada semana lo girás. Seis semanas después: abono oscuro, húmedo, con olor a tierra de bosque. Las lombrices explotan de cantidad.',
+    '[eco]El compost no es basura procesada: es el "oro negro" de la huerta. Contiene millones de microorganismos vivos que mejoran el suelo año a año.'],
+  know:'El compost maduro mejora la estructura del suelo, aumenta su retención de agua y aporta microorganismos beneficiosos. A diferencia del fertilizante químico, sus efectos son duraderos y acumulativos.',
+  choices:[{icon:'🌱',text:'Con el suelo preparado, es hora de elegir qué plantar',type:'eco',fx:{soil:1},next:'pre_cultivos'}]},
+
+biofert:{icon:'🍵',title:'Alquimia verde',prog:34,img:'🌿💧✨',
+  text:['Aprendés a hacer <strong>purín de ortiga</strong>: hojas de ortiga + agua, fermentar 10 días revolviendo diario. Diluir 1:10 y aplicar al suelo. Rico en nitrógeno, hierro y potasio.',
+    'También hacés <strong>té de compost</strong>: compost en una red dentro de un balde con agua oxigenada. En 24 hs, fertilizante líquido lleno de vida microbiana.',
+    'Aparecen hongos blancos entre las raíces: micorrizas, las redes invisibles que llevan agua y nutrientes a donde las raíces no llegan.',
+    '[eco]Las micorrizas son destruidas por fungicidas y fertilizantes sintéticos. La agroecología las protege y potencia.'],
+  know:'El 90% de las plantas terrestres vive en simbiosis con hongos micorrízicos. Estos extienden redes de kilómetros alrededor de las raíces, multiplicando su capacidad de absorción de agua y nutrientes.',
+  choices:[{icon:'🌱',text:'Con el suelo vivo y revitalizado, elegir qué plantar',type:'eco',fx:{soil:1,bio:1},next:'pre_cultivos'}]},
+
+npk:{icon:'⚗️',title:'La ilusión de la solución rápida',prog:28,img:'🧪📈😟',
+  text:['Aplicás fertilizante NPK. Las plantas brotan rápido. ¡Parece que funciona!',
+    'Pero pronto las señales preocupantes: lombrices desaparecidas, suelo que se endurece más después de cada lluvia, plantas que crecen pero son frágiles y se enferman con facilidad.',
+    '[bad]El fertilizante químico alimenta la planta pero envenena el suelo: acidifica el pH, destruye microorganismos y crea un sistema de dependencia total. Cuanto más usás, más necesitás.',
+    '[tip]La paradoja del NPK: el suelo pierde su capacidad de autoabastecerse porque toda su biología fue eliminada. El granjero químico trabaja cada año más y gana cada año menos.'],
+  know:'La agricultura industrial requiere cada año más fertilizantes para mantener los mismos rendimientos porque destruye la fertilidad natural. La agroecología construye fertilidad: cada año el suelo mejora sin esfuerzo adicional.',
+  choices:[
+    {icon:'♻️',text:'Complementar con compost para recuperar la vida del suelo',type:'eco',fx:{soil:1},next:'pre_cultivos'},
+    {icon:'🔄',text:'Seguir igual y ver qué pasa',type:'chem',fx:{soil:-1},next:'pre_cultivos'}
+  ]},
+
+pre_cultivos:{icon:'🛒',title:'¿Qué y cómo vamos a plantar?',prog:46,img:'🌱🤔🗒️',
+  text:['El suelo está preparado. Ahora la pregunta fundamental: ¿qué cultivos elegir y cómo organizarlos?',
+    'En agroecología, esto no es aleatorio. Cada planta tiene <strong>compañeras</strong> que la potencian y <strong>enemigos</strong> que la perjudican. Algunas fijan nitrógeno para las demás. Otras repelen plagas. La diversidad es protección.',
+    '[eco]En la naturaleza no existe el monocultivo: la diversidad vegetal crea diversidad animal, y esa diversidad animal regula las plagas de forma gratuita y permanente.'],
+  know:'Los monocultivos industriales son máquinas de generar plagas: concentran el "alimento" del insecto plaga y eliminan la diversidad de predadores naturales. Esto explica por qué la agricultura química gasta billones en pesticidas cada año.',
+  choices:[{icon:'🌱',text:'Ir a elegir los cultivos para mi huerta',type:'eco',fx:{},next:'crop-select'}]},
+
+post_plano:{icon:'🗺️',title:'¡Diseño listo!',prog:68,img:'🗺️✅🌱',
+  text:['Tu plano de siembra está definido. Plantás con cuidado, respetando las combinaciones y las zonas de sol.',
+    'Las primeras semanas son de expectativa: germination, primeras hojas, primeras flores.',
+    'Pero a las semanas, aparece el primer desafío: tu huerta necesita gestión de agua y de plagas.'],
+  know:'El diseño de la huerta es una inversión: una huerta bien planificada requiere menos intervención cada año porque el sistema se vuelve más resiliente y autónomo.',
+  choices:[
+    {icon:'💧',text:'Gestionar el riego de forma eficiente',type:'eco',fx:{harvest:1},next:'riego'},
+    {icon:'🐞',text:'Aprender a manejar las plagas sin tóxicos',type:'eco',fx:{bio:1},next:'plagas'}
+  ]},
+
+riego:{icon:'💧',title:'El agua: usarla bien',prog:76,img:'☀️💧🌿',
+  text:['El verano llega con calor. Las plantas piden agua, pero el riego mal hecho puede ser tan dañino como no regar.',
+    'Errores comunes: regar a pleno sol (el 60% se evapora, las gotas queman hojas), mojar el follaje (favorece hongos), regar siempre por encima (las raíces no "aprenden" a buscar agua profunda).'],
+  know:'El riego por goteo reduce el consumo de agua hasta un 50% respecto al riego por aspersión. Al no mojar hojas, también reduce las enfermedades fúngicas drásticamente.',
+  choices:[
+    {icon:'🌅',text:'Regar temprano o al atardecer, al pie de cada planta',type:'eco',fx:{harvest:1},next:'mulching'},
+    {icon:'🌾',text:'Hacer mulching primero para que el suelo retenga la humedad naturalmente',type:'eco',fx:{soil:1,harvest:2,flag:'mulch'},next:'mulching'},
+    {icon:'☀️',text:'Regar cuando las plantas muestran sed, aunque sea mediodía',type:'neutral',fx:{harvest:-1},next:'riego_mal'}
+  ]},
+
+riego_mal:{icon:'😓',title:'Las consecuencias de regar mal',prog:78,img:'🥵💧😟',
+  text:['Manchas en las hojas por quemadura solar. Tizón tardío en los tomates por hojas húmedas. Algunos frutos con podredumbre apical por estrés hídrico irregular.',
+    '[bad]El estrés hídrico fluctuante es una de las principales causas de enfermedades, pérdida de frutos y dependencia de fungicidas.',
+    'Con fungicidas vendría otro problema: matan los hongos benéficos (micorrizas) que tanto le costó al suelo generar.'],
+  know:'La podredumbre apical del tomate no es una enfermedad: es estrés fisiológico causado por riego irregular que impide la absorción de calcio. Se resuelve con riego constante, no con químicos.',
+  choices:[{icon:'🔄',text:'Cambiar el método y hacer mulching para recuperar',type:'eco',fx:{harvest:1},next:'mulching'}]},
+
+plagas:{icon:'🐞',title:'Plagas: equilibrio vs. exterminio',prog:76,img:'🐞🌿🌸',
+  text:['Aparecen pulgones en los tomates. La tentación inmediata: insecticida. Pero antes de actuar, observás.',
+    'En las caléndulas que pusiste en los bordes, hay mariquitas. Una sola come hasta 100 pulgones por día.',
+    'También hacés un repelente casero: ajo + ají molido + agua fermentada. No mata insectos, los desalienta sin tocar a los benéficos.',
+    '[eco]El control biológico establece un equilibrio donde las poblaciones se autoregulan. Es lento, pero una vez establecido, funciona solo para siempre.'],
+  know:'Un insecticida de amplio espectro elimina plagas Y sus predadores naturales. Las plagas evolucionan resistencia en 5-10 generaciones; sus predadores, no. Por eso la química siempre pierde la carrera.',
+  choices:[
+    {icon:'🐞',text:'Confiar en las mariquitas y el repelente natural',type:'eco',fx:{bio:1,harvest:1},next:'mulching'},
+    {icon:'🧪',text:'Aplicar insecticida para eliminarlo más rápido',type:'chem',fx:{bio:-2},next:'insecticida_consecuencias'}
+  ]},
+
+insecticida_consecuencias:{icon:'☠️',title:'El silencio del insecticida',prog:77,img:'💀🐝🌸',
+  text:['Los pulgones desaparecen. Pero la huerta queda en silencio: sin abejas, sin mariquitas, sin mariposas.',
+    'A las tres semanas, los pulgones vuelven... más fuertes y sin predadores que los controlen. El ciclo se repite.',
+    '[bad]El insecticida de amplio espectro no distingue plaga de aliado. Mató al agresor y al policía al mismo tiempo.',
+    '[tip]La "escalada de pesticidas" es un fenómeno documentado: cada aplicación requiere la siguiente, y las dosis deben ser cada vez mayores para el mismo efecto.'],
+  know:'El neonicotinoide imidacloprid, uno de los insecticidas más vendidos, es el principal sospechoso del colapso de colonias de abejas. La UE lo prohibió en 2018 para cultivos al aire libre.',
+  choices:[{icon:'🔄',text:'Parar el ciclo y apostar al equilibrio natural',type:'eco',fx:{bio:1},next:'mulching'}]},
+
+mulching:{icon:'🌾',title:'El colchón del suelo vivo',prog:86,img:'🌾🍂🛡️',
+  text:['Cubrís el suelo entre las plantas con 6-10 cm de paja, hojas secas o pasto cortado. Esto es el <strong>mulching</strong>.',
+    '• El suelo mantiene la humedad el doble de tiempo → menos riego.',
+    '• Las malezas casi no germinan → menos trabajo.',
+    '• El suelo se mantiene fresco en verano y cálido en invierno.',
+    '• Al descomponerse, alimenta microorganismos y lombrices → nuevo compost in situ.',
+    '[eco]En el bosque nunca hay suelo pelado: siempre está cubierto. Un suelo desnudo se erosiona, se reseca y muere. El mulching imita ese principio.'],
+  know:'Un suelo cubierto con mulch puede perder hasta 10 veces menos agua por evaporación que uno descubierto. En lluvias intensas, reduce la erosión en un 90%.',
+  choices:[{icon:'🥕',text:'¡Es hora de cosechar!',type:'eco',fx:{harvest:1},next:'cosecha'}]},
+
+cosecha:{icon:'🌻',title:'¡Hora de cosechar!',prog:97,img:'🥕🍅🥬🫑🌽',
+  text:['Han pasado meses. El terreno abandonado es hoy una huerta viva, diversa y productiva.',
+    'Los tomates cuelgan gordos y rojos. Las zanahorias asoman sus hombros anaranjados. Las lechugas forman rosetas perfectas. Los zapallitos no paran de crecer. Las caléndulas explotan de color.',
+    'Y el suelo: oscuro, suave, oloroso a tierra de bosque. Si lo apretás, se rompe en terrones perfectos. Las lombrices abundan.',
+    'Vas a llevar a la mesa comida que cultivaste vos mismo/a, sin venenos, en armonía con la naturaleza.',
+    '[eco]Tu huerta no solo produce comida: produce suelo fértil, biodiversidad, agua más limpia y conocimiento. Cada temporada, todo eso se multiplica.'],
+  know:'Una huerta agroecológica bien establecida mejora su productividad cada año sin aumentar el trabajo: el suelo se enriquece, los organismos benéficos se multiplican y el sistema se vuelve más resiliente.',
+  choices:[{icon:'🏆',text:'Contemplar el resultado de la aventura',type:'eco',fx:{},next:'end'}]}
+
+}; // fin SCENES
+</script>
+</body>
+</html>

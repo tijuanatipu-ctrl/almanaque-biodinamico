@@ -1,0 +1,970 @@
+{
+  "name": "Almanaque Biodinámico → TikTok",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 9,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "tt-001",
+      "name": "Todos los días 9:30am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date(new Date().getTime() - 3 * 3600000);\nconst day   = today.getDate();\nconst mon   = today.getMonth();\nconst year  = today.getFullYear();\nconst dow   = today.getDay();\nconst monNum = mon + 1;\nconst DIAS  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];\nconst MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];\nfunction moonSign(date){const J2000=new Date('2000-01-01T12:00:00Z').getTime();const days=(date.getTime()-J2000)/86400000;const L=((218.316+13.176396*days)%360-23.85+360)%360;const S=[{sign:'Aries',tipo:'fruto'},{sign:'Tauro',tipo:'raiz'},{sign:'Géminis',tipo:'flor'},{sign:'Cáncer',tipo:'hoja'},{sign:'Leo',tipo:'fruto'},{sign:'Virgo',tipo:'raiz'},{sign:'Libra',tipo:'flor'},{sign:'Escorpio',tipo:'hoja'},{sign:'Sagitario',tipo:'fruto'},{sign:'Capricornio',tipo:'raiz'},{sign:'Acuario',tipo:'flor'},{sign:'Piscis',tipo:'hoja'}];return S[Math.floor(L/30)%12];}\nfunction moonPhase(date){const REF=new Date('2000-01-06T18:14:00Z').getTime();const cycle=29.530589*86400000;const frac=(((date.getTime()-REF)%cycle)+cycle)%cycle/cycle;if(frac<0.03||frac>0.97)return'Luna Nueva';if(frac<0.22)return'Luna Creciente';if(frac<0.28)return'Cuarto Creciente';if(frac<0.47)return'Luna Gibosa Creciente';if(frac<0.53)return'Luna Llena';if(frac<0.72)return'Luna Gibosa Menguante';if(frac<0.78)return'Cuarto Menguante';return'Luna Menguante';}\nfunction moonAscending(date){const J2000=new Date('2000-01-01T12:00:00Z').getTime();const days=(date.getTime()-J2000)/86400000;const L=(((218.316+13.176396*days)%360)+360)%360;return L>270||L<90;}\nconst SEASONAL={1:{fruto:{p:['Tomates','Zapallos','Pepinos','Maíz'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Cebollas','Ajos','Puerros'],h:['Cebollas','Ajos','Puerros','Papas']},hoja:{p:['Lechugas','Albahaca','Rúcula'],h:['Lechugas','Albahaca','Rúcula']},flor:{p:['Girasoles','Caléndulas'],h:['Lavanda','Romero','Orégano']}},2:{fruto:{p:['Tomates','Zapallos','Pepinos'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Zanahorias','Remolachas','Cebollas'],h:['Cebollas','Ajos','Puerros','Papas']},hoja:{p:['Lechugas','Espinacas','Rúcula'],h:['Lechugas','Espinacas','Acelgas']},flor:{p:['Caléndulas'],h:['Caléndulas','Orégano','Manzanilla']}},3:{fruto:{p:['Zapallitos','Pepinos'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Zanahorias','Remolachas','Cebollas','Ajos'],h:['Cebollas','Ajos','Zanahorias','Remolachas']},hoja:{p:['Lechugas','Espinacas','Acelgas','Kale'],h:['Lechugas','Espinacas','Acelgas']},flor:{p:['Manzanilla','Caléndulas'],h:['Orégano','Caléndulas','Manzanilla']}},4:{fruto:{p:['Arvejas','Habas'],h:['Tomates','Zapallos','Pepinos']},raiz:{p:['Zanahorias','Remolachas','Cebollas','Ajos'],h:['Cebollas','Ajos','Zanahorias','Remolachas']},hoja:{p:['Lechugas','Acelgas','Espinacas','Kale'],h:['Acelgas','Espinacas','Lechugas']},flor:{p:['Manzanilla','Caléndulas','Lavanda'],h:['Orégano','Manzanilla','Caléndulas']}},5:{fruto:{p:['Arvejas','Habas'],h:['Zapallos','Pepinos']},raiz:{p:['Zanahorias','Remolachas','Cebollas','Ajos','Puerros'],h:['Remolachas','Zanahorias','Puerros','Cebollas']},hoja:{p:['Lechugas','Acelgas','Espinacas','Kale','Rúcula'],h:['Acelgas','Espinacas','Lechugas','Kale']},flor:{p:['Manzanilla','Caléndulas','Lavanda','Romero'],h:['Orégano','Manzanilla','Caléndulas']}},6:{fruto:{p:['Arvejas','Habas'],h:['Arvejas','Habas']},raiz:{p:['Cebollas','Ajos','Puerros'],h:['Cebollas','Ajos','Puerros','Nabos']},hoja:{p:['Espinacas','Acelgas','Kale'],h:['Espinacas','Acelgas','Kale']},flor:{p:['Lavanda','Romero'],h:['Lavanda','Romero','Tomillo']}},7:{fruto:{p:['Arvejas','Habas'],h:['Arvejas','Habas']},raiz:{p:['Zanahorias','Remolachas','Puerros'],h:['Cebollas','Ajos','Puerros','Nabos']},hoja:{p:['Espinacas','Acelgas','Kale','Rúcula'],h:['Espinacas','Acelgas','Kale']},flor:{p:['Lavanda','Romero','Tomillo'],h:['Lavanda','Romero','Tomillo']}},8:{fruto:{p:['Tomates','Zapallos'],h:['Arvejas','Habas']},raiz:{p:['Zanahorias','Remolachas','Nabos'],h:['Zanahorias','Remolachas','Nabos']},hoja:{p:['Lechugas','Espinacas','Rúcula'],h:['Espinacas','Acelgas','Kale']},flor:{p:['Caléndulas','Lavanda'],h:['Lavanda','Romero','Tomillo']}},9:{fruto:{p:['Tomates','Zapallos','Pepinos','Zapallitos'],h:['Tomates','Zapallos','Pepinos']},raiz:{p:['Zanahorias','Remolachas','Rábanos'],h:['Zanahorias','Remolachas','Nabos']},hoja:{p:['Lechugas','Rúcula','Espinacas'],h:['Lechugas','Espinacas']},flor:{p:['Caléndulas','Girasoles'],h:['Caléndulas','Lavanda']}},10:{fruto:{p:['Tomates','Zapallos','Pepinos','Maíz'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Zanahorias','Remolachas','Rábanos'],h:['Zanahorias','Remolachas','Rábanos']},hoja:{p:['Lechugas','Rúcula','Albahaca'],h:['Lechugas','Rúcula','Albahaca']},flor:{p:['Girasoles','Caléndulas'],h:['Caléndulas','Lavanda']}},11:{fruto:{p:['Tomates','Zapallos','Pepinos','Maíz','Porotos'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Cebollas','Rábanos'],h:['Cebollas','Rábanos','Zanahorias']},hoja:{p:['Lechugas','Rúcula','Albahaca'],h:['Lechugas','Rúcula','Albahaca']},flor:{p:['Caléndulas','Albahaca'],h:['Caléndulas','Lavanda','Manzanilla']}},12:{fruto:{p:['Porotos','Maíz'],h:['Tomates','Zapallos','Pepinos','Maíz']},raiz:{p:['Rábanos','Cebollas'],h:['Cebollas','Remolachas','Zanahorias']},hoja:{p:['Lechugas','Rúcula'],h:['Lechugas','Rúcula','Albahaca']},flor:{p:[],h:['Caléndulas','Lavanda']}}};\nconst ms=moonSign(today);const tipo=ms.tipo;const sea=SEASONAL[monNum]||SEASONAL[5];const sc=sea[tipo]||{p:[],h:[]};const fase=moonPhase(today);const asc=moonAscending(today);\nconst MOON_VISUAL={'Luna Nueva':'dark new moon no visible light','Luna Creciente':'thin waxing crescent moon','Cuarto Creciente':'first quarter half moon right side illuminated','Luna Gibosa Creciente':'waxing gibbous moon nearly full','Luna Llena':'full moon bright round completely illuminated','Luna Gibosa Menguante':'waning gibbous moon slightly past full','Cuarto Menguante':'last quarter half moon left side illuminated','Luna Menguante':'thin waning crescent moon'};const moonVisual=MOON_VISUAL[fase];\nconst TIPO_EMOJI={fruto:'🍅',raiz:'🥕',flor:'🌸',hoja:'🌿'};const msInicio=moonSign(new Date(Date.UTC(year,mon,day,3,0,0)));const msFin=moonSign(new Date(Date.UTC(year,mon,day+1,3,0,0)));const tipoInicio=msInicio.tipo;const tipoFin=msFin.tipo;const cambiaTipo=tipoInicio!==tipoFin;let horasCambio=null;if(cambiaTipo){for(let h=1;h<=23;h++){if(moonSign(new Date(Date.UTC(year,mon,day,3+h,0,0))).tipo!==tipoInicio){horasCambio=h;break;}}}\nconst pArr=sc.p.slice(0,4);const hArr=sc.h.slice(0,4);const hSetA=new Set(hArr);const pSetA=new Set(pArr);const ambos=pArr.filter(x=>hSetA.has(x));const soloP=pArr.filter(x=>!hSetA.has(x));const soloH=hArr.filter(x=>!pSetA.has(x));\nconst dateStr=`${year}-${String(monNum).padStart(2,'0')}-${String(day).padStart(2,'0')}`;\n\nconst tipoExplica={fruto:'Hoy es día de fruto: la luna favorece los frutos y semillas.',raiz:'Hoy es día de raíz: la luna va hacia el suelo, ideal para lo que crece bajo tierra.',flor:'Hoy es día de flor: la luna potencia flores y aromáticas.',hoja:'Hoy es día de hoja: la humedad y vitalidad de las plantas de hoja están al máximo.'};\nconst tipoTip={fruto:'Cosechá tomates, zapallos o pepinos hoy: están en su mejor punto. Si guardás semillas hoy, germinan mejor.',raiz:'Trasplantá macetas hoy, el suelo está receptivo. Ajos y cebollas cosechados hoy concentran más el sabor.',flor:'Cortá romero, lavanda o manzanilla hoy: tienen más aceites esenciales. Perfectas para infusiones.',hoja:'Regá bien tus plantas hoy, absorben mucho mejor. Las verduras de hoja están en su mejor momento nutritivo.'};\n\nconst dateHash=day*31+monNum*7+(year%100)*13;\n\nconst PAISAJE={fruto:[`biodynamic garden abundant harvest ripe tomatoes and squash on vines, ${moonVisual} glowing at golden sunset, argentine pampa, cinematic vertical portrait photography, warm amber tones, no text`,`lush biodynamic orchard loaded with fruits at dawn, misty morning light, ${ms.sign} constellation in pale sky, south american countryside, cinematic vertical portrait photography, cool blue tones, no text`,`vibrant biodynamic vegetable garden corn and melons at midday, dramatic sunlight, ${moonVisual} faintly visible in blue sky, patagonian landscape, cinematic vertical portrait photography, vivid colors, no text`,`harvest time biodynamic farm pumpkins and peppers at dusk, purple twilight sky, ${moonVisual} rising, pampa horizon, cinematic vertical portrait photography, deep orange tones, no text`],raiz:[`biodynamic root vegetable garden misty autumn morning, garlic and onion rows, ${moonVisual} in soft grey sky, wet argentine soil, cinematic vertical portrait photography, earthy browns, no text`,`dark fertile earth emerging beet and carrot tops, ground level perspective, ${moonVisual} at twilight, rural argentina, cinematic vertical portrait photography, deep earth tones, no text`,`foggy biodynamic farm at dawn roots glistening with dew, ${ms.sign} constellation overhead, muted morning colors, south american countryside, cinematic vertical portrait photography, cool misty tones, no text`,`argentinian countryside root harvest scene, farmer carrying basket of roots at sunset, ${moonVisual} visible in orange sky, cinematic vertical portrait photography, warm harvest tones, no text`],flor:[`breathtaking biodynamic wildflower meadow lavender and calendula in full bloom, ${moonVisual} at golden hour, magical argentine countryside, cinematic vertical portrait photography, purple and gold tones, no text`,`aromatic herb garden rosemary and chamomile flowers at morning, ${moonVisual} in pale blue sky, misty garden bokeh, cinematic vertical portrait photography, soft green tones, no text`,`biodynamic garden full bloom at twilight, dramatic purple sky, ${ms.sign} constellation glowing, south american countryside, cinematic vertical portrait photography, romantic tones, no text`,`wildflower field in summer afternoon sunflowers and lavender, ${moonVisual} half visible, pampa wind, cinematic vertical portrait photography, vivid yellow and purple tones, no text`],hoja:[`lush biodynamic kitchen garden leafy greens glistening with morning dew, ${moonVisual} in blue sky, fresh argentine countryside, cinematic vertical portrait photography, vibrant green, no text`,`spinach kale and lettuce rows after rain, puddles reflecting grey sky, ${moonVisual} emerging from clouds, cinematic vertical portrait photography, cool fresh greens, no text`,`dense biodynamic garden overhead canopy of leafy greens at midday, dramatic light through leaves, ${moonVisual} faint in sky, cinematic vertical portrait photography, deep forest green, no text`,`misty morning lettuce and herb garden with long shadows, ${ms.sign} constellation in dawn sky, dew on every leaf, cinematic vertical portrait photography, cool silver-green tones, no text`]};\n\nconst LUNA=[`${ms.sign} zodiac constellation in starry night sky above argentine pampa, ${moonVisual} glowing ethereally, mystical astronomy, cinematic vertical portrait photography, deep midnight blue, no text`,`${moonVisual} rising over misty pampa horizon, ${ms.sign} stars shimmering, ancient astrological chart overlaid, cinematic vertical portrait photography, silver and indigo tones, no text`,`${ms.sign} constellation map glowing in clear desert night sky, ${moonVisual} prominent overhead, milky way visible, south american countryside, cinematic vertical portrait photography, deep blue black, no text`,`mystical ${ms.sign} symbol in night sky, ${moonVisual} glowing with sacred geometry light, argentinian pampa silhouette, cinematic vertical portrait photography, ethereal purple and silver, no text`];\n\nconst ACTIVIDAD={fruto:[`farmer hands carefully harvesting ripe tomatoes in biodynamic garden close-up, warm afternoon sunlight, earth and abundance, cinematic vertical portrait photography, rich colors, no text`,`close-up hands picking purple figs from tree branch, morning dew, soft light, biodynamic farm, cinematic vertical portrait photography, warm tones, no text`,`woman harvesting squash in biodynamic garden, long afternoon shadows, golden light, cinematic vertical portrait photography, earthy rich tones, no text`,`hands cutting ripe peppers from plant at sunrise, mist in background, biodynamic garden, cinematic vertical portrait photography, vibrant red tones, no text`],raiz:[`gardener hands working dark fertile soil planting bulbs close-up, biodynamic cultivation, dramatic natural light, earthy and rich, cinematic vertical portrait photography, no text`,`hands pulling fresh carrots from dark earth, soil falling, close-up, misty morning, biodynamic garden, cinematic vertical portrait photography, earthy warm tones, no text`,`farmer digging up large beets with rustic fork, dramatic earth tones, biodynamic farm, cinematic vertical portrait photography, deep browns and purples, no text`,`close-up hands sorting garlic bulbs on wooden table, garden in background, soft light, biodynamic setting, cinematic vertical portrait photography, warm neutral tones, no text`],flor:[`delicate wildflowers and aromatic herbs being harvested by gentle hands close-up, soft morning light, biodynamic garden bokeh, cinematic vertical portrait photography, pastel colors, no text`,`hands carefully cutting lavender bundles at dawn, dew drops, purple field background, biodynamic farm, cinematic vertical portrait photography, purple and silver tones, no text`,`close-up hands arranging fresh chamomile flowers, golden light, soft garden bokeh, biodynamic garden, cinematic vertical portrait photography, warm golden tones, no text`,`woman tying herb bundles for drying, rosemary and oregano, rustic background, golden afternoon light, cinematic vertical portrait photography, warm earthy tones, no text`],hoja:[`fresh leafy greens with morning dew drops close-up, lush spinach and lettuce leaves, biodynamic garden, soft natural light, cinematic vertical portrait photography, vibrant green, no text`,`hands washing freshly harvested kale in stone basin, garden background, soft morning light, biodynamic farm, cinematic vertical portrait photography, cool fresh greens, no text`,`close-up giant chard leaf with water droplets, backlit sunlight, translucent green, biodynamic garden, cinematic vertical portrait photography, luminous green tones, no text`,`garden salad being assembled from freshly cut greens, rustic wooden surface, warm light, biodynamic harvest, cinematic vertical portrait photography, vibrant fresh colors, no text`]};\n\nconst DETALLE={fruto:[`rustic wooden basket overflowing with colorful fresh harvest on garden background, golden hour light, vertical portrait photography, abundance and warmth, no text`,`glass jar preserved tomatoes next to fresh harvest, rustic stone surface, soft light, vertical portrait photography, warm red tones, no text`,`scattered colorful squash and zucchini on burlap sack, natural light, rustic farm aesthetic, vertical portrait photography, earthy abundance, no text`,`wooden crate mixed heritage tomatoes yellow red and green, outdoor market, soft natural light, vertical portrait photography, vibrant colors, no text`],raiz:[`fresh pulled carrots beets and root vegetables with soil on roots, rustic wooden surface, vertical portrait photography, earthy richness, warm tones, no text`,`braided garlic and onion hanging from rustic wooden beam, warm kitchen light, vertical portrait photography, warm golden tones, no text`,`pile of muddy potatoes and turnips in wooden crate, dramatic side light, vertical portrait photography, rich earthy tones, no text`,`assorted root vegetables arranged on stone surface, one split open showing interior, soft natural light, vertical portrait photography, deep earth palette, no text`],flor:[`beautiful wildflower bouquet in mason jar with soft garden background, natural light, vertical portrait photography, dreamy and magical, soft pastel tones, no text`,`dried lavender bundles tied with rustic string hanging in window light, vertical portrait photography, purple and silver tones, no text`,`chamomile tea in clear glass mug with fresh flowers surrounding it, morning light, vertical portrait photography, golden warm tones, no text`,`fresh herb bundles rosemary mint and thyme on linen cloth, rustic surface, soft light, vertical portrait photography, natural green tones, no text`],hoja:[`colorful salad bowl overflowing with fresh garden greens on rustic wooden table, natural light, vertical portrait photography, fresh and vibrant, no text`,`fresh cut herbs in small clay pots on windowsill, morning light streaming in, vertical portrait photography, bright cheerful greens, no text`,`large ceramic bowl of leafy greens with drops of olive oil, rustic stone table, natural light, vertical portrait photography, fresh mediterranean tones, no text`,`freshly washed lettuce leaves drying on linen towel, afternoon light, airy and fresh, vertical portrait photography, clean soft greens, no text`]};\n\nconst CIERRE={fruto:[`argentine pampa at golden hour, warm light over open farmland, wide sky, peaceful and abundant landscape, cinematic vertical portrait photography, no text`,`sunset over biodynamic farm with fruit trees silhouetted, purple orange sky, cinematic vertical portrait photography, dramatic warm tones, no text`,`wide angle pampa landscape after harvest, golden stubble fields, big sky with clouds, cinematic vertical portrait photography, warm earthy tones, no text`,`old farmhouse surrounded by fruit trees at dusk, firefly lights beginning, cinematic vertical portrait photography, romantic warm tones, no text`],raiz:[`misty argentine countryside at dawn, soft morning light, grounded and serene rural landscape, dew on grass, cinematic vertical portrait photography, earthy tones, no text`,`fog over flat pampa fields at sunrise, solitary tree silhouette, cinematic vertical portrait photography, cool grey and gold, no text`,`wide open argentine farmland after rain, dark wet soil, clearing sky, cinematic vertical portrait photography, earthy dramatic tones, no text`,`rural dirt road through misty countryside at dawn, biodynamic farm in distance, cinematic vertical portrait photography, cool morning tones, no text`],flor:[`wildflower meadow at sunset in argentine pampa, purple and golden sky, magical open countryside, cinematic vertical portrait photography, no text`,`lavender field at dusk with fireflies, purple twilight sky, cinematic vertical portrait photography, magical purple tones, no text`,`sunflower field swaying in pampa wind at golden hour, dramatic sky, cinematic vertical portrait photography, vivid warm tones, no text`,`meadow of mixed wildflowers at dawn, mist rising, gentle morning light, cinematic vertical portrait photography, soft pastel tones, no text`],hoja:[`lush green argentine countryside after rain, fresh and alive, wide open sky, biodynamic landscape, vibrant, cinematic vertical portrait photography, no text`,`dense biodynamic garden from above at golden hour, geometric vegetable rows, lush and orderly, cinematic vertical portrait photography, vivid green, no text`,`misty morning over green pampa fields, dew on grass, cattle grazing in distance, cinematic vertical portrait photography, cool fresh tones, no text`,`leafy vegetable garden at sunset, backlighting through greens, magical atmosphere, cinematic vertical portrait photography, glowing green tones, no text`]};\n\nconst promptImagen1=PAISAJE[tipo][dateHash%4];const promptImagen2=LUNA[(dateHash+1)%4];const promptImagen3=ACTIVIDAD[tipo][(dateHash+2)%4];const promptImagen4=DETALLE[tipo][(dateHash+3)%4];const promptImagen5=CIERRE[tipo][(dateHash+4)%4];\n\nlet actNarr;if(ambos.length&&!soloP.length&&!soloH.length){actNarr='Hoy podés sembrar y cosechar '+ambos.slice(0,3).join(', ')+'.';}else if(ambos.length){let t='Hoy podés sembrar y cosechar '+ambos.slice(0,2).join(' y ');if(soloP.length)t+=', también sembrar '+soloP.slice(0,2).join(' y ');if(soloH.length)t+=', y cosechar '+soloH.slice(0,2).join(' y ');actNarr=t+'.';}else if(soloP.length||soloH.length){const parts=[];if(soloP.length)parts.push('sembrar '+soloP.slice(0,3).join(', '));if(soloH.length)parts.push('cosechar '+soloH.slice(0,3).join(', '));actNarr='Hoy es buen momento para '+parts.join(' y ')+'.';}else{actNarr='Hoy es buen día para observar el huerto.';}let actCaption;if(ambos.length&&!soloP.length&&!soloH.length){actCaption='Sembrar y cosechar: '+ambos.join(', ');}else if(ambos.length){const cp=['Sembrar y cosechar: '+ambos.join(', ')];if(soloP.length)cp.push('Solo sembrar: '+soloP.join(', '));if(soloH.length)cp.push('Solo cosechar: '+soloH.join(', '));actCaption=cp.join(' · ');}else{const cp2=[];if(soloP.length)cp2.push('Sembrar: '+soloP.slice(0,3).join(', '));if(soloH.length)cp2.push('Cosechar: '+soloH.slice(0,3).join(', '));actCaption=cp2.length?cp2.join(' · '):'Seguí tu intuición';}\nconst hooks=['¿Sabías que la luna decide qué sembrar cada día?','La luna de hoy tiene un mensaje para tu huerta.','La agricultura biodinámica lleva siglos siguiendo los ciclos lunares.','Antes de regar o cosechar hoy, mirá esto.','El ritmo del cosmos llega a tu huerta todos los días.','¿Tu huerta no da lo que esperás? Puede ser cuestión de timing lunar.','No todas las fechas son iguales para sembrar y cosechar.'];\nconst hook=hooks[(day+monNum)%hooks.length];\nconst narracion=`${hook} Hoy, ${DIAS[dow]} ${day} de ${MESES[mon]}, luna en ${ms.sign}, ${fase}${asc?', ascendente':', descendente'}. ${tipoExplica[tipo]}${cambiaTipo?' A las '+horasCambio+' horas la luna pasa a día de '+tipoFin+', cuando el órgano cambia y las actividades también.':''} ${tipoTip[tipo]} ${actNarr} Guardá este video y empezá a sembrar con la luna. Almanaque biodinámico, hemisferio sur.`;\n\nconst tipoLabel=cambiaTipo?tipoInicio+' '+TIPO_EMOJI[tipoInicio]+' → '+tipoFin+' '+TIPO_EMOJI[tipoFin]+' (desde ~'+horasCambio+'hs)':tipo+' '+TIPO_EMOJI[tipo];const captionTT=`${DIAS[dow]} ${day} de ${MESES[mon]} — Día de ${tipoLabel}\\n🌙 Luna en ${ms.sign} | ${fase}\\n${asc?'↑ Ascendente':'↓ Descendente'}\\n\\n${actCaption}\\n\\n#almanaquebiodinamico #luna #huerto #biodinamica #hemisferiosur`;\n\nconst sub1=`🌙 Luna en ${ms.sign}  ·  ${fase}`;\nconst sub2=cambiaTipo?`${TIPO_EMOJI[tipoInicio]} ${tipoInicio.charAt(0).toUpperCase()+tipoInicio.slice(1)} → ${TIPO_EMOJI[tipoFin]} ${tipoFin.charAt(0).toUpperCase()+tipoFin.slice(1)} (~${horasCambio}hs)  ·  ${asc?'↑ Asc':'↓ Des'}`:`Día de ${tipo.charAt(0).toUpperCase()+tipo.slice(1)} ${TIPO_EMOJI[tipo]}  ·  ${asc?'↑ Ascendente':'↓ Descendente'}`;\nconst sub3=ambos.length?`🌱 Sembrar y cosechar: ${[...ambos,...soloP].slice(0,3).join(', ')}`:(sc.p.length?`🌱 Sembrar: ${sc.p.slice(0,3).join(', ')}`:`🌱 Descanso lunar`);const sub4=soloH.length?`🌿 Solo cosechar: ${soloH.slice(0,3).join(', ')}`:(ambos.length?`🌿 Todo se puede sembrar y cosechar`:(sc.h.length?`🌿 Cosechar: ${sc.h.slice(0,3).join(', ')}`:`🌿 Seguí la intuición`));\nconst sub5=`📅 Almanaque Biodinámico · Hemisferio Sur`;\nconst titulo=`Almanaque Biodinámico · ${DIAS[dow]} ${day} de ${MESES[mon]} · Día de ${cambiaTipo?tipoInicio+' → '+tipoFin:tipo}`;return [{ json: { narracion, captionTT, titulo, promptImagen1, promptImagen2, promptImagen3, promptImagen4, promptImagen5, sub1, sub2, sub3, sub4, sub5, dateStr } }];"
+      },
+      "id": "tt-002",
+      "name": "Datos del día",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\nconst ahora = new Date(new Date().getTime() - 3 * 3600000);\nconst hoy = ahora.toISOString().split('T')[0];\nif (data.ultimaPublicacionTT === hoy) {\n  throw new Error('TikTok: ya publicado hoy ' + hoy);\n}\ndata.ultimaPublicacionTT = hoy;\nreturn $input.all();"
+      },
+      "id": "tt-003",
+      "name": "Guard: ya publicado en TikTok",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\ndata.ultimaPublicacionTT = null;\nreturn [{ json: { reset: true } }];"
+      },
+      "id": "tt-reset",
+      "name": "Reset Guard TikTok (solo pruebas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "sk_b271165b56e491fa7e1288c7f9480cb659a5d7e0eb031862"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $node['Datos del día'].json.narracion, model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.55, similarity_boost: 0.80, style: 0.15, use_speaker_boost: true } }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "audio"
+            }
+          }
+        }
+      },
+      "id": "tt-007",
+      "name": "ElevenLabs TTS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        920,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloudinary.com/v1_1/dswpdeego/auto/upload",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "audio"
+            },
+            {
+              "name": "upload_preset",
+              "value": "ml_default"
+            },
+            {
+              "name": "folder",
+              "value": "almanaque-audio"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "tt-008",
+      "name": "Subir audio a Cloudinary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1160,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.piapi.ai/api/v1/task",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'Qubico/flux1-schnell', task_type: 'txt2img', input: { prompt: $node['Datos del día'].json.promptImagen1, width: 576, height: 1024, num_inference_steps: 4 } }) }}",
+        "options": {}
+      },
+      "id": "tt-004",
+      "name": "PiAPI imagen 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.piapi.ai/api/v1/task",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'Qubico/flux1-schnell', task_type: 'txt2img', input: { prompt: $node['Datos del día'].json.promptImagen2, width: 576, height: 1024, num_inference_steps: 4 } }) }}",
+        "options": {}
+      },
+      "id": "tt-img2",
+      "name": "PiAPI imagen 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.piapi.ai/api/v1/task",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'Qubico/flux1-schnell', task_type: 'txt2img', input: { prompt: $node['Datos del día'].json.promptImagen3, width: 576, height: 1024, num_inference_steps: 4 } }) }}",
+        "options": {}
+      },
+      "id": "tt-img3",
+      "name": "PiAPI imagen 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.piapi.ai/api/v1/task",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'Qubico/flux1-schnell', task_type: 'txt2img', input: { prompt: $node['Datos del día'].json.promptImagen4, width: 576, height: 1024, num_inference_steps: 4 } }) }}",
+        "options": {}
+      },
+      "id": "tt-img4",
+      "name": "PiAPI imagen 4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2120,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.piapi.ai/api/v1/task",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'Qubico/flux1-schnell', task_type: 'txt2img', input: { prompt: $node['Datos del día'].json.promptImagen5, width: 576, height: 1024, num_inference_steps: 4 } }) }}",
+        "options": {}
+      },
+      "id": "tt-img5",
+      "name": "PiAPI imagen 5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2360,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 40,
+        "unit": "seconds"
+      },
+      "id": "tt-005",
+      "name": "Esperar imágenes",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2600,
+        300
+      ],
+      "webhookId": "almanaque-piapi-5img-wait"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.piapi.ai/api/v1/task/' + $node['PiAPI imagen 1'].json.data.task_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "tt-006",
+      "name": "Check PiAPI img 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2840,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.piapi.ai/api/v1/task/' + $node['PiAPI imagen 2'].json.data.task_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "tt-chk2",
+      "name": "Check PiAPI img 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3080,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.piapi.ai/api/v1/task/' + $node['PiAPI imagen 3'].json.data.task_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "tt-chk3",
+      "name": "Check PiAPI img 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.piapi.ai/api/v1/task/' + $node['PiAPI imagen 4'].json.data.task_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "tt-chk4",
+      "name": "Check PiAPI img 4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3560,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.piapi.ai/api/v1/task/' + $node['PiAPI imagen 5'].json.data.task_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "tt-chk5",
+      "name": "Check PiAPI img 5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function getUrl(resp, idx) {\n  if (!resp || !resp.data) throw new Error('PiAPI img' + idx + ': sin data. Respuesta: ' + JSON.stringify(resp));\n  const out = resp.data.output;\n  if (!out) throw new Error('PiAPI img' + idx + ': sin output. Estado: ' + resp.data.status);\n  const url = out.image_url || (Array.isArray(out.image_urls) && out.image_urls[0]) || null;\n  if (!url) throw new Error('PiAPI img' + idx + ': URL no encontrada. Output: ' + JSON.stringify(out));\n  return url;\n}\n\nconst url1 = getUrl($node['Check PiAPI img 1'].json, 1);\nconst url2 = getUrl($node['Check PiAPI img 2'].json, 2);\nconst url3 = getUrl($node['Check PiAPI img 3'].json, 3);\nconst url4 = getUrl($node['Check PiAPI img 4'].json, 4);\nconst url5 = getUrl($node['Check PiAPI img 5'].json, 5);\nconst audioUrl = $node['Subir audio a Cloudinary'].json.secure_url;\nif (!audioUrl) throw new Error('Cloudinary: secure_url no encontrado');\n\nconst d = $node['Datos del día'].json;\nconst musicUrl = ''; // MUSICA: pegar URL de Cloudinary con MP3 royalty-free\n\nconst tracks = [\n  { clips: [\n    { asset: { type: 'image', src: url1 }, start: 0, length: 9, effect: 'zoomIn', transition: { 'in': 'fade', out: 'fade' } },\n    { asset: { type: 'image', src: url2 }, start: 9, length: 9, effect: 'slideLeft', transition: { 'in': 'fade', out: 'fade' } },\n    { asset: { type: 'image', src: url3 }, start: 18, length: 9, effect: 'zoomOut', transition: { 'in': 'fade', out: 'fade' } },\n    { asset: { type: 'image', src: url4 }, start: 27, length: 9, effect: 'slideRight', transition: { 'in': 'fade', out: 'fade' } },\n    { asset: { type: 'image', src: url5 }, start: 36, length: 9, effect: 'slideUp', transition: { 'in': 'fade', out: 'fade' } }\n  ]}\n];\n\nif (musicUrl) {\n  tracks.push({ clips: [{ asset: { type: 'audio', src: musicUrl, volume: 0.15 }, start: 0, length: 45 }] });\n}\n\nconst shotstackBody = JSON.stringify({\n  timeline: {\n    soundtrack: { src: audioUrl, effect: 'fadeOut', volume: 1 },\n    tracks\n  },\n  output: { format: 'mp4', resolution: 'hd', aspectRatio: '9:16', fps: 25 }\n});\n\nreturn [{ json: { shotstackBody } }];"
+      },
+      "id": "tt-prep",
+      "name": "Preparar URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4040,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.shotstack.io/edit/stage/render",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "FJujlDwiDfxGSPh06cdnLcrBXCdp5HH0NcqxeIzm"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.shotstackBody }}",
+        "options": {}
+      },
+      "id": "tt-009",
+      "name": "Shotstack Render",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4280,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 200,
+        "unit": "seconds"
+      },
+      "id": "tt-010",
+      "name": "Esperar render",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4520,
+        300
+      ],
+      "webhookId": "almanaque-shotstack-wait"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.shotstack.io/edit/stage/render/' + $node['Shotstack Render'].json.response.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "FJujlDwiDfxGSPh06cdnLcrBXCdp5HH0NcqxeIzm"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "tt-011",
+      "name": "Check Shotstack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $input.first().json.response;\nif (!r) throw new Error('Shotstack: sin response en la respuesta');\nif (r.status === 'rendering' || r.status === 'queued') throw new Error('Shotstack aún renderizando (estado: ' + r.status + '). Aumentar el tiempo de espera o reintentar más tarde.');\nif (r.status === 'failed') throw new Error('Shotstack falló: ' + (r.error || 'error desconocido'));\nif (!r.url) throw new Error('Shotstack status=' + r.status + ' pero sin URL. Response: ' + JSON.stringify(r));\nreturn [{ json: { videoUrl: r.url } }];"
+      },
+      "id": "tt-verify",
+      "name": "Verificar render",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5000,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const videoUrl = $input.first().json.videoUrl;\nconst d = $node['Datos del día'].json;\nconst caption = d.captionTT || '';\nconst dateStr = d.dateStr || '';\n\nconst html = `<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Preview ${dateStr}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d0d;color:#fff;font-family:system-ui,sans-serif;display:flex;gap:24px;padding:24px;min-height:100vh;align-items:flex-start}video{border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.6);max-height:88vh}.info{max-width:380px;padding-top:8px}h2{font-size:1rem;color:#a78bfa;margin-bottom:14px;font-weight:500}pre{white-space:pre-wrap;font-size:.85rem;color:#ccc;background:#1a1a1a;padding:16px;border-radius:10px;line-height:1.7}a{display:block;margin-top:12px;font-size:.75rem;color:#7c3aed;word-break:break-all}</style></head><body><video src=\"${videoUrl}\" controls autoplay loop playsinline></video><div class=\"info\"><h2>Almanaque Biodinámico · ${dateStr}</h2><pre>${caption.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre><a href=\"${videoUrl}\" target=\"_blank\">${videoUrl}</a></div></body></html>`;\n\nconst b64 = Buffer.from(html, 'utf-8').toString('base64');\nconst dataUrl = 'data:text/html;base64,' + b64;\n\nreturn [{ json: { videoUrl, dateStr, previewDataUrl: dataUrl } }];"
+      },
+      "id": "tt-preview",
+      "name": "Preview HTML (test)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5240,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "blt_yDz6vhxK+JvD2q1m9k+ZXVZZZIApno72jk7wazPkQNE="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ post: { accountId: '44260', content: { text: $node['Datos del día'].json.captionTT, mediaUrls: [$json.videoUrl], platform: 'tiktok' }, target: { targetType: 'tiktok', privacyLevel: 'PUBLIC_TO_EVERYONE', disabledComments: false, disabledDuet: false, disabledStitch: false, isBrandedContent: false, isYourBrand: false, isAiGenerated: true } } }) }}",
+        "options": {}
+      },
+      "id": "tt-012",
+      "name": "Blotato → TikTok",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "blotato-api-key",
+              "value": "blt_yDz6vhxK+JvD2q1m9k+ZXVZZZIApno72jk7wazPkQNE="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ post: { accountId: '38363', content: { text: $node['Datos del día'].json.captionTT, mediaUrls: [$node['Verificar render'].json.videoUrl], platform: 'youtube' }, target: { targetType: 'youtube', privacyStatus: 'public', madeForKids: false, isShort: true, title: $node['Datos del día'].json.titulo, shouldNotifySubscribers: false } } }) }}",
+        "options": {}
+      },
+      "id": "tt-013",
+      "name": "Blotato → YouTube Shorts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v19.0/17841429539202533/media",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "video_url",
+              "value": "={{ $node['Verificar render'].json.videoUrl }}"
+            },
+            {
+              "name": "media_type",
+              "value": "STORIES"
+            },
+            {
+              "name": "access_token",
+              "value": "EAAOHttPyRi4BRjZCoLuCvmc700rciNDJWmmRYMEMU2o2MYO6ISXE4fEX1UlfNRJWZAV40DyrjvG2y3deofIsfWYtNIOBZBUkp3j3nDg6A8lQNG2jeTzFo6KXZCy87qXT7H76DpQ9gEuU13tlV6PmJXFeJ3VQPZCNfYjRO4Dq4x0mHGPvq4URdfh4hGMcwWxeEbf0ZCdyM1J2NYmDVU5wKOVBmT"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ig-s1",
+      "name": "IG Story → Crear container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5720,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 45,
+        "unit": "seconds"
+      },
+      "id": "ig-s2",
+      "name": "IG Story → Esperar procesamiento",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5960,
+        300
+      ],
+      "webhookId": "ig-story-process-wait"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v19.0/17841429539202533/media_publish",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $node['IG Story → Crear container'].json.id }}"
+            },
+            {
+              "name": "access_token",
+              "value": "EAAOHttPyRi4BRjZCoLuCvmc700rciNDJWmmRYMEMU2o2MYO6ISXE4fEX1UlfNRJWZAV40DyrjvG2y3deofIsfWYtNIOBZBUkp3j3nDg6A8lQNG2jeTzFo6KXZCy87qXT7H76DpQ9gEuU13tlV6PmJXFeJ3VQPZCNfYjRO4Dq4x0mHGPvq4URdfh4hGMcwWxeEbf0ZCdyM1J2NYmDVU5wKOVBmT"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ig-s3",
+      "name": "IG Story → Publicar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6200,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Todos los días 9:30am": {
+      "main": [
+        [
+          {
+            "node": "Datos del día",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Datos del día": {
+      "main": [
+        [
+          {
+            "node": "Guard: ya publicado en TikTok",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard: ya publicado en TikTok": {
+      "main": [
+        [
+          {
+            "node": "ElevenLabs TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ElevenLabs TTS": {
+      "main": [
+        [
+          {
+            "node": "Subir audio a Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir audio a Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "PiAPI imagen 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PiAPI imagen 1": {
+      "main": [
+        [
+          {
+            "node": "PiAPI imagen 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PiAPI imagen 2": {
+      "main": [
+        [
+          {
+            "node": "PiAPI imagen 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PiAPI imagen 3": {
+      "main": [
+        [
+          {
+            "node": "PiAPI imagen 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PiAPI imagen 4": {
+      "main": [
+        [
+          {
+            "node": "PiAPI imagen 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PiAPI imagen 5": {
+      "main": [
+        [
+          {
+            "node": "Esperar imágenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar imágenes": {
+      "main": [
+        [
+          {
+            "node": "Check PiAPI img 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check PiAPI img 1": {
+      "main": [
+        [
+          {
+            "node": "Check PiAPI img 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check PiAPI img 2": {
+      "main": [
+        [
+          {
+            "node": "Check PiAPI img 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check PiAPI img 3": {
+      "main": [
+        [
+          {
+            "node": "Check PiAPI img 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check PiAPI img 4": {
+      "main": [
+        [
+          {
+            "node": "Check PiAPI img 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check PiAPI img 5": {
+      "main": [
+        [
+          {
+            "node": "Preparar URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar URLs": {
+      "main": [
+        [
+          {
+            "node": "Shotstack Render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shotstack Render": {
+      "main": [
+        [
+          {
+            "node": "Esperar render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar render": {
+      "main": [
+        [
+          {
+            "node": "Check Shotstack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Shotstack": {
+      "main": [
+        [
+          {
+            "node": "Verificar render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar render": {
+      "main": [
+        [
+          {
+            "node": "Blotato → TikTok",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preview HTML (test)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blotato → TikTok": {
+      "main": [
+        [
+          {
+            "node": "Blotato → YouTube Shorts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blotato → YouTube Shorts": {
+      "main": [
+        [
+          {
+            "node": "IG Story → Crear container",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG Story → Crear container": {
+      "main": [
+        [
+          {
+            "node": "IG Story → Esperar procesamiento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG Story → Esperar procesamiento": {
+      "main": [
+        [
+          {
+            "node": "IG Story → Publicar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "almanaque"
+    },
+    {
+      "name": "tiktok"
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "name": "Bot Pedidos - El Huerto de Lucas v8",
+  "nodes": [
+    {
+      "parameters": { "updates": ["message"], "additionalFields": {} },
+      "id": "n1", "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger", "typeVersion": 1.1,
+      "position": [200, 300], "webhookId": "huerto-bot-v8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst chatId = $json.message.chat.id.toString();\nconst text = ($json.message.text || '').trim();\n\nif (!staticData.sessions) staticData.sessions = {};\nif (!staticData.orderCounter) staticData.orderCounter = 0;\nif (!staticData.sessions[chatId]) staticData.sessions[chatId] = { step: 0, data: { products: [] } };\n\nconst session = staticData.sessions[chatId];\nif (!session.data.products) session.data.products = [];\n\n// ─── LUNAR CALCULATOR ────────────────────────────────────────────────────────\nfunction getMoonData(date) {\n  const J2000 = new Date('2000-01-01T12:00:00Z');\n  const daysSinceJ2000 = (date - J2000) / 86400000;\n\n  // Moon mean longitude (tropical)\n  const L = ((218.3165 + 13.17639648 * daysSinceJ2000) % 360 + 360) % 360;\n  const signIndex = Math.floor(L / 30);\n  const signs = ['Aries','Tauro','Geminis','Cancer','Leo','Virgo','Libra','Escorpio','Sagitario','Capricornio','Acuario','Piscis'];\n  const sign = signs[signIndex];\n\n  // Moon phase (synodic)\n  const knownNew = new Date('2000-01-06T18:14:00Z');\n  const SYNODIC = 29.530589;\n  const daysSinceNew = (date - knownNew) / 86400000;\n  const cycle = ((daysSinceNew % SYNODIC) + SYNODIC) % SYNODIC;\n  const illumination = Math.round(50 * (1 - Math.cos(2 * Math.PI * cycle / SYNODIC)));\n\n  let phase;\n  if (cycle < 1.85) phase = 'Luna Nueva';\n  else if (cycle < 7.38) phase = 'Luna Creciente';\n  else if (cycle < 9.22) phase = 'Cuarto Creciente';\n  else if (cycle < 14.77) phase = 'Gibosa Creciente';\n  else if (cycle < 16.61) phase = 'Luna Llena';\n  else if (cycle < 22.15) phase = 'Gibosa Menguante';\n  else if (cycle < 23.99) phase = 'Cuarto Menguante';\n  else phase = 'Luna Menguante';\n\n  const bioType = { Aries:'fruto', Tauro:'raiz', Geminis:'flor', Cancer:'hoja',\n    Leo:'fruto', Virgo:'raiz', Libra:'flor', Escorpio:'hoja',\n    Sagitario:'fruto', Capricornio:'raiz', Acuario:'flor', Piscis:'hoja' };\n\n  return { sign, phase, illumination, type: bioType[sign], cycleDay: Math.round(cycle) };\n}\n\nfunction buildBioTip(date) {\n  const m = getMoonData(date);\n  const dateStr = date.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });\n\n  const typeInfo = {\n    raiz:  { titulo:'DIA DE RAICES',  cultivos:'zanahorias, remolachas, cebollas, ajos, papas, puerros, rabanos',  consejo:'Cosechar, trasplantar y trabajar raices, tuberculos y bulbos. La savia baja hacia las raices.' },\n    hoja:  { titulo:'DIA DE HOJAS',   cultivos:'lechugas, acelgas, espinacas, kale, rucula, perejil, cilantro',    consejo:'Regar, fertilizar y cosechar hojas. La savia sube hacia el follaje. Bueno para plantar y trasplantar verduras de hoja.' },\n    fruto: { titulo:'DIA DE FRUTOS',  cultivos:'tomates, pimientos, zapallo, pepinos, porotos, guisantes, maiz',    consejo:'Cosechar frutos y semillas. Excelente para secar y guardar semillas. La energia se concentra en los frutos.' },\n    flor:  { titulo:'DIA DE FLORES',  cultivos:'flores, aromaticas, lavanda, manzanilla, calendula, albahaca',      consejo:'Trabajar flores y aromaticas, cortar flores para ramos, podar plantas en flor. Favorece el aroma y la belleza.' }\n  };\n\n  const phaseInfo = {\n    'Luna Nueva':        'LUNA NUEVA: Energia baja. Ideal para preparar canteros y compostar. Evitar sembrar.',\n    'Luna Creciente':    'LUNA CRECIENTE: Energia ascendente. Buen momento para sembrar plantas de hoja y flor.',\n    'Cuarto Creciente':  'CUARTO CRECIENTE: Energia fuerte. Muy bueno para sembrar y transplantar.',\n    'Gibosa Creciente':  'GIBOSA CRECIENTE: Maxima energia ascendente. Excelente para sembrar y fertilizar con biofertilizantes.',\n    'Luna Llena':        'LUNA LLENA: Maxima energia. Ideal para cosechar, resembrar y hacer preparados biodinamicos.',\n    'Gibosa Menguante':  'GIBOSA MENGUANTE: Energia descendente. Bueno para podar, conservar y hacer mermeladas.',\n    'Cuarto Menguante':  'CUARTO MENGUANTE: Energia menguante. Bueno para labrar la tierra, hacer compost y desmalezar.',\n    'Luna Menguante':    'LUNA MENGUANTE: Energia en reposo. Ideal para barbecho, limpieza y descanso del huerto.'\n  };\n\n  const ti = typeInfo[m.type];\n  return '🌱 Calendario Biodinamico\\n' + dateStr + '\\n\\n' +\n    'Luna en ' + m.sign + ' (' + m.phase + ', ' + m.illumination + '% iluminada)\\n' +\n    'Dia ' + m.cycleDay + ' del ciclo lunar\\n\\n' +\n    ti.titulo + '\\n' +\n    'Cultivos favorables: ' + ti.cultivos + '\\n\\n' +\n    'Que hacer hoy: ' + ti.consejo + '\\n\\n' +\n    phaseInfo[m.phase] + '\\n\\n' +\n    'Escribi 1 para hacer un pedido o 4 para fichas de plantas.';\n}\n// ─────────────────────────────────────────────────────────────────────────────\n\nconst MENU = 'Bienvenido a El Huerto de Lucas!\\n\\nQue queres hacer?\\n\\n1. Tienda online (hacer un pedido)\\n2. Mis redes y contacto\\n3. Consejo biodinamico de hoy\\n4. Fichas de plantas';\n\nlet response = '';\nlet checkStock = false;\nlet productSlug = '';\nlet productName = '';\nlet sendToLucas = false;\nlet sendQR = false;\nlet notifyPayment = false;\nlet orderSummary = '';\nlet paymentSummary = '';\nlet sheetData = {};\nlet routeTo = 'order';\n\n// ─── STEP 0: MAIN MENU ───────────────────────────────────────────────────────\nif (session.step === 0) {\n\n  // Awaiting plant question (option 4 sub-flow)\n  if (session.menuMode === 'fichas') {\n    session.menuMode = null;\n    return [{ json: { chatId, routeTo: 'ai',\n      userMessage: 'El usuario pregunta sobre como cultivar: ' + text + '. Respondé con ficha practica de cultivo agroecologico: epocas de siembra (indicar meses para Buenos Aires/zona templada), distancias entre plantas, profundidad de siembra, dias a cosecha, variedades recomendadas, riego y tips de manejo agroecologico. Si pregunta algo que no es una planta, indicale que escriba el nombre de un cultivo.',\n      response: '', checkStock: false, sendToLucas: false, sendQR: false, notifyPayment: false, orderSummary: '', paymentSummary: '', sheetData: {} } }];\n  }\n\n  if (text === '1') {\n    session.step = 1;\n    response = 'Genial! Para hacer tu pedido necesito algunos datos.\\n\\nCual es tu nombre?';\n\n  } else if (text === '2') {\n    response = 'El Huerto de Lucas\\n\\nInstagram: @elhuertodelucas\\nWhatsApp: +54 11 2532-8861\\nDireccion: Los Sauces 264, General Pinto, Buenos Aires\\nWeb: elhuertodelucas.com.ar\\n\\nEscribi 1, 3 o 4 para otras opciones.';\n\n  } else if (text === '3') {\n    response = buildBioTip(new Date());\n\n  } else if (text === '4') {\n    session.menuMode = 'fichas';\n    response = 'Fichas de plantas!\\n\\nQue planta o cultivo queres consultar?\\n(Ejemplo: acelga, tomate, zanahoria, lechuga...)';\n\n  } else {\n    response = MENU;\n  }\n\n  return [{ json: { chatId, routeTo, userMessage: text, response, checkStock: false, sendToLucas: false, sendQR: false, notifyPayment: false, orderSummary: '', paymentSummary: '', sheetData: {} } }];\n}\n\n// ─── STEPS 1-7: ORDER FLOW ───────────────────────────────────────────────────\n\nconst productMap = {\n  'acelga': { name: 'Acelga', slug: 'hortalizas/de-hojas/acelga-agroecologica-mix-variedades-atado' },\n  'rucula': { name: 'Rucula', slug: 'hortalizas/de-hojas/rucula-agroecologica-atado' },\n  'kale': { name: 'Kale', slug: 'hortalizas/de-hojas/kale-agroecologico-atado' },\n  'huevos': { name: 'Huevos de Campo', slug: 'granja/avicola/huevos-de-campo-docena' },\n  'puerro': { name: 'Puerro', slug: 'hortalizas/de-raices/puerro-agroecologico-atado' },\n  'albahaca': { name: 'Albahaca', slug: 'aromaticas/atados-frescos/albahaca-agroecologica-atado' },\n  'ciboulette': { name: 'Ciboulette', slug: 'aromaticas/atados-frescos/cibullete-agroecologico-atado' },\n  'cibullete': { name: 'Ciboulette', slug: 'aromaticas/atados-frescos/cibullete-agroecologico-atado' },\n  'oregano': { name: 'Oregano', slug: 'aromaticas/oregano-en-hojas-deshidratado-30gr' },\n  'laurel': { name: 'Laurel', slug: 'aromaticas/atados-frescos/laurel-agroecologico-fresco-atado' },\n  'achicoria': { name: 'Achicoria', slug: 'hortalizas/de-hojas/achicoria-agroecologica-atado' },\n  'cebolla': { name: 'Cebolla de Verdeo', slug: 'hortalizas/de-hojas/cebolla-de-verdeo-agroecologica-atado' },\n  'ensalada': { name: 'Hojas de Ensalada', slug: 'bolsones-y-mezclum/mezclum/hojas-ensalada-350gr' },\n};\n\nconst prices = {\n  'Acelga': 2800, 'Rucula': 2000, 'Kale': 1800, 'Huevos de Campo': 5000,\n  'Puerro': 2500, 'Albahaca': 1600, 'Ciboulette': 1500, 'Oregano': 1800,\n  'Laurel': 1000, 'Achicoria': 1000, 'Cebolla de Verdeo': 1800, 'Hojas de Ensalada': 4000,\n};\n\nfunction fmt(n) { return n.toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.'); }\n\nfunction calcTotal(products) {\n  let total = 0;\n  for (const item of products) {\n    const match = item.match(/^(\\d+)\\s*x\\s*(.+)$/i);\n    if (match) total += parseInt(match[1]) * (prices[match[2].trim()] || 0);\n  }\n  return total;\n}\n\nif (session.step === 1) {\n  session.data.name = text;\n  session.step = 2;\n  response = 'Gracias ' + text + '! Que producto queres agregar?\\n(Escribi el nombre, o listo cuando termines)';\n\n} else if (session.step === 2) {\n  const lower = text.toLowerCase();\n  if (session.data.awaitingQuantity) {\n    const pName = session.data.pendingProductName || 'Producto';\n    session.data.products.push(text + ' x ' + pName);\n    delete session.data.awaitingQuantity;\n    delete session.data.pendingProductName;\n    delete session.data.pendingProduct;\n    response = text + ' x ' + pName + ' agregado!\\nEscribi otro producto o listo para terminar.';\n  } else if (lower === 'listo') {\n    if (session.data.products.length === 0) {\n      response = 'No agregaste ningun producto todavia. Escribi el nombre de un producto para empezar.';\n    } else {\n      const total = calcTotal(session.data.products);\n      const discount = Math.min(Math.round(total * 0.4), 4000);\n      session.data.total = total;\n      session.step = 3;\n      response = 'Tu pedido:\\n- ' + session.data.products.join('\\n- ') +\n        '\\n\\nTotal: $' + fmt(total) + ' (con Cuenta DNI: $' + fmt(total - discount) + ')' +\n        '\\n\\nComo queres recibir tu pedido?\\n1. Envio a domicilio (sin costo, General Pinto)\\n2. Retiro en el huerto (Sabados 15 a 18hs)\\n3. Retiro en feria (Sabados cada 15 dias, 10 a 12:30hs)';\n    }\n  } else {\n    let found = null;\n    for (const [key, val] of Object.entries(productMap)) {\n      if (lower.includes(key)) { found = val; break; }\n    }\n    if (found) {\n      checkStock = true;\n      productSlug = found.slug;\n      productName = found.name;\n      session.data.pendingProduct = text;\n      session.data.pendingProductName = found.name;\n    } else {\n      response = 'No encontre ese producto.\\nEscribi alguno de estos: Acelga, Kale, Puerro, Rucula, Huevos, Albahaca, Ciboulette, Oregano, Laurel, Achicoria, Cebolla, Ensalada.';\n    }\n  }\n\n} else if (session.step === 3) {\n  if (text === '1') {\n    session.data.delivery = 'Envio a domicilio';\n    session.step = 4;\n    response = 'Envio a domicilio seleccionado.\\nCual es tu direccion en General Pinto?';\n  } else if (text === '2') {\n    session.data.delivery = 'Retiro en el huerto';\n    session.data.address = 'Retiro en el huerto (Sabados 15 a 18hs)';\n    session.step = 5;\n    response = 'Retiro en el huerto seleccionado (Sabados de 15 a 18hs).\\nCual es tu numero de telefono?';\n  } else if (text === '3') {\n    session.data.delivery = 'Retiro en feria';\n    session.data.address = 'Retiro en feria (Sabados cada 15 dias, 10 a 12:30hs)';\n    session.step = 5;\n    response = 'Retiro en feria seleccionado (Sabados cada 15 dias, de 10 a 12:30hs).\\nCual es tu numero de telefono?';\n  } else {\n    response = 'Escribi 1, 2 o 3 para elegir:\\n1. Envio a domicilio (sin costo, General Pinto)\\n2. Retiro en el huerto (Sabados 15 a 18hs)\\n3. Retiro en feria (Sabados c/15 dias, 10 a 12:30hs)';\n  }\n\n} else if (session.step === 4) {\n  session.data.address = text;\n  session.step = 5;\n  response = 'Cual es tu numero de telefono?';\n\n} else if (session.step === 5) {\n  session.data.phone = text;\n  staticData.orderCounter++;\n  const orderNum = 'PED-' + String(staticData.orderCounter).padStart(4, '0');\n  const ahora = new Date();\n  const fecha = ahora.toLocaleDateString('es-AR') + ' ' + ahora.toLocaleTimeString('es-AR');\n  const totalStr = '$' + fmt(session.data.total || 0);\n  sheetData = {\n    Pedido: orderNum,\n    Fecha: fecha,\n    Nombre: session.data.name,\n    Productos: session.data.products.join(', '),\n    Total: totalStr,\n    Entrega: session.data.delivery || '',\n    Direccion: session.data.address || '',\n    Telefono: text,\n    Pago: 'Pendiente'\n  };\n  orderSummary = orderNum + ' - NUEVO PEDIDO\\n\\nNombre: ' + session.data.name +\n    '\\nProductos:\\n- ' + session.data.products.join('\\n- ') +\n    '\\nTotal: ' + totalStr +\n    '\\nEntrega: ' + (session.data.delivery || '') +\n    '\\nDireccion: ' + (session.data.address || '') +\n    '\\nTelefono: ' + text +\n    '\\nPago: PENDIENTE';\n  response = 'Pedido ' + orderNum + ' registrado!\\n\\nComo vas a abonar?\\n1. Efectivo (al momento de la entrega/retiro)\\n2. Transferencia bancaria';\n  sendToLucas = true;\n  session.step = 6;\n\n} else if (session.step === 6) {\n  if (text === '1') {\n    response = 'Pago en efectivo seleccionado. Te contactamos para coordinar. Gracias por elegirnos!';\n    staticData.sessions[chatId] = { step: 0, data: { products: [] } };\n  } else if (text === '2') {\n    response = 'Para transferir usa el alias: lucaspirizmp\\nTe mandamos el QR a continuacion.\\n\\nCuando realices el pago, manda el comprobante por aca.';\n    sendQR = true;\n    session.step = 7;\n  } else {\n    response = 'Escribi 1 o 2:\\n1. Efectivo (al momento de entrega/retiro)\\n2. Transferencia bancaria';\n  }\n\n} else if (session.step === 7) {\n  const nombre = session.data.name || 'cliente';\n  response = 'Comprobante recibido! Tu pago esta confirmado. El pedido queda pendiente de envio. Gracias!';\n  paymentSummary = 'PAGO RECIBIDO\\n\\nCliente: ' + nombre + '\\nComprobante de transferencia recibido.\\nPedido listo para procesar.';\n  notifyPayment = true;\n  staticData.sessions[chatId] = { step: 0, data: { products: [] } };\n}\n\nreturn [{ json: { chatId, response, routeTo, checkStock, productSlug, productName, sendToLucas, sendQR, notifyPayment, orderSummary, paymentSummary, sheetData } }];"
+      },
+      "id": "n2", "name": "Code Main",
+      "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "conditions": { "conditions": [{ "id": "c1", "leftValue": "={{ $json.routeTo }}", "rightValue": "ai", "operator": { "type": "string", "operation": "equals" } }], "combinator": "and" }
+      },
+      "id": "n3", "name": "IF routeTo AI",
+      "type": "n8n-nodes-base.if", "typeVersion": 2, "position": [680, 160]
+    },
+    {
+      "parameters": {
+        "promptType": "define", "text": "={{ $json.userMessage }}",
+        "options": {
+          "systemMessage": "Sos el asistente virtual de El Huerto de Lucas, una huerta agroecologica en General Pinto, Buenos Aires, Argentina. Respondés de manera amigable, concisa y en español rioplatense. Recordas el contexto de la conversacion.\n\nPRODUCTOS Y PRECIOS:\n- Huevos de Campo (docena): $5.000\n- Hojas Ensalada (350gr): $4.000\n- Acelga Agroecologica (atado): $2.800\n- Puerro Agroecologico (atado): $2.500\n- Oregano Deshidratado (30gr): $1.800\n- Kale Agroecologico (atado): $1.800\n- Albahaca Agroecologica (atado): $1.600\n- Ciboulette Agroecologico (atado): $1.500\n- Laurel Agroecologico Fresco (atado): $1.000\nSIN STOCK ahora: Rucula, Cebolla de Verdeo, Achicoria.\n\nENTREGAS:\n- Envio a domicilio: sin costo, solo General Pinto, sabados a la tarde\n- Retiro en el huerto: sabados de 15 a 18hs\n- Retiro en feria: sabados cada 15 dias, de 10 a 12:30hs\n\nPAGOS:\n- Efectivo: al momento de la entrega o retiro\n- Transferencia bancaria: alias lucaspirizmp\n- Cuenta DNI: 40% de descuento hasta $4.000 de ahorro por semana\n\nFICHAS DE PLANTAS: Cuando el usuario pregunte sobre como cultivar una planta, respondé con informacion practica de cultivo agroecologico: epoca de siembra (meses para clima templado/Buenos Aires), distancias entre plantas y entre surcos, profundidad de siembra, dias a cosecha, variedades recomendadas, riego, y tips de manejo agroecologico. Sé breve y concreto.\n\nSi quiere hacer un pedido, indicale que escriba 1.\nSi no sabes algo, decí que contacten a Lucas al WhatsApp +54 11 2532-8861.\nRespuestas cortas. Sin emojis."
+        }
+      },
+      "id": "n4", "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent", "typeVersion": 1.7, "position": [900, 60]
+    },
+    {
+      "parameters": { "model": "gpt-4o-mini", "options": { "maxTokens": 400 } },
+      "id": "n5", "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi", "typeVersion": 1.2, "position": [780, -40]
+    },
+    {
+      "parameters": { "sessionKey": "={{ $('Code Main').item.json.chatId }}", "contextWindowLength": 20 },
+      "id": "n6", "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow", "typeVersion": 1.3, "position": [1020, -40]
+    },
+    {
+      "parameters": { "jsCode": "const chatId = $('Code Main').item.json.chatId;\nconst response = $json.output;\nreturn [{ json: { chatId, response } }];" },
+      "id": "n7", "name": "Code AI Format",
+      "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [1120, 60]
+    },
+    {
+      "parameters": {
+        "conditions": { "conditions": [{ "id": "c2", "leftValue": "={{ $json.checkStock }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } }], "combinator": "and" }
+      },
+      "id": "n8", "name": "IF checkStock",
+      "type": "n8n-nodes-base.if", "typeVersion": 2, "position": [900, 260]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://elhuertodelucas.com.ar/{{ $json.productSlug }}",
+        "options": { "response": { "response": { "responseFormat": "text" } } }
+      },
+      "id": "n9", "name": "Fetch Producto",
+      "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [1120, 180]
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst mainData = $('Code Main').item.json;\nconst chatId = mainData.chatId;\nconst productName = mainData.productName;\nconst session = staticData.sessions[chatId];\nconst html = $json.data || '';\nconst isOutOfStock = html.includes('product-tag--sin-stock');\nlet response = '';\nif (isOutOfStock) {\n  delete session.data.pendingProduct;\n  delete session.data.pendingProductName;\n  response = 'Lo siento, ' + productName + ' no esta disponible ahora.\\nEscribi otro producto o listo para continuar.';\n} else {\n  session.data.awaitingQuantity = true;\n  response = productName + ' disponible! Cuantos atados/unidades queres?';\n}\nreturn [{ json: { chatId, response } }];"
+      },
+      "id": "n10", "name": "Code Stock",
+      "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [1340, 180]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8963099582:AAHrpiZY_RUfLiWUMPx-IrIRjg8QRLsk99g/sendMessage",
+        "sendBody": true, "contentType": "json", "specifyBody": "keypair",
+        "bodyParameters": { "parameters": [
+          { "name": "chat_id", "value": "={{ $json.chatId }}" },
+          { "name": "text", "value": "={{ $json.response }}" }
+        ]},
+        "options": {}
+      },
+      "id": "n11", "name": "Enviar al Cliente",
+      "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [1560, 240]
+    },
+    {
+      "parameters": {
+        "conditions": { "conditions": [{ "id": "c3", "leftValue": "={{ $json.sendToLucas }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } }], "combinator": "and" }
+      },
+      "id": "n12", "name": "IF sendToLucas",
+      "type": "n8n-nodes-base.if", "typeVersion": 2, "position": [680, 380]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json.sheetData;\nreturn [{ json: {\n  Pedido: d.Pedido,\n  Fecha: d.Fecha,\n  Nombre: d.Nombre,\n  Productos: d.Productos,\n  Total: d.Total,\n  Entrega: d.Entrega,\n  Direccion: d.Direccion,\n  Telefono: d.Telefono,\n  Pago: d.Pago || 'Pendiente'\n} }];"
+      },
+      "id": "n13", "name": "Flat Sheet Data",
+      "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [900, 460]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": { "__rl": true, "value": "1ieRlpQe49pDPLlFzFopdbDUu4NyW2BRpX2tLsMKrbuI", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "Pedidos", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Pedido": "={{ $json.Pedido }}",
+            "Fecha": "={{ $json.Fecha }}", "Nombre": "={{ $json.Nombre }}",
+            "Productos": "={{ $json.Productos }}", "Total": "={{ $json.Total }}",
+            "Entrega": "={{ $json.Entrega }}", "Direccion": "={{ $json.Direccion }}",
+            "Telefono": "={{ $json.Telefono }}", "Pago": "={{ $json.Pago }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "Pedido", "displayName": "Pedido", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "Fecha", "displayName": "Fecha", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "Nombre", "displayName": "Nombre", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "Productos", "displayName": "Productos", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "Total", "displayName": "Total", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "Entrega", "displayName": "Entrega", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "Direccion", "displayName": "Direccion", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "Telefono", "displayName": "Telefono", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "Pago", "displayName": "Pago", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n14", "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets", "typeVersion": 4, "position": [1120, 460]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8963099582:AAHrpiZY_RUfLiWUMPx-IrIRjg8QRLsk99g/sendMessage",
+        "sendBody": true, "contentType": "json", "specifyBody": "keypair",
+        "bodyParameters": { "parameters": [
+          { "name": "chat_id", "value": "8325134029" },
+          { "name": "text", "value": "={{ $('Code Main').item.json.orderSummary }}" }
+        ]},
+        "options": {}
+      },
+      "id": "n15", "name": "Notificar Lucas Pedido",
+      "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [1340, 460]
+    },
+    {
+      "parameters": {
+        "conditions": { "conditions": [{ "id": "c4", "leftValue": "={{ $json.sendQR }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } }], "combinator": "and" }
+      },
+      "id": "n16", "name": "IF sendQR",
+      "type": "n8n-nodes-base.if", "typeVersion": 2, "position": [680, 540]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8963099582:AAHrpiZY_RUfLiWUMPx-IrIRjg8QRLsk99g/sendPhoto",
+        "sendBody": true, "contentType": "json", "specifyBody": "keypair",
+        "bodyParameters": { "parameters": [
+          { "name": "chat_id", "value": "={{ $('Code Main').item.json.chatId }}" },
+          { "name": "photo", "value": "https://d22fxaf9t8d39k.cloudfront.net/descripciones/5b27725b058e335831d12553272237f8abedd5a656352b3788dfa57dc1638a31179602.jpg" },
+          { "name": "caption", "value": "Alias: lucaspirizmp" }
+        ]},
+        "options": {}
+      },
+      "id": "n17", "name": "Enviar QR",
+      "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [900, 620]
+    },
+    {
+      "parameters": {
+        "conditions": { "conditions": [{ "id": "c5", "leftValue": "={{ $json.notifyPayment }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true" } }], "combinator": "and" }
+      },
+      "id": "n18", "name": "IF notifyPayment",
+      "type": "n8n-nodes-base.if", "typeVersion": 2, "position": [680, 700]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8963099582:AAHrpiZY_RUfLiWUMPx-IrIRjg8QRLsk99g/sendMessage",
+        "sendBody": true, "contentType": "json", "specifyBody": "keypair",
+        "bodyParameters": { "parameters": [
+          { "name": "chat_id", "value": "8325134029" },
+          { "name": "text", "value": "={{ $('Code Main').item.json.paymentSummary }}" }
+        ]},
+        "options": {}
+      },
+      "id": "n19", "name": "Notificar Lucas Pago",
+      "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [900, 780]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": { "main": [[{ "node": "Code Main", "type": "main", "index": 0 }]] },
+    "Code Main": {
+      "main": [[
+        { "node": "IF routeTo AI", "type": "main", "index": 0 },
+        { "node": "IF sendToLucas", "type": "main", "index": 0 },
+        { "node": "IF sendQR", "type": "main", "index": 0 },
+        { "node": "IF notifyPayment", "type": "main", "index": 0 }
+      ]]
+    },
+    "IF routeTo AI": {
+      "main": [
+        [{ "node": "AI Agent", "type": "main", "index": 0 }],
+        [{ "node": "IF checkStock", "type": "main", "index": 0 }]
+      ]
+    },
+    "OpenAI Chat Model": { "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]] },
+    "Window Buffer Memory": { "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]] },
+    "AI Agent": { "main": [[{ "node": "Code AI Format", "type": "main", "index": 0 }]] },
+    "Code AI Format": { "main": [[{ "node": "Enviar al Cliente", "type": "main", "index": 0 }]] },
+    "IF checkStock": {
+      "main": [
+        [{ "node": "Fetch Producto", "type": "main", "index": 0 }],
+        [{ "node": "Enviar al Cliente", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Producto": { "main": [[{ "node": "Code Stock", "type": "main", "index": 0 }]] },
+    "Code Stock": { "main": [[{ "node": "Enviar al Cliente", "type": "main", "index": 0 }]] },
+    "IF sendToLucas": { "main": [[{ "node": "Flat Sheet Data", "type": "main", "index": 0 }]] },
+    "Flat Sheet Data": { "main": [[{ "node": "Google Sheets", "type": "main", "index": 0 }]] },
+    "Google Sheets": { "main": [[{ "node": "Notificar Lucas Pedido", "type": "main", "index": 0 }]] },
+    "IF sendQR": { "main": [[{ "node": "Enviar QR", "type": "main", "index": 0 }]] },
+    "IF notifyPayment": { "main": [[{ "node": "Notificar Lucas Pago", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="90" fill="#1a1a1a"/>
+
+  <!-- Crescent moon (top-right) -->
+  <circle cx="370" cy="130" r="105" fill="#ec008c"/>
+  <circle cx="415" cy="95"  r="88"  fill="#1a1a1a"/>
+
+  <!-- Hen tail feathers -->
+  <ellipse cx="68" cy="295" rx="52" ry="22" fill="#cccccc" transform="rotate(-50 68 295)"/>
+  <ellipse cx="58" cy="325" rx="52" ry="22" fill="#dddddd" transform="rotate(-35 58 325)"/>
+  <ellipse cx="62" cy="355" rx="52" ry="22" fill="#cccccc" transform="rotate(-20 62 355)"/>
+
+  <!-- Hen body -->
+  <ellipse cx="215" cy="355" rx="155" ry="115" fill="#ffffff"/>
+
+  <!-- Wing detail -->
+  <ellipse cx="200" cy="345" rx="100" ry="65" fill="#e8e8e8" transform="rotate(-10 200 345)"/>
+
+  <!-- Hen head -->
+  <circle cx="345" cy="258" r="78" fill="#ffffff"/>
+
+  <!-- Comb -->
+  <ellipse cx="318" cy="185" rx="19" ry="28" fill="#ec008c"/>
+  <ellipse cx="345" cy="178" rx="20" ry="32" fill="#ec008c"/>
+  <ellipse cx="372" cy="184" rx="18" ry="27" fill="#ec008c"/>
+
+  <!-- Wattle -->
+  <ellipse cx="405" cy="308" rx="15" ry="22" fill="#ec008c"/>
+
+  <!-- Beak -->
+  <polygon points="415,262 458,252 415,282" fill="#f5a623"/>
+
+  <!-- Eye -->
+  <circle cx="368" cy="246" r="14" fill="#1a1a1a"/>
+  <circle cx="372" cy="242" r="5"  fill="#ffffff"/>
+
+  <!-- Legs -->
+  <rect x="170" y="462" width="22" height="50" rx="6" fill="#f5a623"/>
+  <rect x="230" y="462" width="22" height="50" rx="6" fill="#f5a623"/>
+
+  <!-- Feet left -->
+  <line x1="160" y1="510" x2="138" y2="510" stroke="#f5a623" stroke-width="10" stroke-linecap="round"/>
+  <line x1="170" y1="510" x2="170" y2="510" stroke="#f5a623" stroke-width="10" stroke-linecap="round"/>
+  <line x1="182" y1="510" x2="202" y2="510" stroke="#f5a623" stroke-width="10" stroke-linecap="round"/>
+  <!-- Feet right -->
+  <line x1="220" y1="510" x2="200" y2="510" stroke="#f5a623" stroke-width="10" stroke-linecap="round"/>
+  <line x1="230" y1="510" x2="230" y2="510" stroke="#f5a623" stroke-width="10" stroke-linecap="round"/>
+  <line x1="242" y1="510" x2="260" y2="510" stroke="#f5a623" stroke-width="10" stroke-linecap="round"/>
+</svg>

@@ -2117,7 +2117,7 @@ function render(date){
     <div class="moon-wrap">
       <span class="moon-em">${mp.em}</span>
       <div class="moon-txt">
-        <span class="moon-sign">Luna en ${addGlyphs(signo.split('→')[0].replace(/@[\d\-–]+\s*hs/i,'').trim())}</span><br>
+        <span class="moon-sign">Luna en ${addGlyphs(signo.replace(/@[\d\-–]+\s*hs/i,'').replace(/\s+$/,''))}</span><br>
         <span class="moon-bar" style="--p:${mp.ill}%"></span>${mp.ph} · Día ${mp.day}<br>
         <span class="moon-asc-ctx ${asc?'asc':'desc'}">${asc?'↑ Ascendente — cosechar · sembrar · podar':'↓ Descendente — trasplantar · abonar · compostar'}</span>
       </div>

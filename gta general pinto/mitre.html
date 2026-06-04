@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paseo por Av. Mitre — General Pinto</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; overflow:hidden; font-family:'Nunito',sans-serif; }
+
+/* ── Street View fullscreen ── */
+#pano { width:100vw; height:100vh; }
+
+/* ── Filtro cinematográfico ── */
+#grain {
+    position:fixed; inset:0; z-index:3; pointer-events:none;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay; opacity:.4;
+}
+#vignette {
+    position:fixed; inset:0; z-index:3; pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
+}
+
+/* ── Barras cinemáticas ── */
+.letterbox {
+    position:fixed; left:0; right:0; z-index:10; pointer-events:none;
+    background:#000; height:12vh;
+    transition:height .6s ease;
+}
+#lb-top    { top:0; }
+#lb-bottom { bottom:0; display:flex; align-items:center; justify-content:center; }
+
+/* ── Título intro ── */
+#intro {
+    position:fixed; inset:0; z-index:50;
+    background:#000; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:12px;
+    transition:opacity 1s;
+}
+#intro.fade { opacity:0; pointer-events:none; }
+#intro h1 {
+    font-size:clamp(1.2rem,4vw,2.2rem); font-weight:900;
+    color:#fff; letter-spacing:4px; text-transform:uppercase; text-align:center;
+}
+#intro p {
+    font-size:clamp(.7rem,2vw,1rem);
+    color:rgba(255,255,255,.5); letter-spacing:2px;
+}
+.intro-line {
+    width:60px; height:2px; background:#1fc71f;
+    box-shadow:0 0 10px #1fc71f;
+    animation:lineIn .8s ease forwards; opacity:0;
+}
+@keyframes lineIn { to { opacity:1; width:140px; } }
+#intro-btn {
+    margin-top:16px;
+    background:linear-gradient(135deg,#1fc71f,#14a014);
+    color:#fff; border:none; border-radius:10px;
+    padding:10px 28px; font-family:'Nunito',sans-serif;
+    font-size:.9rem; font-weight:900; letter-spacing:2px;
+    cursor:pointer; transition:transform .1s;
+}
+#intro-btn:hover { transform:scale(1.04); }
+
+/* ── Overlay de calle ── */
+#street-label {
+    position:fixed; top:14vh; left:50%; transform:translateX(-50%);
+    z-index:20; text-align:center; pointer-events:none;
+    transition:opacity .5s;
+}
+#street-label .calle {
+    font-size:clamp(1rem,3vw,1.6rem); font-weight:900; color:#fff;
+    text-shadow:0 2px 8px rgba(0,0,0,.9);
+    letter-spacing:2px; text-transform:uppercase;
+}
+#street-label .cruce {
+    font-size:clamp(.6rem,2vw,.85rem); color:rgba(255,255,255,.6);
+    letter-spacing:1px; margin-top:3px;
+}
+
+/* ── Badge de comercio ── */
+#comercio-card {
+    position:fixed; right:20px; top:50%; transform:translateY(-50%);
+    z-index:20; width:min(220px,38vw);
+    background:rgba(3,12,3,.92); border:1.5px solid #1fc71f;
+    border-radius:14px; padding:14px 16px;
+    opacity:0; pointer-events:none;
+    transition:opacity .4s, transform .4s;
+    transform:translateY(-50%) translateX(20px);
+    backdrop-filter:blur(10px);
+}
+#comercio-card.visible {
+    opacity:1; pointer-events:all;
+    transform:translateY(-50%) translateX(0);
+}
+#comercio-card .badge {
+    font-size:.55rem; font-weight:800; letter-spacing:2px;
+    color:#1fc71f; text-transform:uppercase; margin-bottom:6px; display:block;
+}
+#comercio-card h3 { font-size:.9rem; color:#fff; margin-bottom:3px; }
+#comercio-card p  { font-size:.7rem; color:#555; margin-bottom:10px; }
+.c-btn {
+    display:inline-block; padding:6px 11px; border-radius:7px;
+    text-decoration:none; font-size:.7rem; font-weight:700; margin:2px;
+}
+.c-phone    { background:#141420; color:#fff; border:1px solid #333; }
+.c-anunciar { background:#1fc71f; color:#000; }
+
+/* ── Barra de progreso ── */
+#progress-wrap {
+    position:fixed; bottom:12vh; left:50%; transform:translateX(-50%);
+    z-index:20; width:min(560px,80vw);
+}
+#progress-bar-bg {
+    height:3px; background:rgba(255,255,255,.15); border-radius:2px; margin-bottom:8px;
+}
+#progress-bar-fill {
+    height:100%; background:#1fc71f; border-radius:2px;
+    box-shadow:0 0 6px #1fc71f; width:0%;
+    transition:width .8s ease;
+}
+#progress-dots {
+    display:flex; justify-content:space-between;
+    position:relative;
+}
+.pdot {
+    width:8px; height:8px; border-radius:50%;
+    background:rgba(255,255,255,.25); border:1px solid rgba(255,255,255,.3);
+    cursor:pointer; transition:all .2s; flex-shrink:0;
+}
+.pdot.done  { background:#1fc71f; border-color:#1fc71f; box-shadow:0 0 6px #1fc71f; }
+.pdot.curr  { background:#fff; border-color:#fff; transform:scale(1.4); }
+.pdot:hover { transform:scale(1.3); opacity:.8; }
+.pdot-label {
+    position:absolute; bottom:12px; font-size:.5rem;
+    color:rgba(255,255,255,.4); white-space:nowrap;
+    transform:translateX(-50%);
+}
+
+/* ── Controles ── */
+#controls {
+    display:flex; align-items:center; gap:10px;
+    z-index:20;
+}
+.ctrl-btn {
+    background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.2);
+    border-radius:8px; color:#fff; font-family:'Nunito',sans-serif;
+    font-size:.72rem; font-weight:800; padding:6px 14px;
+    cursor:pointer; letter-spacing:1px; transition:background .2s;
+    backdrop-filter:blur(4px);
+}
+.ctrl-btn:hover { background:rgba(31,199,31,.15); border-color:#1fc71f; color:#1fc71f; }
+.ctrl-btn.active { background:rgba(31,199,31,.2); border-color:#1fc71f; color:#1fc71f; }
+#ctrl-play { font-size:1rem; padding:6px 16px; }
+
+/* ── Header mínimo ── */
+#hdr {
+    position:fixed; top:0; left:0; right:0; height:12vh; z-index:15;
+    display:flex; align-items:center; padding:0 20px; gap:10px;
+    pointer-events:none;
+}
+#hdr h1 {
+    font-size:.8rem; font-weight:900; color:#1fc71f;
+    letter-spacing:3px; text-transform:uppercase;
+    text-shadow:0 0 10px rgba(31,199,31,.5);
+    display:flex; align-items:center; gap:6px;
+}
+#hdr .sep { color:rgba(255,255,255,.2); }
+#hdr .km  { font-size:.65rem; color:rgba(255,255,255,.4); }
+
+/* ── Botones corner ── */
+.corner-btn {
+    position:fixed; z-index:30;
+    background:rgba(0,0,0,.65); border:1px solid rgba(255,255,255,.2);
+    border-radius:8px; color:rgba(255,255,255,.7); font-family:'Nunito',sans-serif;
+    font-size:.65rem; font-weight:800; letter-spacing:1px; padding:6px 12px;
+    cursor:pointer; backdrop-filter:blur(5px); transition:all .2s;
+}
+.corner-btn:hover { border-color:#1fc71f; color:#1fc71f; }
+#btn-sv   { top:14vh; right:16px; }
+#btn-here { bottom:16vh; right:16px; }
+</style>
+</head>
+<body>
+
+<!-- Intro -->
+<div id="intro">
+    <div class="intro-line" style="animation-delay:.2s"></div>
+    <h1>Av. Mitre<br>General Pinto</h1>
+    <p>Paseo Virtual · Buenos Aires</p>
+    <div class="intro-line" style="animation-delay:.5s"></div>
+    <button id="intro-btn">▶ &nbsp;COMENZAR PASEO</button>
+</div>
+
+<!-- Street View -->
+<div id="pano"></div>
+
+<!-- Efectos -->
+<div id="grain"></div>
+<div id="vignette"></div>
+
+<!-- Barras cinemáticas -->
+<div class="letterbox" id="lb-top">
+    <div id="hdr">
+        <h1>
+            <svg width="12" height="12" viewBox="0 0 54 54">
+                <polygon points="27,2 52,27 27,52 2,27" fill="#1fc71f" opacity=".9"/>
+                <polygon points="27,2 52,27 27,28" fill="#14a014"/>
+            </svg>
+            Av. Mitre
+        </h1>
+        <span class="sep">·</span>
+        <span class="km" id="km-label">0.0 km</span>
+    </div>
+</div>
+<div class="letterbox" id="lb-bottom">
+    <!-- progreso + controles dentro -->
+    <div style="width:100%;padding:0 20px;display:flex;flex-direction:column;gap:8px;align-items:center">
+        <div id="progress-wrap">
+            <div id="progress-bar-bg"><div id="progress-bar-fill"></div></div>
+            <div id="progress-dots"></div>
+        </div>
+        <div id="controls">
+            <button class="ctrl-btn" onclick="cambiarDir()">⇄ DIRECCIÓN</button>
+            <button class="ctrl-btn" id="ctrl-play" onclick="togglePlay()">⏸</button>
+            <button class="ctrl-btn" id="ctrl-spd" onclick="ciclarVelocidad()">1×</button>
+            <button class="ctrl-btn" onclick="location.href='index.html'">🚶 Tour</button>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay calle -->
+<div id="street-label">
+    <div class="calle" id="sl-nombre"></div>
+    <div class="cruce" id="sl-cruce"></div>
+</div>
+
+<!-- Card comercio -->
+<div id="comercio-card">
+    <span class="badge">📍 Comercio local</span>
+    <h3 id="cc-nombre"></h3>
+    <p  id="cc-dir"></p>
+    <div id="cc-btns"></div>
+</div>
+
+<!-- Botones flotantes -->
+<button class="corner-btn" id="btn-sv"   onclick="abrirEnTour()">🗺 Ver en mapa</button>
+<button class="corner-btn" id="btn-here" onclick="pausarAqui()">⏹ Explorar aquí</button>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  RUTA: waypoints de Av. Mitre de Oeste a Este
+//  Cada punto tiene: lat, lng, heading, cruce (calle transversal), y optionalmente comercio
+// ═══════════════════════════════════════════════════════
+const WA_CONTACTO = "541125328861";
+
+// ── Av. Mitre corre de SUR a NORTE (vertical en el mapa)
+// Longitud constante ≈ -61.8913  |  Latitud decrece hacia el norte
+// Calles transversales identificadas en el mapa real del usuario
+const RUTA = [
+    { lat:-34.7735, lng:-61.8913, heading:355, cruce:"y Rivadavia — Sur",          km:0.0  },
+    { lat:-34.7723, lng:-61.8913, heading:355, cruce:"y Roque Sáenz Peña",         km:0.13 },
+    { lat:-34.7712, lng:-61.8913, heading:355, cruce:"y Hipólito Yrigoyen",        km:0.26 },
+    { lat:-34.7700, lng:-61.8913, heading:355, cruce:"y Córdoba",                  km:0.39,
+      comercio:{ nombre:"Hotel Ancaloo", dir:"Córdoba y Av. Mitre", tel:null, tipo:"hotel" } },
+    { lat:-34.7689, lng:-61.8913, heading:355, cruce:"y Adolfo Alsina",            km:0.51,
+      comercio:{ nombre:"Casa Cantora", dir:"Av. Mitre 185", tel:"02356420008", tipo:"comercio" } },
+    { lat:-34.7678, lng:-61.8913, heading:355, cruce:"y Gral. Villegas — Plaza",   km:0.63 },
+    { lat:-34.7667, lng:-61.8913, heading:355, cruce:"y Pueblos Originarios",      km:0.75 },
+    { lat:-34.7656, lng:-61.8913, heading:355, cruce:"y Mayor Sustaita",           km:0.87,
+      comercio:{ nombre:"Farmacia Lozano", dir:"Mayor Sustaita y Av. Mitre", tel:null, tipo:"farmacia" } },
+    { lat:-34.7645, lng:-61.8913, heading:355, cruce:"y Bernardo de Irigoyen",     km:0.99,
+      comercio:{ nombre:"Terminal de Ómnibus", dir:"Bernardo de Irigoyen", tel:null, tipo:"terminal" } },
+    { lat:-34.7634, lng:-61.8913, heading:355, cruce:"y Aristides Blanco",         km:1.12,
+      comercio:{ nombre:"Centro Cultural Municipal", dir:"Aristides Blanco", tel:null, tipo:"cultura" } },
+    { lat:-34.7623, lng:-61.8913, heading:355, cruce:"y Antártida Argentina",      km:1.24 },
+    { lat:-34.7612, lng:-61.8913, heading:355, cruce:"Club Social y Deportivo — Norte", km:1.36 },
+];
+
+let routeIdx   = 0;
+let playing    = true;
+let speed      = 1;     // 1 | 2 | 4
+let dirFwd     = true;  // true = oeste→este
+let timer      = null;
+let panorama, svService;
+let currentPos = null;
+
+const STEP_MS  = 4000; // ms entre avances (velocidad 1×)
+
+// ═══════════════════════════════════════════════════════
+//  INICIALIZACIÓN
+// ═══════════════════════════════════════════════════════
+document.getElementById("intro-btn").addEventListener("click", () => {
+    const intro = document.getElementById("intro");
+    intro.classList.add("fade");
+    setTimeout(() => { intro.style.display = "none"; iniciarTour(); }, 1000);
+});
+
+function iniciarTour() {
+    svService = new google.maps.StreetViewService();
+
+    panorama = new google.maps.StreetViewPanorama(document.getElementById("pano"), {
+        pov:              { heading:88, pitch:0 },
+        zoom:             0,
+        visible:          false,
+        addressControl:   false,
+        fullscreenControl:false,
+        motionTracking:   false,
+        motionTrackingControl: false,
+        showRoadLabels:   false,
+        linksControl:     false,
+        panControl:       false,
+        enableCloseButton:false,
+    });
+
+    // Filtro cinematográfico sobre el pano
+    panorama.addListener("status_changed", () => {
+        if (panorama.getStatus() === google.maps.StreetViewStatus.OK) {
+            panorama.setVisible(true);
+        }
+    });
+
+    buildDots();
+    irA(routeIdx);
+    arrancarTimer();
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAVEGACIÓN
+// ═══════════════════════════════════════════════════════
+function irA(idx) {
+    const wp = RUTA[idx];
+    currentPos = { lat: wp.lat, lng: wp.lng };
+
+    svService.getPanorama(
+        { location: currentPos, radius: 80, preference: google.maps.StreetViewPreference.NEAREST },
+        (data, status) => {
+            if (status === google.maps.StreetViewStatus.OK) {
+                panorama.setPano(data.location.pano);
+                panorama.setPov({ heading: dirFwd ? wp.heading : (wp.heading + 180) % 360, pitch: 0 });
+                panorama.setVisible(true);
+            } else {
+                // Sin cobertura: saltar al siguiente
+                avanzar();
+            }
+        }
+    );
+
+    actualizarUI(idx);
+}
+
+function avanzar() {
+    let next = dirFwd ? routeIdx + 1 : routeIdx - 1;
+    if (next >= RUTA.length) { next = 0; }
+    if (next < 0) { next = RUTA.length - 1; }
+    routeIdx = next;
+    irA(routeIdx);
+}
+
+function arrancarTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+        if (!playing) return;
+        avanzar();
+    }, STEP_MS / speed);
+}
+
+// ═══════════════════════════════════════════════════════
+//  UI
+// ═══════════════════════════════════════════════════════
+function buildDots() {
+    const wrap = document.getElementById("progress-dots");
+    wrap.innerHTML = "";
+    RUTA.forEach((wp, i) => {
+        const dot = document.createElement("div");
+        dot.className = "pdot";
+        dot.id = `dot-${i}`;
+        dot.title = wp.cruce;
+        dot.onclick = () => { routeIdx = i; irA(i); arrancarTimer(); };
+        if (wp.comercio) {
+            dot.style.background = "#1fc71f";
+            dot.style.borderColor = "#1fc71f";
+        }
+        wrap.appendChild(dot);
+    });
+}
+
+function actualizarUI(idx) {
+    const wp = RUTA[idx];
+
+    // Nombre de calle
+    document.getElementById("sl-nombre").textContent = "Av. Mitre";
+    document.getElementById("sl-cruce").textContent  = wp.cruce;
+
+    // Km
+    document.getElementById("km-label").textContent = wp.km.toFixed(1) + " km";
+
+    // Barra de progreso
+    const pct = (idx / (RUTA.length - 1)) * 100;
+    document.getElementById("progress-bar-fill").style.width = pct + "%";
+
+    // Dots
+    document.querySelectorAll(".pdot").forEach((d, i) => {
+        d.classList.remove("done","curr");
+        if (i < idx)  d.classList.add("done");
+        if (i === idx) d.classList.add("curr");
+    });
+
+    // Card de comercio
+    const card = document.getElementById("comercio-card");
+    if (wp.comercio) {
+        const c = wp.comercio;
+        const iconos = { hotel:"🏨", comercio:"🏪", farmacia:"💊", terminal:"🚌", cultura:"🎭" };
+        document.querySelector("#comercio-card .badge").textContent =
+            (iconos[c.tipo] || "📍") + " " + (c.tipo || "lugar").toUpperCase();
+        document.getElementById("cc-nombre").textContent = c.nombre;
+        document.getElementById("cc-dir").textContent    = "📍 " + c.dir;
+        let html = "";
+        if (c.tel)      html += `<a class="c-btn c-phone" href="tel:${c.tel}">📞 ${c.tel}</a>`;
+        if (c.instagram)html += `<a class="c-btn" style="background:linear-gradient(135deg,#f09433,#dc2743);color:#fff" href="https://instagram.com/${c.instagram}" target="_blank">📸 IG</a>`;
+        if (!c.tel && !c.instagram) {
+            const msg = encodeURIComponent(`Hola! Quiero anunciar ${c.nombre} en el tour virtual de General Pinto`);
+            html = `<a class="c-btn c-anunciar" href="https://wa.me/${WA_CONTACTO}?text=${msg}" target="_blank">📣 Anunciate</a>`;
+        }
+        document.getElementById("cc-btns").innerHTML = html;
+        card.classList.add("visible");
+        setTimeout(() => card.classList.remove("visible"), 5000);
+    } else {
+        card.classList.remove("visible");
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  CONTROLES
+// ═══════════════════════════════════════════════════════
+function togglePlay() {
+    playing = !playing;
+    document.getElementById("ctrl-play").textContent = playing ? "⏸" : "▶";
+}
+
+function cambiarDir() {
+    dirFwd = !dirFwd;
+    const pov = panorama.getPov();
+    panorama.setPov({ heading: (pov.heading + 180) % 360, pitch: pov.pitch });
+}
+
+function ciclarVelocidad() {
+    speed = speed === 1 ? 2 : speed === 2 ? 4 : 1;
+    document.getElementById("ctrl-spd").textContent = speed + "×";
+    arrancarTimer();
+}
+
+function abrirEnTour() {
+    if (currentPos) {
+        sessionStorage.setItem("gp_lat", currentPos.lat);
+        sessionStorage.setItem("gp_lng", currentPos.lng);
+    }
+    location.href = "index.html";
+}
+
+function pausarAqui() {
+    playing = false;
+    document.getElementById("ctrl-play").textContent = "▶";
+    document.getElementById("btn-here").textContent  = "▶ Reanudar";
+    document.getElementById("btn-here").onclick      = () => {
+        playing = true;
+        document.getElementById("ctrl-play").textContent = "⏸";
+        document.getElementById("btn-here").textContent  = "⏹ Explorar aquí";
+        document.getElementById("btn-here").onclick      = pausarAqui;
+    };
+}
+</script>
+
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDS-i56aB57KNVA36Y5E-IHU-h8Ns8lXX4&callback=Function.prototype"
+    async defer>
+</script>
+
+</body>
+</html>

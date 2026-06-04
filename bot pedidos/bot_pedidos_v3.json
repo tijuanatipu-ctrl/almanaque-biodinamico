@@ -1,0 +1,291 @@
+{
+  "name": "Bot Pedidos - El Huerto de Lucas v3",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "n1",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [200, 300],
+      "webhookId": "huerto-bot-v3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst chatId = $json.message.chat.id.toString();\nconst text = ($json.message.text || '').trim();\n\nif (!staticData.sessions) staticData.sessions = {};\nif (!staticData.sessions[chatId]) staticData.sessions[chatId] = { step: 0, data: { products: [] } };\n\nconst session = staticData.sessions[chatId];\nif (!session.data.products) session.data.products = [];\n\n// Si no hay pedido activo y no es /start, va al agente de IA\nif (session.step === 0 && text !== '/start') {\n  return [{ json: { chatId, userMessage: text, routeTo: 'ai', response: '', checkStock: false, sendToLucas: false, orderSummary: '', sheetData: {} } }];\n}\n\nlet response = '';\nlet checkStock = false;\nlet productSlug = '';\nlet productName = '';\nlet sendToLucas = false;\nlet orderSummary = '';\nlet sheetData = {};\n\nconst productMap = {\n  'acelga': { name: 'Acelga', slug: 'hortalizas/de-hojas/acelga-agroecologica-mix-variedades-atado' },\n  'rucula': { name: 'Rucula', slug: 'hortalizas/de-hojas/rucula-agroecologica-atado' },\n  'kale': { name: 'Kale', slug: 'hortalizas/de-hojas/kale-agroecologico-atado' },\n  'huevos': { name: 'Huevos de Campo', slug: 'granja/avicola/huevos-de-campo-docena' },\n  'puerro': { name: 'Puerro', slug: 'hortalizas/de-raices/puerro-agroecologico-atado' },\n  'albahaca': { name: 'Albahaca', slug: 'aromaticas/atados-frescos/albahaca-agroecologica-atado' },\n  'ciboulette': { name: 'Ciboulette', slug: 'aromaticas/atados-frescos/cibullete-agroecologico-atado' },\n  'cibullete': { name: 'Ciboulette', slug: 'aromaticas/atados-frescos/cibullete-agroecologico-atado' },\n  'oregano': { name: 'Oregano', slug: 'aromaticas/oregano-en-hojas-deshidratado-30gr' },\n  'laurel': { name: 'Laurel', slug: 'aromaticas/atados-frescos/laurel-agroecologico-fresco-atado' },\n  'achicoria': { name: 'Achicoria', slug: 'hortalizas/de-hojas/achicoria-agroecologica-atado' },\n  'cebolla': { name: 'Cebolla de Verdeo', slug: 'hortalizas/de-hojas/cebolla-de-verdeo-agroecologica-atado' },\n  'ensalada': { name: 'Hojas de Ensalada', slug: 'bolsones-y-mezclum/mezclum/hojas-ensalada-350gr' },\n};\n\nif (text === '/start') {\n  session.step = 1;\n  response = 'Bienvenido a El Huerto de Lucas! Para hacer tu pedido necesito algunos datos.\\n\\nCual es tu nombre?';\n} else if (session.step === 1) {\n  session.data.name = text;\n  session.step = 2;\n  response = 'Gracias ' + text + '! Que producto queres agregar?\\n(Escribi el nombre del producto, o listo cuando termines)';\n} else if (session.step === 2) {\n  const lower = text.toLowerCase();\n  if (lower === 'listo') {\n    if (session.data.products.length === 0) {\n      response = 'No agregaste ningun producto todavia. Escribi el nombre de un producto para empezar.';\n    } else {\n      session.step = 3;\n      response = 'Tu pedido:\\n- ' + session.data.products.join('\\n- ') + '\\n\\nCual es tu direccion de entrega?';\n    }\n  } else {\n    let found = null;\n    for (const [key, val] of Object.entries(productMap)) {\n      if (lower.includes(key)) { found = val; break; }\n    }\n    if (found) {\n      checkStock = true;\n      productSlug = found.slug;\n      productName = found.name;\n      session.data.pendingProduct = text;\n    } else {\n      response = 'No encontre ese producto.\\nEscribi alguno de estos: Acelga, Kale, Puerro, Rucula, Huevos, Albahaca, Ciboulette, Oregano, Laurel, Achicoria, Cebolla, Ensalada.';\n    }\n  }\n} else if (session.step === 3) {\n  session.data.address = text;\n  session.step = 4;\n  response = 'Cual es tu numero de telefono?';\n} else if (session.step === 4) {\n  session.data.phone = text;\n  const ahora = new Date();\n  const fecha = ahora.toLocaleDateString('es-AR') + ' ' + ahora.toLocaleTimeString('es-AR');\n  sheetData = {\n    Fecha: fecha,\n    Nombre: session.data.name,\n    Productos: session.data.products.join(', '),\n    Direccion: session.data.address,\n    Telefono: text\n  };\n  orderSummary = 'NUEVO PEDIDO\\n\\nNombre: ' + session.data.name + '\\nProductos:\\n- ' + session.data.products.join('\\n- ') + '\\nDireccion: ' + session.data.address + '\\nTelefono: ' + text;\n  response = 'Pedido recibido! Te vamos a contactar para confirmar la entrega. Gracias!';\n  sendToLucas = true;\n  staticData.sessions[chatId] = { step: 0, data: { products: [] } };\n}\n\nreturn [{ json: { chatId, response, routeTo: 'order', checkStock, productSlug, productName, sendToLucas, orderSummary, sheetData } }];"
+      },
+      "id": "n2",
+      "name": "Code Main",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "cond-ai",
+              "leftValue": "={{ $json.routeTo }}",
+              "rightValue": "ai",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "n3",
+      "name": "IF routeTo AI",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.userMessage }}",
+        "options": {
+          "systemMessage": "Sos el asistente virtual de El Huerto de Lucas, una huerta agroecologica en General Pinto, Buenos Aires, Argentina. Respondés de manera amigable, concisa y en español rioplatense. Recordas el contexto de la conversacion.\n\nPRODUCTOS Y PRECIOS:\n- Huevos de Campo (docena): $5.000\n- Hojas Ensalada (350gr): $4.000\n- Acelga Agroecologica (atado): $2.800\n- Puerro Agroecologico (atado): $2.500\n- Oregano Deshidratado (30gr): $1.800\n- Kale Agroecologico (atado): $1.800\n- Albahaca Agroecologica (atado): $1.600\n- Ciboulette Agroecologico (atado): $1.500\n- Laurel Agroecologico Fresco (atado): $1.000\nSIN STOCK ahora: Rucula, Cebolla de Verdeo, Achicoria.\n\nENTREGAS:\n- Sabados a la tarde en General Pinto\n- Retiro en feria cada 15 dias\n\nPAGOS: Mercado Pago, QR Cuenta DNI (40% de descuento hasta $4.000/semana), efectivo, transferencia.\n\nCERTIFICACION agroecologica provincial (EXP. CE-2024-19558226).\n\nSi quiere hacer un pedido, indicale que escriba /start.\nSi no sabes algo, decí que contacten a Lucas al +54 911-2532-8861.\nRespuestas cortas. Sin emojis."
+        }
+      },
+      "id": "n4",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [900, 100]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "maxTokens": 400
+        }
+      },
+      "id": "n5",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [780, 0]
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $json.chatId }}",
+        "contextWindowLength": 20
+      },
+      "id": "n6",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [1020, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = $('Code Main').item.json.chatId;\nconst response = $json.output;\nreturn [{ json: { chatId, response } }];"
+      },
+      "id": "n7",
+      "name": "Code AI Format",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "cond-stock",
+              "leftValue": "={{ $json.checkStock }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "n8",
+      "name": "IF checkStock",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 280]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://elhuertodelucas.com.ar/{{ $json.productSlug }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "n9",
+      "name": "Fetch Producto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst mainData = $('Code Main').item.json;\nconst chatId = mainData.chatId;\nconst productName = mainData.productName;\nconst session = staticData.sessions[chatId];\nconst html = $json.data || '';\n\nconst isOutOfStock = html.includes('product-tag--sin-stock');\n\nlet response = '';\nif (isOutOfStock) {\n  response = 'Lo siento, ' + productName + ' no esta disponible ahora.\\nEscribi otro producto o listo para continuar.';\n} else {\n  const pendingProduct = session.data.pendingProduct || productName;\n  session.data.products.push(pendingProduct);\n  delete session.data.pendingProduct;\n  response = productName + ' agregado al pedido!\\nEscribi otro producto o listo para continuar.';\n}\n\nreturn [{ json: { chatId, response } }];"
+      },
+      "id": "n10",
+      "name": "Code Stock",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.response }}",
+        "additionalFields": {}
+      },
+      "id": "n11",
+      "name": "Telegram Cliente",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1560, 260]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "cond-lucas",
+              "leftValue": "={{ $json.sendToLucas }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "n12",
+      "name": "IF sendToLucas",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 420]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ieRlpQe49pDPLlFzFopdbDUu4NyW2BRpX2tLsMKrbuI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Pedidos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $('Code Main').item.json.sheetData.Fecha }}",
+            "Nombre": "={{ $('Code Main').item.json.sheetData.Nombre }}",
+            "Productos": "={{ $('Code Main').item.json.sheetData.Productos }}",
+            "Direccion": "={{ $('Code Main').item.json.sheetData.Direccion }}",
+            "Telefono": "={{ $('Code Main').item.json.sheetData.Telefono }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "n13",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [900, 500]
+    },
+    {
+      "parameters": {
+        "chatId": "8325134029",
+        "text": "={{ $('Code Main').item.json.orderSummary }}",
+        "additionalFields": {}
+      },
+      "id": "n14",
+      "name": "Telegram Lucas",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, 500]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [{ "node": "Code Main", "type": "main", "index": 0 }]
+      ]
+    },
+    "Code Main": {
+      "main": [
+        [
+          { "node": "IF routeTo AI", "type": "main", "index": 0 },
+          { "node": "IF sendToLucas", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "IF routeTo AI": {
+      "main": [
+        [{ "node": "AI Agent", "type": "main", "index": 0 }],
+        [{ "node": "IF checkStock", "type": "main", "index": 0 }]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [{ "node": "Code AI Format", "type": "main", "index": 0 }]
+      ]
+    },
+    "Code AI Format": {
+      "main": [
+        [{ "node": "Telegram Cliente", "type": "main", "index": 0 }]
+      ]
+    },
+    "IF checkStock": {
+      "main": [
+        [{ "node": "Fetch Producto", "type": "main", "index": 0 }],
+        [{ "node": "Telegram Cliente", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Producto": {
+      "main": [
+        [{ "node": "Code Stock", "type": "main", "index": 0 }]
+      ]
+    },
+    "Code Stock": {
+      "main": [
+        [{ "node": "Telegram Cliente", "type": "main", "index": 0 }]
+      ]
+    },
+    "IF sendToLucas": {
+      "main": [
+        [{ "node": "Google Sheets", "type": "main", "index": 0 }]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [{ "node": "Telegram Lucas", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Pinto — Mapa 3D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Nunito',sans-serif; overflow:hidden; background:#050510; }
+
+        #map { width:100vw; height:100vh; }
+
+        /* ── HUD Header ── */
+        .hud-header {
+            position:fixed; top:0; left:0; right:0;
+            background:linear-gradient(to bottom,rgba(0,0,0,0.85),transparent);
+            padding:14px 20px 40px;
+            z-index:100; pointer-events:none;
+            display:flex; align-items:center; gap:10px;
+        }
+        .hud-header h1 {
+            font-size:1rem; font-weight:900; color:#1fc71f;
+            letter-spacing:3px; text-transform:uppercase;
+            text-shadow:0 0 12px rgba(31,199,31,0.5);
+            display:flex; align-items:center; gap:8px;
+        }
+        .hud-header p {
+            font-size:0.65rem; color:rgba(255,255,255,0.4);
+            letter-spacing:1px; margin-top:2px;
+        }
+
+        /* ── Panel de info de comercio ── */
+        #panel {
+            position:fixed; bottom:-220px; left:50%;
+            transform:translateX(-50%);
+            width:min(320px,90vw);
+            background:rgba(5,10,5,0.97);
+            border:1.5px solid #1fc71f;
+            border-bottom:none; border-radius:14px 14px 0 0;
+            padding:16px 20px 24px;
+            z-index:200; transition:bottom 0.3s ease;
+            backdrop-filter:blur(12px);
+        }
+        #panel.visible { bottom:0; }
+        #panel-badge {
+            font-size:0.58rem; letter-spacing:2px; text-transform:uppercase;
+            padding:2px 8px; border-radius:20px; font-weight:800;
+            display:inline-block; margin-bottom:8px;
+        }
+        #panel-badge.activo {
+            background:rgba(31,199,31,0.15); color:#1fc71f;
+            border:1px solid rgba(31,199,31,0.35);
+        }
+        #panel-badge.disponible {
+            background:rgba(255,255,255,0.04); color:#555; border:1px solid #333;
+        }
+        #panel-nombre { font-size:1.05rem; color:#fff; font-weight:800; margin-bottom:3px; }
+        #panel-dir    { font-size:0.72rem; color:#555; margin-bottom:12px; }
+        #panel-btns   { display:flex; gap:8px; flex-wrap:wrap; }
+        .btn {
+            display:inline-flex; align-items:center; gap:5px;
+            padding:8px 14px; border-radius:8px;
+            text-decoration:none; font-size:0.75rem; font-weight:700;
+        }
+        .btn-phone    { background:#141420; color:#fff; border:1px solid #333; }
+        .btn-ig       { background:linear-gradient(135deg,#f09433,#dc2743,#bc1888); color:#fff; }
+        .btn-wa       { background:#25D366; color:#fff; }
+        .btn-anunciar { background:#1fc71f; color:#000; font-weight:900; }
+        .panel-close  {
+            position:absolute; top:12px; right:14px;
+            background:none; border:none; color:#555;
+            font-size:1rem; cursor:pointer;
+        }
+        .panel-close:hover { color:#fff; }
+
+        /* ── HUD teclas ── */
+        #keyhud {
+            position:fixed; bottom:22px; left:22px; z-index:100;
+            display:grid;
+            grid-template-columns:repeat(3,34px);
+            grid-template-rows:repeat(2,34px);
+            gap:4px;
+        }
+        .key {
+            width:34px; height:34px;
+            background:rgba(0,0,0,0.55);
+            border:1px solid rgba(31,199,31,0.3);
+            border-radius:6px; display:flex;
+            align-items:center; justify-content:center;
+            font-size:0.8rem; color:rgba(255,255,255,0.35);
+            pointer-events:none; backdrop-filter:blur(4px);
+            transition:all 0.1s;
+        }
+        .key.active {
+            background:rgba(31,199,31,0.2);
+            border-color:#1fc71f; color:#1fc71f;
+        }
+        #key-up    { grid-column:2; grid-row:1; }
+        #key-left  { grid-column:1; grid-row:2; }
+        #key-down  { grid-column:2; grid-row:2; }
+        #key-right { grid-column:3; grid-row:2; }
+
+        /* ── Botones de esquina ── */
+        .hud-btn {
+            position:fixed; z-index:100;
+            background:rgba(0,0,0,0.65);
+            border:1px solid rgba(31,199,31,0.35);
+            border-radius:9px; color:#1fc71f;
+            font-family:'Nunito',sans-serif;
+            font-size:0.72rem; font-weight:800;
+            letter-spacing:1px; padding:7px 14px;
+            cursor:pointer; backdrop-filter:blur(6px);
+            transition:background 0.2s;
+        }
+        .hud-btn:hover { background:rgba(31,199,31,0.12); }
+        #btn-sv    { top:14px; right:20px; }
+        #btn-rotate{ top:14px; right:140px; }
+
+        /* ── Minibrújula ── */
+        #compass {
+            position:fixed; bottom:80px; right:22px; z-index:100;
+            width:48px; height:48px;
+            background:rgba(0,0,0,0.6);
+            border:1.5px solid rgba(31,199,31,0.4);
+            border-radius:50%; display:flex;
+            align-items:center; justify-content:center;
+            backdrop-filter:blur(6px);
+        }
+        #compass-needle {
+            font-size:1.4rem; transition:transform 0.3s;
+        }
+
+        /* ── Aviso sin key ── */
+        #no-key {
+            position:fixed; inset:0; z-index:500;
+            background:rgba(5,10,5,0.97);
+            display:flex; align-items:center; justify-content:center;
+            flex-direction:column; gap:16px; text-align:center; padding:32px;
+        }
+        #no-key h2 { color:#1fc71f; font-size:1.3rem; font-weight:900; }
+        #no-key p  { color:rgba(255,255,255,0.6); font-size:0.85rem; line-height:1.6; }
+        #no-key code {
+            background:rgba(31,199,31,0.1); border:1px solid rgba(31,199,31,0.3);
+            border-radius:6px; padding:2px 8px; color:#1fc71f; font-size:0.82rem;
+        }
+        #no-key input {
+            background:rgba(31,199,31,0.06); border:1.5px solid rgba(31,199,31,0.3);
+            border-radius:10px; padding:10px 16px;
+            color:#fff; font-family:'Nunito',sans-serif;
+            font-size:0.9rem; font-weight:700; outline:none;
+            width:min(360px,85vw); text-align:center;
+        }
+        #no-key input:focus { border-color:#1fc71f; }
+        #no-key button {
+            background:linear-gradient(135deg,#1fc71f,#14a014);
+            color:#fff; border:none; border-radius:10px;
+            padding:12px 28px; font-family:'Nunito',sans-serif;
+            font-size:0.95rem; font-weight:900; cursor:pointer;
+            letter-spacing:1px;
+        }
+        #no-key a { color:#1fc71f; font-size:0.8rem; }
+    </style>
+</head>
+<body>
+
+<!-- ── Aviso si no hay API key ── -->
+<div id="no-key">
+    <svg width="48" height="48" viewBox="0 0 54 54" style="filter:drop-shadow(0 0 14px #1fc71f)">
+        <polygon points="27,2 52,27 27,52 2,27" fill="#1fc71f" opacity="0.9"/>
+        <polygon points="27,2 52,27 27,28" fill="#14a014"/>
+        <polygon points="27,2 2,27 27,28" fill="#25e025" opacity="0.85"/>
+        <polygon points="27,8 27,28 40,27" fill="rgba(255,255,255,0.2)"/>
+    </svg>
+    <h2>Mapa 3D — General Pinto</h2>
+    <p>
+        Para el mapa 3D necesitás una API key gratuita de MapTiler.<br>
+        Creá tu cuenta gratis (2 minutos) en
+        <a href="https://maptiler.com" target="_blank">maptiler.com</a><br>
+        y pegá tu clave pública acá:
+    </p>
+    <input id="key-input" type="text" placeholder="Pegá tu API key de MapTiler…">
+    <button onclick="iniciarConKey()">▶ CARGAR MAPA 3D</button>
+    <p style="font-size:0.7rem;opacity:0.4">La clave se guarda solo en tu navegador.</p>
+</div>
+
+<!-- ── Mapa ── -->
+<div id="map"></div>
+
+<!-- ── HUD ── -->
+<div class="hud-header">
+    <div>
+        <h1>
+            <svg width="15" height="15" viewBox="0 0 54 54">
+                <polygon points="27,2 52,27 27,52 2,27" fill="#1fc71f" opacity="0.9"/>
+                <polygon points="27,2 52,27 27,28" fill="#14a014"/>
+                <polygon points="27,2 2,27 27,28" fill="#25e025" opacity="0.85"/>
+            </svg>
+            General Pinto
+        </h1>
+        <p>Mapa 3D · Comercios Locales</p>
+    </div>
+</div>
+
+<button class="hud-btn" id="btn-sv" onclick="location.href='index.html'">
+    🚶 Street View
+</button>
+<button class="hud-btn" id="btn-rotate" onclick="toggleRotar()">
+    🔄 Auto-rotar
+</button>
+
+<div id="keyhud">
+    <div class="key" id="key-up">▲</div>
+    <div class="key" id="key-left">◀</div>
+    <div class="key" id="key-down">▼</div>
+    <div class="key" id="key-right">▶</div>
+</div>
+
+<div id="compass"><span id="compass-needle">🧭</span></div>
+
+<div id="panel">
+    <button class="panel-close" onclick="cerrarPanel()">✕</button>
+    <span id="panel-badge" class="activo">Comercio</span>
+    <h2 id="panel-nombre"></h2>
+    <p id="panel-dir"></p>
+    <div class="btn-row" id="panel-btns"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  DATOS
+// ─────────────────────────────────────────────
+const WA_CONTACTO = "541125328861";
+
+const comercios = [
+    {
+        nombre: "Casa Cantora",
+        direccion: "Av. Mitre 185",
+        telefono: "02356420008",
+        lat: -34.7680167, lng: -61.8913835,
+        activo: true
+    },
+    {
+        nombre: "Local Felisa",
+        direccion: "San Martín 300",
+        telefono: "02356405048",
+        lat: -34.7669158, lng: -61.8927301,
+        activo: true
+    },
+    { direccion: "Belgrano 240",   lat: -34.7630, lng: -61.8895, activo: false },
+    { direccion: "Rivadavia 185",  lat: -34.7660, lng: -61.8925, activo: false },
+    { direccion: "Av. Mitre 380",  lat: -34.7638, lng: -61.8935, activo: false },
+    { direccion: "España 155",     lat: -34.7625, lng: -61.8910, activo: false },
+];
+
+// ─────────────────────────────────────────────
+//  INICIALIZACIÓN CON KEY
+// ─────────────────────────────────────────────
+const CENTRO = [-61.8908, -34.7644];
+
+function iniciarConKey() {
+    const key = document.getElementById("key-input").value.trim();
+    if (!key) { alert("Ingresá tu API key de MapTiler."); return; }
+    localStorage.setItem("maptiler_key", key);
+    arrancarMapa(key);
+}
+
+// Intentar con key guardada
+const keySaved = localStorage.getItem("maptiler_key");
+if (keySaved) {
+    document.getElementById("no-key").style.display = "none";
+    arrancarMapa(keySaved);
+}
+
+function arrancarMapa(key) {
+    document.getElementById("no-key").style.display = "none";
+
+    const map = new maplibregl.Map({
+        container: "map",
+        style: `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${key}`,
+        center: CENTRO,
+        zoom: 16,
+        pitch: 58,
+        bearing: -20,
+        antialias: true,
+        attributionControl: false,
+    });
+
+    map.addControl(new maplibregl.AttributionControl({ compact: true }));
+
+    map.on("load", () => {
+
+        // ── Edificios 3D ──
+        map.addLayer({
+            id: "edificios-3d",
+            source: "openmaptiles",
+            "source-layer": "building",
+            type: "fill-extrusion",
+            minzoom: 14,
+            paint: {
+                "fill-extrusion-color": [
+                    "interpolate", ["linear"], ["get", "render_height"],
+                    0,  "#0d1a0d",
+                    5,  "#0f1f0f",
+                    10, "#111",
+                    30, "#141414",
+                ],
+                "fill-extrusion-height":     ["coalesce", ["get", "render_height"], 5],
+                "fill-extrusion-base":       ["coalesce", ["get", "render_min_height"], 0],
+                "fill-extrusion-opacity":    0.92,
+            }
+        });
+
+        // ── Markers de comercios ──
+        comercios.forEach(c => agregarMarker(map, c));
+
+        // ── Fly-in inicial ──
+        map.flyTo({
+            center: CENTRO,
+            zoom: 17,
+            pitch: 60,
+            bearing: -20,
+            duration: 2800,
+            essential: true,
+        });
+
+        // ── Iniciar controles ──
+        iniciarControles(map);
+        iniciarBrujula(map);
+    });
+
+    map.on("error", e => {
+        if (e.error?.status === 401) {
+            localStorage.removeItem("maptiler_key");
+            document.getElementById("no-key").style.display = "flex";
+            alert("API key inválida. Verificá tu clave de MapTiler.");
+        }
+    });
+}
+
+// ─────────────────────────────────────────────
+//  MARKERS PERSONALIZADOS
+// ─────────────────────────────────────────────
+function agregarMarker(map, c) {
+    const el = document.createElement("div");
+    el.style.cssText = `
+        width:${c.activo ? 32 : 24}px;
+        height:${c.activo ? 32 : 24}px;
+        border-radius:50% 50% 50% 0;
+        transform:rotate(-45deg);
+        background:${c.activo ? "#1fc71f" : "#2a3a2a"};
+        border:2px solid ${c.activo ? "#fff" : "#3a4a3a"};
+        cursor:pointer;
+        box-shadow:${c.activo ? "0 0 10px rgba(31,199,31,0.6)" : "none"};
+        transition:transform 0.2s;
+    `;
+    el.addEventListener("mouseenter", () => {
+        el.style.transform = "rotate(-45deg) scale(1.2)";
+    });
+    el.addEventListener("mouseleave", () => {
+        el.style.transform = "rotate(-45deg)";
+    });
+    el.addEventListener("click", () => abrirPanel(c));
+
+    new maplibregl.Marker({ element: el, anchor: "bottom-left" })
+        .setLngLat([c.lng, c.lat])
+        .addTo(map);
+}
+
+// ─────────────────────────────────────────────
+//  PANEL INFO
+// ─────────────────────────────────────────────
+function abrirPanel(c) {
+    const badge = document.getElementById("panel-badge");
+    const nombre = document.getElementById("panel-nombre");
+    const dir    = document.getElementById("panel-dir");
+    const btns   = document.getElementById("panel-btns");
+
+    if (c.activo) {
+        badge.textContent = "Comercio local";
+        badge.className   = "panel-badge activo";
+        nombre.textContent = c.nombre;
+        dir.textContent    = "📍 " + c.direccion;
+        let html = "";
+        if (c.telefono)  html += `<a class="btn btn-phone" href="tel:${c.telefono}">📞 ${c.telefono}</a>`;
+        if (c.whatsapp)  html += `<a class="btn btn-wa" href="https://wa.me/${c.whatsapp}" target="_blank">💬 WhatsApp</a>`;
+        if (c.instagram) html += `<a class="btn btn-ig" href="https://instagram.com/${c.instagram}" target="_blank">📸 Instagram</a>`;
+        btns.innerHTML = html;
+    } else {
+        const msg = encodeURIComponent(
+            "Hola! Vi el Tour Virtual de General Pinto y quiero anunciar mi negocio en " + c.direccion
+        );
+        badge.textContent = "Espacio disponible";
+        badge.className   = "panel-badge disponible";
+        nombre.textContent = "¿Tu negocio va aquí?";
+        dir.textContent    = "📍 " + c.direccion;
+        btns.innerHTML = `
+            <a class="btn btn-anunciar"
+               href="https://wa.me/${WA_CONTACTO}?text=${msg}"
+               target="_blank">📣 Anunciate aquí</a>`;
+    }
+    document.getElementById("panel").classList.add("visible");
+}
+
+function cerrarPanel() {
+    document.getElementById("panel").classList.remove("visible");
+}
+
+// ─────────────────────────────────────────────
+//  CONTROLES DE TECLADO
+// ─────────────────────────────────────────────
+function iniciarControles(map) {
+    const MOVE_SPEED   = 0.00018;
+    const TURN_SPEED   = 1.8;
+    const keys         = {};
+    let autoRotar      = true;
+    let rotarTimer     = null;
+
+    const keyMap = {
+        ArrowUp: "up", ArrowDown: "down",
+        ArrowLeft: "left", ArrowRight: "right",
+        w: "up", s: "down", a: "left", d: "right",
+        W: "up", S: "down", A: "left", D: "right",
+    };
+
+    document.addEventListener("keydown", e => {
+        const id = keyMap[e.key];
+        if (!id) return;
+        e.preventDefault();
+        keys[e.key] = true;
+        const el = document.getElementById("key-" + id);
+        if (el) el.classList.add("active");
+        autoRotar = false;
+        clearTimeout(rotarTimer);
+    });
+
+    document.addEventListener("keyup", e => {
+        const id = keyMap[e.key];
+        if (!id) return;
+        keys[e.key] = false;
+        const el = document.getElementById("key-" + id);
+        if (el) el.classList.remove("active");
+        const anyPressed = Object.values(keyMap).some(
+            (_, k) => keys[Object.keys(keyMap)[k]]
+        );
+        if (!anyPressed) {
+            rotarTimer = setTimeout(() => { autoRotar = true; }, 5000);
+        }
+    });
+
+    function loop() {
+        const bearing = map.getBearing();
+        const center  = map.getCenter();
+
+        const fwd  = keys.ArrowUp   || keys.w || keys.W;
+        const bwd  = keys.ArrowDown || keys.s || keys.S;
+        const left = keys.ArrowLeft || keys.a || keys.A;
+        const rgt  = keys.ArrowRight|| keys.d || keys.D;
+
+        if (fwd || bwd || left || rgt) {
+            const rad = (bearing * Math.PI) / 180;
+            const dir = fwd ? 1 : bwd ? -1 : 0;
+            const turn = left ? -TURN_SPEED : rgt ? TURN_SPEED : 0;
+
+            if (dir !== 0) {
+                center.lng += Math.sin(rad) * MOVE_SPEED * dir;
+                center.lat -= Math.cos(rad) * MOVE_SPEED * dir;
+                map.setCenter(center);
+            }
+            if (turn !== 0) map.setBearing(bearing + turn);
+        }
+
+        if (autoRotar && _autoRotarActivo) {
+            map.setBearing((map.getBearing() + 0.04) % 360);
+        }
+
+        requestAnimationFrame(loop);
+    }
+    loop();
+}
+
+// ─────────────────────────────────────────────
+//  BRÚJULA
+// ─────────────────────────────────────────────
+function iniciarBrujula(map) {
+    map.on("rotate", () => {
+        const bearing = map.getBearing();
+        document.getElementById("compass-needle").style.transform =
+            `rotate(${-bearing}deg)`;
+    });
+}
+
+// ─────────────────────────────────────────────
+//  TOGGLE AUTO-ROTAR
+// ─────────────────────────────────────────────
+let _autoRotarActivo = true;
+function toggleRotar() {
+    _autoRotarActivo = !_autoRotarActivo;
+    document.getElementById("btn-rotate").textContent =
+        _autoRotarActivo ? "🔄 Auto-rotar" : "⏸ Pausa rotación";
+}
+</script>
+
+</body>
+</html>

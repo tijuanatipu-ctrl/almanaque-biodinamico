@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Drive Manager</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#008080;font-family:'MS Sans Serif',Arial,sans-serif;font-size:11px;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.window{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;width:960px;height:620px;display:flex;flex-direction:column;box-shadow:2px 2px 0 #000;}
+.titlebar{background:linear-gradient(90deg,#000080,#1084d0);color:#fff;padding:3px 4px;display:flex;justify-content:space-between;align-items:center;user-select:none;flex-shrink:0;}
+.titlebar-left{display:flex;align-items:center;gap:6px;font-weight:bold;font-size:11px;}
+.titlebar-btns{display:flex;gap:2px;}
+.tbtn{width:16px;height:14px;background:#c0c0c0;border:1px solid;border-color:#fff #404040 #404040 #fff;color:#000;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1;}
+.tbtn:active{border-color:#404040 #fff #fff #404040;}
+.menubar{background:#c0c0c0;display:flex;padding:2px 0;border-bottom:1px solid #808080;flex-shrink:0;user-select:none;position:relative;z-index:100;}
+.menu-item{padding:2px 8px;cursor:default;position:relative;}
+.menu-item:hover,.menu-item.open{background:#000080;color:#fff;}
+.dropdown{display:none;position:absolute;top:100%;left:0;background:#c0c0c0;border:2px solid;border-color:#fff #404040 #404040 #fff;min-width:160px;z-index:200;}
+.menu-item.open .dropdown{display:block;}
+.dd-item{padding:3px 24px 3px 8px;cursor:default;display:flex;justify-content:space-between;gap:16px;}
+.dd-item:hover:not(.disabled){background:#000080;color:#fff;}
+.dd-item.disabled{color:#808080;}
+.dd-sep{border-top:1px solid #808080;border-bottom:1px solid #fff;margin:2px 0;}
+.toolbar{background:#c0c0c0;display:flex;align-items:center;padding:3px 4px;gap:2px;border-bottom:2px solid #808080;flex-shrink:0;}
+.tbar-btn{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;padding:1px 8px;cursor:pointer;font-size:11px;font-family:inherit;min-height:22px;white-space:nowrap;}
+.tbar-btn:active{border-color:#808080 #fff #fff #808080;}
+.tbar-btn:disabled{color:#808080;cursor:default;}
+.tbar-sep{width:1px;background:#808080;height:20px;margin:0 3px;border-right:1px solid #fff;}
+.path-box{flex:1;background:#fff;border:2px solid;border-color:#808080 #fff #fff #808080;padding:1px 4px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#loginScreen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px;}
+#loginScreen h2{font-size:14px;}
+#loginScreen p{font-size:11px;color:#404040;text-align:center;max-width:320px;line-height:1.6;}
+#configNotice{background:#ffffcc;border:1px solid #808000;padding:8px;font-size:11px;line-height:1.6;max-width:420px;display:none;}
+#mainContent{flex:1;display:none;overflow:hidden;flex-direction:column;}
+.content-area{flex:1;display:flex;overflow:hidden;padding:4px;gap:0;}
+.left-pane{width:220px;flex-shrink:0;background:#fff;border:2px solid;border-color:#808080 #fff #fff #808080;overflow:auto;padding:2px;}
+.splitter{width:5px;background:#c0c0c0;cursor:ew-resize;flex-shrink:0;}
+.right-pane{flex:1;display:flex;flex-direction:column;background:#fff;border:2px solid;border-color:#808080 #fff #fff #808080;overflow:hidden;margin-left:4px;}
+.file-header{display:flex;background:#c0c0c0;border-bottom:1px solid #808080;flex-shrink:0;}
+.fh{padding:2px 4px;cursor:pointer;user-select:none;font-weight:bold;border:2px solid;border-color:#fff #808080 #808080 #fff;font-size:11px;}
+.fh:active{border-color:#808080 #fff #fff #808080;}
+.cn{flex:1;min-width:120px;}.cs{width:80px;}.cd{width:140px;}.ct{width:90px;}
+.file-list-body{flex:1;overflow:auto;}
+.fi{display:flex;align-items:center;cursor:default;user-select:none;border-bottom:1px solid transparent;}
+.fi:hover{background:#c8d8f0;}
+.fi.selected{background:#000080;color:#fff;}
+.fi.drag-over{outline:2px dashed #000080;background:#e0e8ff;}
+.fi .cn{display:flex;align-items:center;gap:4px;padding:1px 4px;overflow:hidden;}
+.fi .cn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fi .cs,.fi .cd,.fi .ct{padding:1px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;}
+.fi .cs{text-align:right;}
+.tree-row{display:flex;align-items:center;gap:2px;padding:1px 2px;cursor:default;user-select:none;white-space:nowrap;}
+.tree-row:hover{background:#000080;color:#fff;}
+.tree-row.selected{background:#000080;color:#fff;}
+.tree-toggle{width:12px;height:12px;border:1px solid #808080;background:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;color:#000;cursor:pointer;line-height:1;}
+.tree-sp{width:12px;flex-shrink:0;}
+.statusbar{background:#c0c0c0;border-top:2px solid #808080;display:flex;padding:2px 4px;gap:4px;flex-shrink:0;}
+.sb{border:1px solid;border-color:#808080 #fff #fff #808080;padding:1px 6px;font-size:11px;flex:1;}
+.ctx-menu{position:fixed;background:#c0c0c0;border:2px solid;border-color:#fff #404040 #404040 #fff;z-index:9000;display:none;min-width:140px;}
+.ctx-item{padding:3px 20px 3px 8px;cursor:default;font-size:11px;}
+.ctx-item:hover:not(.disabled){background:#000080;color:#fff;}
+.ctx-item.disabled{color:#808080;}
+.ctx-sep{border-top:1px solid #808080;border-bottom:1px solid #fff;margin:2px 0;}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:5000;display:none;align-items:center;justify-content:center;}
+.ov.show{display:flex;}
+.dlg{background:#c0c0c0;border:2px solid;border-color:#fff #404040 #404040 #fff;min-width:280px;}
+.dlg-title{background:linear-gradient(90deg,#000080,#1084d0);color:#fff;padding:3px 6px;font-weight:bold;font-size:11px;display:flex;justify-content:space-between;align-items:center;}
+.dlg-body{padding:12px 16px;}
+.dlg-foot{padding:8px 16px;display:flex;justify-content:flex-end;gap:8px;}
+.dlg-btn{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;padding:3px 16px;cursor:pointer;font-size:11px;font-family:inherit;min-width:70px;}
+.dlg-btn:active{border-color:#808080 #fff #fff #808080;}
+.dlg-btn.primary{outline:2px solid #000;outline-offset:-4px;}
+.dlg-input{width:100%;background:#fff;border:2px solid;border-color:#808080 #fff #fff #808080;padding:2px 4px;font-size:11px;font-family:inherit;outline:none;}
+.dlg-label{display:block;margin-bottom:4px;font-size:11px;}
+.move-tree{background:#fff;border:2px solid;border-color:#808080 #fff #fff #808080;height:200px;overflow:auto;padding:2px;}
+.move-row{padding:2px 4px;cursor:default;font-size:11px;display:flex;align-items:center;gap:4px;}
+.move-row:hover{background:#c8d8f0;}
+.move-row.msel{background:#000080;color:#fff;}
+.dup-group{margin-bottom:8px;border:1px solid #808080;}
+.dup-hdr{background:#000080;color:#fff;padding:2px 6px;font-size:11px;}
+.dup-item{display:flex;align-items:center;padding:2px 6px;gap:8px;font-size:11px;cursor:default;}
+.dup-item:hover{background:#c8d8f0;}
+.dup-item.to-del{background:#ffd0d0;text-decoration:line-through;color:#808080;}
+::-webkit-scrollbar{width:16px;height:16px;}
+::-webkit-scrollbar-track{background:#c0c0c0;}
+::-webkit-scrollbar-thumb{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;}
+::-webkit-scrollbar-button{background:#c0c0c0;border:2px solid;border-color:#fff #808080 #808080 #fff;height:16px;width:16px;}
+</style>
+</head>
+<body>
+
+<div class="window">
+  <!-- Title bar -->
+  <div class="titlebar">
+    <div class="titlebar-left">
+      <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" fill="#c0c0c0" stroke="#000" stroke-width="1"/><rect x="3" y="5" width="10" height="6" fill="#008080"/><rect x="5" y="12" width="6" height="2" fill="#808080"/></svg>
+      Administrador de Drive
+    </div>
+    <div class="titlebar-btns">
+      <div class="tbtn">_</div><div class="tbtn">□</div><div class="tbtn" onclick="window.close()">✕</div>
+    </div>
+  </div>
+
+  <!-- Menu bar -->
+  <div class="menubar" id="menubar">
+    <div class="menu-item" data-menu="archivo">Archivo
+      <div class="dropdown">
+        <div class="dd-item" onclick="showDlg('newFolderOv')">Nueva carpeta<span>Ctrl+N</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item" onclick="handleLogout()">Cerrar sesión</div>
+      </div>
+    </div>
+    <div class="menu-item" data-menu="edicion">Edición
+      <div class="dropdown">
+        <div class="dd-item" id="mi-cut" onclick="cutFiles()">Cortar<span>Ctrl+X</span></div>
+        <div class="dd-item" id="mi-paste" onclick="pasteFiles()">Pegar<span>Ctrl+V</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item" id="mi-selall" onclick="selectAll()">Seleccionar todo<span>Ctrl+A</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item" id="mi-del" onclick="showDeleteConfirm()">Eliminar<span>Supr</span></div>
+      </div>
+    </div>
+    <div class="menu-item" data-menu="ver">Ver
+      <div class="dropdown">
+        <div class="dd-item" onclick="refreshCurrent()">Actualizar<span>F5</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item" onclick="setSortCol('name')">Por nombre</div>
+        <div class="dd-item" onclick="setSortCol('date')">Por fecha</div>
+        <div class="dd-item" onclick="setSortCol('size')">Por tamaño</div>
+      </div>
+    </div>
+    <div class="menu-item" data-menu="herr">Herramientas
+      <div class="dropdown">
+        <div class="dd-item" onclick="findDuplicates()">Buscar duplicados...</div>
+        <div class="dd-item" onclick="goUp()">Subir un nivel<span>Alt+↑</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="tbar-btn" onclick="goUp()" title="Subir un nivel">↑ Subir</button>
+    <div class="tbar-sep"></div>
+    <button class="tbar-btn" onclick="showDlg('newFolderOv')">📁 Nueva carpeta</button>
+    <button class="tbar-btn" id="btn-delete" onclick="showDeleteConfirm()" disabled>🗑 Eliminar</button>
+    <button class="tbar-btn" id="btn-move" onclick="showMoveDialog()" disabled>✂ Mover a...</button>
+    <div class="tbar-sep"></div>
+    <button class="tbar-btn" onclick="findDuplicates()">🔍 Duplicados</button>
+    <button class="tbar-btn" onclick="refreshCurrent()">🔄 Actualizar</button>
+    <div class="tbar-sep"></div>
+    <div class="path-box" id="pathBox">Mi Drive</div>
+  </div>
+
+  <!-- Login screen -->
+  <div id="loginScreen">
+    <svg width="64" height="64" viewBox="0 0 64 64"><rect x="4" y="12" width="56" height="40" fill="#c0c0c0" stroke="#000" stroke-width="2"/><rect x="12" y="20" width="40" height="24" fill="#008080"/><rect x="20" y="48" width="24" height="8" fill="#808080"/></svg>
+    <h2>Administrador de Drive</h2>
+    <p>Necesitás autorizar el acceso a tu Google Drive para comenzar.</p>
+    <div id="configNotice"></div>
+    <button class="dlg-btn primary" id="loginBtn" onclick="handleLogin()" disabled>Conectar con Google</button>
+    <p style="font-size:10px;color:#808080;">Se abrirá una ventana de Google para autorizar el acceso.</p>
+  </div>
+
+  <!-- Main content (hidden until login) -->
+  <div id="mainContent">
+    <div class="content-area">
+      <div class="left-pane" id="folderTree"></div>
+      <div class="splitter" id="splitter"></div>
+      <div class="right-pane">
+        <div class="file-header">
+          <div class="fh cn" onclick="setSortCol('name')">Nombre <span id="sort-name"></span></div>
+          <div class="fh cs" onclick="setSortCol('size')">Tamaño <span id="sort-size"></span></div>
+          <div class="fh cd" onclick="setSortCol('date')">Modificado <span id="sort-date">▲</span></div>
+          <div class="fh ct" onclick="setSortCol('type')">Tipo <span id="sort-type"></span></div>
+        </div>
+        <div class="file-list-body" id="fileList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="sb" id="sbLeft">Listo</div>
+    <div class="sb" id="sbRight" style="max-width:260px;"></div>
+  </div>
+</div>
+
+<!-- Context menu -->
+<div class="ctx-menu" id="ctxMenu"></div>
+
+<!-- New Folder dialog -->
+<div class="ov" id="newFolderOv">
+  <div class="dlg" style="width:300px;">
+    <div class="dlg-title">Nueva carpeta <span class="tbtn" onclick="hideDlg('newFolderOv')">✕</span></div>
+    <div class="dlg-body">
+      <label class="dlg-label">Nombre de la nueva carpeta:</label>
+      <input class="dlg-input" id="newFolderName" type="text" placeholder="Sin título" onkeydown="if(event.key==='Enter')confirmNewFolder()">
+    </div>
+    <div class="dlg-foot">
+      <button class="dlg-btn primary" onclick="confirmNewFolder()">Aceptar</button>
+      <button class="dlg-btn" onclick="hideDlg('newFolderOv')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete dialog -->
+<div class="ov" id="deleteOv">
+  <div class="dlg" style="width:340px;">
+    <div class="dlg-title">Confirmar eliminación <span class="tbtn" onclick="hideDlg('deleteOv')">✕</span></div>
+    <div class="dlg-body">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <span style="font-size:32px;">⚠️</span>
+        <span id="deleteMsg" style="font-size:11px;line-height:1.6;"></span>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button class="dlg-btn primary" onclick="confirmDelete()">Eliminar</button>
+      <button class="dlg-btn" onclick="hideDlg('deleteOv')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Move dialog -->
+<div class="ov" id="moveOv">
+  <div class="dlg" style="width:360px;">
+    <div class="dlg-title">Mover a... <span class="tbtn" onclick="hideDlg('moveOv')">✕</span></div>
+    <div class="dlg-body">
+      <label class="dlg-label">Seleccioná la carpeta destino:</label>
+      <div class="move-tree" id="moveTree"></div>
+    </div>
+    <div class="dlg-foot">
+      <button class="dlg-btn primary" onclick="confirmMove()">Mover aquí</button>
+      <button class="dlg-btn" onclick="hideDlg('moveOv')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Duplicates dialog -->
+<div class="ov" id="dupOv">
+  <div class="dlg" style="width:620px;max-height:90vh;display:flex;flex-direction:column;">
+    <div class="dlg-title">Buscar duplicados <span class="tbtn" onclick="hideDlg('dupOv')">✕</span></div>
+    <div class="dlg-body" style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:8px;">
+      <div id="dupStatus" style="font-size:11px;"></div>
+      <div id="dupContent" style="overflow:auto;flex:1;background:#fff;border:2px solid;border-color:#808080 #fff #fff #808080;padding:4px;min-height:200px;max-height:340px;"></div>
+    </div>
+    <div class="dlg-foot">
+      <button class="dlg-btn primary" id="dupDelBtn" style="display:none;background:#c04040;color:#fff;" onclick="deleteDuplicates()">Eliminar marcados</button>
+      <button class="dlg-btn" onclick="hideDlg('dupOv')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Google APIs -->
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIGURACIÓN — reemplazá con tu Client ID
+// ═══════════════════════════════════════════════
+const CLIENT_ID = 'TU_CLIENT_ID_AQUI.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive';
+
+// ═══ ESTADO ═══════════════════════════════════
+let tokenClient, gapiReady = false, gisReady = false;
+let currentFolderId = 'root';
+let currentPath = [{ id: 'root', name: 'Mi Drive' }];
+let allFiles = [];
+let selectedFiles = [];
+let clipboard = { action: null, files: [] };
+let sortCol = 'date', sortAsc = false;
+let moveTargetId = null;
+let dupToDelete = new Set();
+
+// ═══ SVG ICONS ════════════════════════════════
+const IC = {
+  folder: `<svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="5" width="14" height="10" fill="#ffff00" stroke="#808000" stroke-width="1"/><rect x="1" y="3" width="6" height="3" fill="#ffff00" stroke="#808000" stroke-width="1"/></svg>`,
+  folderOpen: `<svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="5" width="14" height="10" fill="#ffff00" stroke="#808000" stroke-width="1"/><rect x="1" y="3" width="6" height="3" fill="#ffff00" stroke="#808000" stroke-width="1"/><line x1="2" y1="9" x2="14" y2="9" stroke="#808000" stroke-width="1"/></svg>`,
+  image: `<svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="12" height="14" fill="#fff" stroke="#000" stroke-width="1"/><polygon points="9,1 13,5 9,5" fill="#c0c0c0" stroke="#000" stroke-width="1"/><rect x="2" y="8" width="10" height="5" fill="#008080"/><circle cx="4" cy="6" r="1.5" fill="#ffff00"/></svg>`,
+  file: `<svg width="16" height="16" viewBox="0 0 16 16"><polygon points="2,1 10,1 14,5 14,15 2,15" fill="#fff" stroke="#000" stroke-width="1"/><polygon points="10,1 14,5 10,5" fill="#c0c0c0" stroke="#000" stroke-width="1"/></svg>`,
+  drive: `<svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="4" width="14" height="9" fill="#c0c0c0" stroke="#000" stroke-width="1"/><rect x="3" y="6" width="10" height="5" fill="#008080"/></svg>`,
+};
+
+// ═══ GOOGLE API ════════════════════════════════
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    await gapi.client.init({
+      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+    });
+    gapiReady = true;
+    checkReady();
+  });
+}
+
+function gisLoaded() {
+  if (CLIENT_ID === 'TU_CLIENT_ID_AQUI.apps.googleusercontent.com') {
+    const n = document.getElementById('configNotice');
+    n.style.display = 'block';
+    n.innerHTML = '⚠️ <b>Configuración requerida:</b> Abrí este archivo en un editor de texto y reemplazá <code>TU_CLIENT_ID_AQUI.apps.googleusercontent.com</code> con tu OAuth2 Client ID de Google Cloud Console.';
+    return;
+  }
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { alert('Error de autenticación: ' + resp.error); return; }
+      showMain();
+      await buildTree();
+      await loadFolder('root');
+    },
+  });
+  gisReady = true;
+  checkReady();
+}
+
+function checkReady() {
+  if (gapiReady && gisReady) document.getElementById('loginBtn').disabled = false;
+}
+
+function handleLogin() {
+  tokenClient.requestAccessToken({ prompt: gapi.client.getToken() ? '' : 'consent' });
+}
+
+function handleLogout() {
+  const t = gapi.client.getToken();
+  if (t) { google.accounts.oauth2.revoke(t.access_token); gapi.client.setToken(''); }
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function showMain() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'flex';
+  document.getElementById('mainContent').style.flexDirection = 'column';
+}
+
+// ═══ DRIVE API ════════════════════════════════
+async function listFolder(folderId) {
+  let files = [], pageToken = null;
+  do {
+    const p = {
+      q: `'${folderId}' in parents and trashed=false`,
+      fields: 'nextPageToken,files(id,name,mimeType,size,modifiedTime,md5Checksum,parents)',
+      orderBy: 'folder,name',
+      pageSize: 1000,
+    };
+    if (pageToken) p.pageToken = pageToken;
+    const r = await gapi.client.drive.files.list(p);
+    files = files.concat(r.result.files);
+    pageToken = r.result.nextPageToken;
+  } while (pageToken);
+  return files;
+}
+
+async function loadFolder(id, name) {
+  currentFolderId = id;
+  setStatus('Cargando...');
+  allFiles = await listFolder(id);
+  renderFiles();
+  updateStatus();
+  updatePathBox();
+}
+
+async function apiCreateFolder(name, parentId) {
+  await gapi.client.drive.files.create({
+    resource: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId || currentFolderId] },
+    fields: 'id',
+  });
+}
+
+async function apiMoveFiles(ids, targetId) {
+  for (const id of ids) {
+    const f = allFiles.find(x => x.id === id);
+    const parents = f && f.parents ? f.parents.join(',') : currentFolderId;
+    await gapi.client.drive.files.update({ fileId: id, addParents: targetId, removeParents: parents, fields: 'id' });
+  }
+}
+
+async function apiDeleteFiles(ids) {
+  for (const id of ids) await gapi.client.drive.files.delete({ fileId: id });
+}
+
+async function refreshCurrent() {
+  allFiles = await listFolder(currentFolderId);
+  renderFiles();
+  updateStatus();
+  await refreshTree();
+}
+
+// ═══ RENDER FILES ══════════════════════════════
+function renderFiles() {
+  const el = document.getElementById('fileList');
+  if (!allFiles.length) { el.innerHTML = '<div style="padding:8px;color:#808080;">Carpeta vacía</div>'; return; }
+
+  const sorted = [...allFiles].sort((a, b) => {
+    const aF = a.mimeType === 'application/vnd.google-apps.folder';
+    const bF = b.mimeType === 'application/vnd.google-apps.folder';
+    if (aF !== bF) return aF ? -1 : 1;
+    let av, bv;
+    if (sortCol === 'name') { av = a.name.toLowerCase(); bv = b.name.toLowerCase(); }
+    else if (sortCol === 'size') { av = +(a.size || 0); bv = +(b.size || 0); }
+    else if (sortCol === 'date') { av = a.modifiedTime || ''; bv = b.modifiedTime || ''; }
+    else if (sortCol === 'type') { av = a.mimeType; bv = b.mimeType; }
+    if (av < bv) return sortAsc ? -1 : 1;
+    if (av > bv) return sortAsc ? 1 : -1;
+    return 0;
+  });
+
+  el.innerHTML = '';
+  sorted.forEach(f => {
+    const isDir = f.mimeType === 'application/vnd.google-apps.folder';
+    const div = document.createElement('div');
+    div.className = 'fi';
+    div.dataset.id = f.id;
+    div.innerHTML = `
+      <div class="cn">${isDir ? IC.folder : (isImg(f.mimeType) ? IC.image : IC.file)}<span title="${esc(f.name)}">${esc(f.name)}</span></div>
+      <div class="cs">${isDir ? '' : fmtSize(f.size)}</div>
+      <div class="cd">${fmtDate(f.modifiedTime)}</div>
+      <div class="ct">${fmtType(f.mimeType)}</div>`;
+
+    div.addEventListener('click', e => handleClick(e, div, f));
+    div.addEventListener('dblclick', () => {
+      if (isDir) { currentPath.push({ id: f.id, name: f.name }); loadFolder(f.id, f.name); }
+      else window.open(`https://drive.google.com/file/d/${f.id}/view`, '_blank');
+    });
+    div.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      if (!div.classList.contains('selected')) { clearSel(); div.classList.add('selected'); selectedFiles = [f]; }
+      showCtxMenu(e.clientX, e.clientY);
+    });
+    div.draggable = true;
+    div.addEventListener('dragstart', e => {
+      if (!selectedFiles.find(x => x.id === f.id)) { clearSel(); div.classList.add('selected'); selectedFiles = [f]; }
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', JSON.stringify(selectedFiles.map(x => x.id)));
+    });
+    if (isDir) {
+      div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drag-over'); });
+      div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+      div.addEventListener('drop', async e => {
+        e.preventDefault(); div.classList.remove('drag-over');
+        const ids = JSON.parse(e.dataTransfer.getData('text/plain'));
+        if (ids.includes(f.id)) return;
+        setStatus('Moviendo...');
+        await apiMoveFiles(ids, f.id);
+        await refreshCurrent();
+      });
+    }
+    el.appendChild(div);
+  });
+}
+
+// ═══ SELECTION ════════════════════════════════
+function handleClick(e, div, f) {
+  const items = [...document.querySelectorAll('.fi')];
+  if (e.ctrlKey) {
+    div.classList.toggle('selected');
+    if (div.classList.contains('selected')) selectedFiles.push(f);
+    else selectedFiles = selectedFiles.filter(x => x.id !== f.id);
+  } else if (e.shiftKey && selectedFiles.length) {
+    const last = items.findIndex(i => i.classList.contains('selected'));
+    const cur = items.indexOf(div);
+    const [s, end] = [Math.min(last, cur), Math.max(last, cur)];
+    clearSel();
+    items.slice(s, end + 1).forEach(i => { i.classList.add('selected'); const ff = allFiles.find(x => x.id === i.dataset.id); if (ff) selectedFiles.push(ff); });
+  } else {
+    clearSel(); div.classList.add('selected'); selectedFiles = [f];
+  }
+  updateToolbarState();
+  updateStatus();
+}
+
+function clearSel() {
+  document.querySelectorAll('.fi.selected').forEach(i => i.classList.remove('selected'));
+  selectedFiles = [];
+}
+
+function selectAll() {
+  document.querySelectorAll('.fi').forEach(i => i.classList.add('selected'));
+  selectedFiles = [...allFiles];
+  updateToolbarState();
+  updateStatus();
+}
+
+function updateToolbarState() {
+  const has = selectedFiles.length > 0;
+  document.getElementById('btn-delete').disabled = !has;
+  document.getElementById('btn-move').disabled = !has;
+}
+
+// ═══ CLIPBOARD ════════════════════════════════
+function cutFiles() {
+  if (!selectedFiles.length) return;
+  clipboard = { action: 'move', files: [...selectedFiles] };
+  updateStatus();
+}
+
+async function pasteFiles() {
+  if (clipboard.action === 'move' && clipboard.files.length) {
+    setStatus('Moviendo...');
+    await apiMoveFiles(clipboard.files.map(f => f.id), currentFolderId);
+    clipboard = { action: null, files: [] };
+    await refreshCurrent();
+  }
+}
+
+// ═══ TREE ══════════════════════════════════════
+async function buildTree() {
+  const el = document.getElementById('folderTree');
+  el.innerHTML = '';
+  const rootWrap = makeTreeNode({ id: 'root', name: 'Mi Drive' }, true);
+  el.appendChild(rootWrap);
+}
+
+async function refreshTree() {
+  await buildTree();
+}
+
+function makeTreeNode(folder, autoExpand) {
+  const wrap = document.createElement('div');
+  const row = document.createElement('div');
+  row.className = 'tree-row' + (folder.id === currentFolderId ? ' selected' : '');
+
+  const toggle = document.createElement('div');
+  toggle.className = 'tree-toggle';
+  toggle.textContent = '+';
+
+  const iconEl = document.createElement('span');
+  iconEl.innerHTML = IC.folder;
+
+  const label = document.createElement('span');
+  label.style.fontSize = '11px';
+  label.textContent = folder.name;
+
+  row.appendChild(toggle);
+  row.appendChild(iconEl);
+  row.appendChild(label);
+
+  const children = document.createElement('div');
+  children.style.paddingLeft = '16px';
+  children.style.display = 'none';
+
+  let expanded = false, loaded = false;
+
+  const expand = async () => {
+    if (!loaded) {
+      loaded = true;
+      children.innerHTML = '<div style="padding:2px 4px;color:#808080;font-size:11px;">...</div>';
+      const r = await gapi.client.drive.files.list({
+        q: `'${folder.id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+        fields: 'files(id,name)', orderBy: 'name',
+      });
+      children.innerHTML = '';
+      r.result.files.forEach(f => children.appendChild(makeTreeNode(f, false)));
+      if (!r.result.files.length) toggle.textContent = '·';
+    }
+    expanded = true;
+    toggle.textContent = '−';
+    children.style.display = 'block';
+  };
+
+  toggle.addEventListener('click', async e => {
+    e.stopPropagation();
+    if (expanded) { expanded = false; toggle.textContent = '+'; children.style.display = 'none'; }
+    else await expand();
+  });
+
+  row.addEventListener('click', async () => {
+    document.querySelectorAll('.tree-row.selected').forEach(r => r.classList.remove('selected'));
+    row.classList.add('selected');
+    if (folder.id === 'root') currentPath = [{ id: 'root', name: 'Mi Drive' }];
+    else currentPath = [{ id: 'root', name: 'Mi Drive' }, { id: folder.id, name: folder.name }];
+    await loadFolder(folder.id, folder.name);
+    if (!expanded) await expand();
+  });
+
+  wrap.appendChild(row);
+  wrap.appendChild(children);
+
+  if (autoExpand) expand();
+
+  return wrap;
+}
+
+// ═══ PATH & STATUS ════════════════════════════
+function updatePathBox() {
+  document.getElementById('pathBox').textContent = currentPath.map(p => p.name).join(' \\ ');
+}
+
+function updateStatus() {
+  const dirs = allFiles.filter(f => f.mimeType === 'application/vnd.google-apps.folder').length;
+  const files = allFiles.length - dirs;
+  const sbL = document.getElementById('sbLeft');
+  if (selectedFiles.length) {
+    const sz = selectedFiles.reduce((s, f) => s + +(f.size || 0), 0);
+    sbL.textContent = `${selectedFiles.length} seleccionado(s) — ${fmtSize(sz)}`;
+  } else {
+    sbL.textContent = `${files} archivo(s), ${dirs} carpeta(s)`;
+  }
+  document.getElementById('sbRight').textContent = clipboard.action
+    ? `Portapapeles: ${clipboard.files.length} archivo(s) para mover`
+    : '';
+}
+
+function setStatus(msg) { document.getElementById('sbLeft').textContent = msg; }
+
+// ═══ NAVIGATION ═══════════════════════════════
+function goUp() {
+  if (currentPath.length <= 1) return;
+  currentPath.pop();
+  const p = currentPath[currentPath.length - 1];
+  loadFolder(p.id, p.name);
+}
+
+// ═══ CONTEXT MENU ════════════════════════════
+function showCtxMenu(x, y) {
+  const m = document.getElementById('ctxMenu');
+  m.innerHTML = '';
+  const add = (label, fn, cls = '') => {
+    const d = document.createElement('div');
+    d.className = 'ctx-item' + (cls ? ' ' + cls : '');
+    d.textContent = label;
+    if (fn) d.addEventListener('click', () => { hideCtxMenu(); fn(); });
+    m.appendChild(d);
+  };
+  const sep = () => { const d = document.createElement('div'); d.className = 'ctx-sep'; m.appendChild(d); };
+
+  const has = selectedFiles.length > 0;
+  const isDir = has && selectedFiles[0].mimeType === 'application/vnd.google-apps.folder';
+
+  if (has) {
+    if (isDir && selectedFiles.length === 1) add('📂 Abrir', () => { currentPath.push({ id: selectedFiles[0].id, name: selectedFiles[0].name }); loadFolder(selectedFiles[0].id); });
+    add('✂️ Cortar', cutFiles);
+    sep();
+    add('📁 Mover a...', showMoveDialog);
+    sep();
+    add('🗑️ Eliminar', showDeleteConfirm);
+  } else {
+    add('📁 Nueva carpeta', () => showDlg('newFolderOv'));
+    add('🔄 Actualizar', refreshCurrent);
+    if (clipboard.action) { sep(); add('📋 Pegar aquí', pasteFiles); }
+  }
+
+  m.style.display = 'block';
+  const mw = m.offsetWidth, mh = m.offsetHeight;
+  m.style.left = Math.min(x, window.innerWidth - mw - 4) + 'px';
+  m.style.top = Math.min(y, window.innerHeight - mh - 4) + 'px';
+}
+
+function hideCtxMenu() { document.getElementById('ctxMenu').style.display = 'none'; }
+
+// ═══ DIALOGS ═══════════════════════════════════
+function showDlg(id) { document.getElementById(id).classList.add('show'); }
+function hideDlg(id) { document.getElementById(id).classList.remove('show'); }
+
+async function confirmNewFolder() {
+  const name = document.getElementById('newFolderName').value.trim();
+  if (!name) return;
+  hideDlg('newFolderOv');
+  setStatus('Creando carpeta...');
+  await apiCreateFolder(name, currentFolderId);
+  document.getElementById('newFolderName').value = '';
+  await refreshCurrent();
+}
+
+function showDeleteConfirm() {
+  if (!selectedFiles.length) return;
+  const names = selectedFiles.length === 1
+    ? `"${selectedFiles[0].name}"`
+    : `${selectedFiles.length} elementos`;
+  document.getElementById('deleteMsg').innerHTML =
+    `¿Eliminar permanentemente ${names}?<br><span style="color:#c04040;font-weight:bold;">Esta acción no se puede deshacer.</span>`;
+  showDlg('deleteOv');
+}
+
+async function confirmDelete() {
+  const ids = selectedFiles.map(f => f.id);
+  hideDlg('deleteOv');
+  setStatus(`Eliminando ${ids.length} elemento(s)...`);
+  await apiDeleteFiles(ids);
+  selectedFiles = [];
+  updateToolbarState();
+  await refreshCurrent();
+}
+
+async function showMoveDialog() {
+  if (!selectedFiles.length) return;
+  moveTargetId = null;
+  const tree = document.getElementById('moveTree');
+  tree.innerHTML = '<div style="padding:4px;color:#808080;font-size:11px;">Cargando árbol...</div>';
+  showDlg('moveOv');
+  await buildMoveTree('root', tree, 0);
+}
+
+async function buildMoveTree(folderId, container, depth) {
+  const excluded = new Set(selectedFiles.map(f => f.id));
+  const q = `'${folderId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+  const r = await gapi.client.drive.files.list({ q, fields: 'files(id,name)', orderBy: 'name' });
+  if (folderId === 'root' || depth === 0) {
+    container.innerHTML = '';
+    const rootRow = makeMoveRow({ id: 'root', name: 'Mi Drive' }, 0);
+    container.appendChild(rootRow);
+  }
+  r.result.files.filter(f => !excluded.has(f.id)).forEach(f => {
+    container.appendChild(makeMoveRow(f, depth + 1));
+  });
+}
+
+function makeMoveRow(folder, depth) {
+  const row = document.createElement('div');
+  row.className = 'move-row';
+  row.style.paddingLeft = (depth * 14 + 4) + 'px';
+  row.innerHTML = IC.folder + `<span>${esc(folder.name)}</span>`;
+  row.addEventListener('click', () => {
+    document.querySelectorAll('.move-row.msel').forEach(r => { r.classList.remove('msel'); r.style.background = ''; r.style.color = ''; });
+    row.classList.add('msel');
+    moveTargetId = folder.id;
+  });
+  return row;
+}
+
+async function confirmMove() {
+  if (!moveTargetId) { alert('Seleccioná una carpeta destino.'); return; }
+  hideDlg('moveOv');
+  setStatus(`Moviendo ${selectedFiles.length} elemento(s)...`);
+  await apiMoveFiles(selectedFiles.map(f => f.id), moveTargetId);
+  selectedFiles = [];
+  updateToolbarState();
+  await refreshCurrent();
+}
+
+// ═══ DUPLICATES ════════════════════════════════
+async function findDuplicates() {
+  dupToDelete.clear();
+  document.getElementById('dupDelBtn').style.display = 'none';
+  document.getElementById('dupContent').innerHTML = '';
+  document.getElementById('dupStatus').textContent = 'Buscando archivos en todo Mi Drive...';
+  showDlg('dupOv');
+
+  let allDriveFiles = [], pageToken = null;
+  do {
+    const p = {
+      q: `mimeType!='application/vnd.google-apps.folder' and trashed=false`,
+      fields: 'nextPageToken,files(id,name,size,modifiedTime,md5Checksum)',
+      pageSize: 1000,
+    };
+    if (pageToken) p.pageToken = pageToken;
+    const r = await gapi.client.drive.files.list(p);
+    allDriveFiles = allDriveFiles.concat(r.result.files);
+    pageToken = r.result.nextPageToken;
+    document.getElementById('dupStatus').textContent = `Analizando... ${allDriveFiles.length} archivos encontrados`;
+  } while (pageToken);
+
+  const groups = {};
+  allDriveFiles.forEach(f => { if (f.md5Checksum) { if (!groups[f.md5Checksum]) groups[f.md5Checksum] = []; groups[f.md5Checksum].push(f); } });
+  const dups = Object.values(groups).filter(g => g.length > 1);
+
+  if (!dups.length) {
+    document.getElementById('dupStatus').textContent = '';
+    document.getElementById('dupContent').innerHTML = '<div style="padding:16px;text-align:center;color:#004000;">✓ No se encontraron archivos duplicados en Mi Drive.</div>';
+    return;
+  }
+
+  const extra = dups.reduce((s, g) => s + g.length - 1, 0);
+  document.getElementById('dupStatus').innerHTML = `<b>${dups.length} grupos</b> con duplicados — <b>${extra}</b> archivos extra.<br><span style="color:#808080;">Los tachados serán eliminados. Hacé clic para cambiar la selección.</span>`;
+
+  const content = document.getElementById('dupContent');
+  content.innerHTML = '';
+
+  dups.forEach((group, gi) => {
+    const groupEl = document.createElement('div');
+    groupEl.className = 'dup-group';
+    const hdr = document.createElement('div');
+    hdr.className = 'dup-hdr';
+    hdr.textContent = `Grupo ${gi + 1}: "${group[0].name}" (${group.length} copias)`;
+    groupEl.appendChild(hdr);
+
+    group.forEach((f, fi) => {
+      const row = document.createElement('div');
+      row.className = 'dup-item' + (fi > 0 ? ' to-del' : '');
+      row.innerHTML = `${isImg(f.mimeType) ? IC.image : IC.file}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(f.name)}">${esc(f.name)}</span><span style="color:#808080;width:70px;text-align:right;">${fmtSize(f.size)}</span><span style="color:#808080;width:130px;">${fmtDate(f.modifiedTime)}</span>`;
+      if (fi > 0) dupToDelete.add(f.id);
+      row.addEventListener('click', () => {
+        if (dupToDelete.has(f.id)) { dupToDelete.delete(f.id); row.classList.remove('to-del'); }
+        else { dupToDelete.add(f.id); row.classList.add('to-del'); }
+        updateDupBtn();
+      });
+      groupEl.appendChild(row);
+    });
+    content.appendChild(groupEl);
+  });
+
+  updateDupBtn();
+}
+
+function updateDupBtn() {
+  const btn = document.getElementById('dupDelBtn');
+  if (dupToDelete.size > 0) { btn.style.display = ''; btn.textContent = `🗑 Eliminar ${dupToDelete.size} duplicados`; }
+  else btn.style.display = 'none';
+}
+
+async function deleteDuplicates() {
+  if (!confirm(`¿Eliminar permanentemente ${dupToDelete.size} archivo(s)? Esta acción no se puede deshacer.`)) return;
+  hideDlg('dupOv');
+  setStatus(`Eliminando ${dupToDelete.size} duplicados...`);
+  await apiDeleteFiles([...dupToDelete]);
+  dupToDelete.clear();
+  await refreshCurrent();
+}
+
+// ═══ SORT ══════════════════════════════════════
+function setSortCol(col) {
+  if (sortCol === col) sortAsc = !sortAsc;
+  else { sortCol = col; sortAsc = col === 'name'; }
+  ['name', 'size', 'date', 'type'].forEach(c => {
+    const el = document.getElementById('sort-' + c);
+    if (el) el.textContent = sortCol === c ? (sortAsc ? '▲' : '▼') : '';
+  });
+  renderFiles();
+}
+
+// ═══ HELPERS ═══════════════════════════════════
+function isImg(m) { return m && m.startsWith('image/'); }
+function fmtSize(b) {
+  if (!b) return ''; const n = +b;
+  if (n < 1024) return n + ' B';
+  if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+  if (n < 1073741824) return (n / 1048576).toFixed(1) + ' MB';
+  return (n / 1073741824).toFixed(2) + ' GB';
+}
+function fmtDate(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  return d.toLocaleDateString('es-AR') + ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+}
+function fmtType(m) {
+  if (!m) return '';
+  if (m === 'application/vnd.google-apps.folder') return 'Carpeta';
+  if (m.startsWith('image/')) return 'Imagen';
+  if (m === 'application/pdf') return 'PDF';
+  if (m.includes('video')) return 'Video';
+  if (m.includes('audio')) return 'Audio';
+  if (m.includes('spreadsheet') || m.includes('excel')) return 'Planilla';
+  if (m.includes('document') || m.includes('word')) return 'Documento';
+  return m.split('/').pop().toUpperCase().slice(0, 12);
+}
+function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+// ═══ EVENTS ════════════════════════════════════
+document.addEventListener('click', e => {
+  if (!e.target.closest('.menu-item')) document.querySelectorAll('.menu-item.open').forEach(m => m.classList.remove('open'));
+  if (!e.target.closest('.ctx-menu')) hideCtxMenu();
+  if (!e.target.closest('.fi') && !e.target.closest('.ctx-menu')) { clearSel(); updateToolbarState(); updateStatus(); }
+});
+
+document.querySelectorAll('.menu-item').forEach(m => {
+  m.addEventListener('click', e => {
+    e.stopPropagation();
+    const wasOpen = m.classList.contains('open');
+    document.querySelectorAll('.menu-item.open').forEach(x => x.classList.remove('open'));
+    if (!wasOpen) m.classList.add('open');
+  });
+});
+
+document.getElementById('fileList').addEventListener('contextmenu', e => {
+  if (!e.target.closest('.fi')) { e.preventDefault(); clearSel(); showCtxMenu(e.clientX, e.clientY); }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Delete' && selectedFiles.length) { showDeleteConfirm(); }
+  if (e.key === 'F5') refreshCurrent();
+  if (e.key === 'Backspace' && !e.target.matches('input')) goUp();
+  if (e.ctrlKey && e.key === 'x') cutFiles();
+  if (e.ctrlKey && e.key === 'v') pasteFiles();
+  if (e.ctrlKey && e.key === 'a') { e.preventDefault(); selectAll(); }
+  if (e.key === 'Escape') { clearSel(); hideCtxMenu(); updateToolbarState(); }
+});
+
+// Splitter resize
+const splitter = document.getElementById('splitter');
+const leftPane = document.querySelector('.left-pane');
+let drag = false, dragX, dragW;
+splitter.addEventListener('mousedown', e => { drag = true; dragX = e.clientX; dragW = leftPane.offsetWidth; document.body.style.cursor = 'ew-resize'; document.body.style.userSelect = 'none'; });
+document.addEventListener('mousemove', e => { if (!drag) return; leftPane.style.width = Math.max(120, Math.min(400, dragW + e.clientX - dragX)) + 'px'; });
+document.addEventListener('mouseup', () => { drag = false; document.body.style.cursor = ''; document.body.style.userSelect = ''; });
+
+// Dialog close on overlay click
+document.querySelectorAll('.ov').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); });
+});
+</script>
+</body>
+</html>

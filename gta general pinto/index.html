@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Pinto — Tour Virtual</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            overflow: hidden;
+            font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0a;
+        }
+
+        /* ── Street View pantalla completa ── */
+        #pano {
+            width: 100vw;
+            height: 100vh;
+            filter: contrast(1.2) saturate(0.72) brightness(0.92);
+        }
+
+        /* ── Filtro GTA: viñeta ── */
+        #vignette {
+            position: fixed;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 45%,
+                rgba(0, 0, 0, 0.55) 100%
+            );
+        }
+
+        /* ── Filtro GTA: color grade naranja/teal ── */
+        #colorgrade {
+            position: fixed;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+            opacity: 0.18;
+            background: linear-gradient(
+                160deg,
+                rgba(0, 40, 60, 0.9) 0%,
+                transparent 50%,
+                rgba(180, 90, 10, 0.9) 100%
+            );
+            mix-blend-mode: color;
+        }
+
+        /* ── Scanlines sutiles ── */
+        #scanlines {
+            position: fixed;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.06) 2px,
+                rgba(0, 0, 0, 0.06) 4px
+            );
+        }
+
+        /* ── Header transparente arriba ── */
+        .header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%);
+            padding: 18px 22px 40px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .header h1 {
+            font-size: 1rem;
+            color: #1fc71f;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 900;
+            text-shadow: 0 0 12px rgba(31,199,31,0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header p {
+            font-size: 0.66rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 3px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* ── Minimap esquina inferior derecha ── */
+        #minimap-wrap {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        #minimap {
+            width: 210px;
+            height: 170px;
+            border: 2px solid #1fc71f;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+        }
+        .minimap-label {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #1fc71f;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+
+        /* ── Panel inferior de comercio ── */
+        #panel {
+            position: fixed;
+            bottom: -260px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(340px, 90vw);
+            background: rgba(8, 8, 18, 0.97);
+            border: 1px solid #1fc71f;
+            border-bottom: none;
+            border-radius: 14px 14px 0 0;
+            padding: 18px 20px 24px;
+            z-index: 200;
+            transition: bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(12px);
+        }
+        #panel.visible { bottom: 0; }
+
+        .panel-close {
+            position: absolute;
+            top: 12px; right: 14px;
+            background: none;
+            border: none;
+            color: #555;
+            font-size: 1.1rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .panel-close:hover { color: #fff; }
+
+        #panel-badge {
+            display: inline-block;
+            font-size: 0.58rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        #panel-badge.activo {
+            background: rgba(240, 180, 41, 0.15);
+            color: #1fc71f;
+            border: 1px solid rgba(240, 180, 41, 0.3);
+        }
+        #panel-badge.disponible {
+            background: rgba(255,255,255,0.05);
+            color: #555;
+            border: 1px solid #333;
+        }
+
+        #panel-nombre {
+            font-size: 1.1rem;
+            color: #fff;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        #panel-dir {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 14px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 9px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: opacity 0.2s, transform 0.1s;
+            cursor: pointer;
+        }
+        .btn:hover { opacity: 0.85; transform: scale(0.98); }
+
+        .btn-phone {
+            background: #1c1c2e;
+            color: #fff;
+            border: 1px solid #333;
+        }
+        .btn-ig {
+            background: linear-gradient(135deg, #f09433 0%, #dc2743 50%, #bc1888 100%);
+            color: #fff;
+        }
+        .btn-wa {
+            background: #25D366;
+            color: #fff;
+        }
+        .btn-anunciar {
+            background: #1fc71f;
+            color: #000;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Tooltip inicial ── */
+        #hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            z-index: 50;
+            transition: opacity 0.5s;
+        }
+        #hint.hidden { opacity: 0; }
+        #hint p {
+            color: rgba(255,255,255,0.35);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        #hint .pulse {
+            font-size: 1.8rem;
+            animation: pulse 2s infinite;
+            display: block;
+            margin-bottom: 8px;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        /* ── Pantalla de login estilo Sims ── */
+        #login-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: linear-gradient(160deg, #0a1a0a 0%, #051205 50%, #0a1a0a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0;
+        }
+        /* Plumbob animado */
+        .plumbob {
+            width: 54px;
+            height: 54px;
+            margin-bottom: 10px;
+            animation: plumbobFloat 2.4s ease-in-out infinite;
+            filter: drop-shadow(0 0 14px rgba(31,199,31,0.7));
+        }
+        @keyframes plumbobFloat {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-10px); }
+        }
+        #login-screen h1 {
+            font-family: 'Nunito', sans-serif;
+            color: #1fc71f;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(31,199,31,0.5);
+            margin-bottom: 2px;
+        }
+        #login-screen .sub {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            margin-bottom: 28px;
+            font-weight: 600;
+        }
+        .login-box {
+            background: rgba(10,30,10,0.85);
+            border: 2px solid rgba(31,199,31,0.35);
+            border-radius: 20px;
+            padding: 28px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: min(340px, 88vw);
+            box-shadow: 0 0 40px rgba(31,199,31,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        /* ── Grid de personajes ── */
+        .personajes-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            width: min(520px, 92vw);
+            margin-bottom: 14px;
+        }
+        .pj-card {
+            background: rgba(10,30,10,0.75);
+            border: 2px solid rgba(31,199,31,0.18);
+            border-radius: 14px;
+            padding: 12px 6px 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.18s;
+            position: relative;
+        }
+        .pj-card:hover {
+            border-color: rgba(31,199,31,0.55);
+            transform: translateY(-3px) scale(1.03);
+            background: rgba(31,199,31,0.08);
+        }
+        .pj-card.seleccionado {
+            border-color: #1fc71f;
+            background: rgba(31,199,31,0.13);
+            box-shadow: 0 0 18px rgba(31,199,31,0.35);
+        }
+        .pj-card.seleccionado::after {
+            content: '✓';
+            position: absolute;
+            top: 5px; right: 8px;
+            font-size: 0.65rem;
+            color: #1fc71f;
+            font-weight: 900;
+        }
+        .pj-emoji {
+            font-size: 2.2rem;
+            display: block;
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+        .pj-nombre {
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: #fff;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .pj-rol {
+            font-size: 0.54rem;
+            color: rgba(31,199,31,0.65);
+            display: block;
+            margin-top: 2px;
+            font-weight: 700;
+        }
+        /* Opción personalizada */
+        .pj-custom {
+            border-style: dashed;
+        }
+        /* Fila nombre + botón */
+        .login-row {
+            display: flex;
+            gap: 10px;
+            width: min(520px, 92vw);
+        }
+        #login-nombre {
+            flex: 1;
+            background: rgba(31,199,31,0.06);
+            border: 1.5px solid rgba(31,199,31,0.22);
+            border-radius: 12px;
+            padding: 11px 16px;
+            color: #fff;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #login-nombre:focus {
+            border-color: #1fc71f;
+            box-shadow: 0 0 10px rgba(31,199,31,0.3);
+        }
+        #login-nombre::placeholder { color: rgba(255,255,255,0.2); font-weight: 400; }
+        #login-btn {
+            background: linear-gradient(135deg, #1fc71f 0%, #14a014 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 11px 20px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(31,199,31,0.35);
+            white-space: nowrap;
+        }
+        #login-btn:hover  { transform: scale(1.03); box-shadow: 0 6px 22px rgba(31,199,31,0.5); }
+        #login-btn:active { transform: scale(0.97); }
+        #file-input { display: none; }
+
+        @media (max-width: 480px) {
+            .personajes-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .pj-emoji { font-size: 1.7rem; }
+            .login-row { flex-direction: column; }
+        }
+
+        /* ── Nombre en HUD ── */
+        #hud-nombre {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            z-index: 100;
+            color: rgba(255,255,255,0.55);
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-align: right;
+            pointer-events: none;
+        }
+        #hud-nombre span { color: #1fc71f; }
+
+        /* ── Botón modo ── */
+        #btn-modo {
+            position: fixed;
+            top: 14px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(31,199,31,0.4);
+            border-radius: 8px;
+            color: #1fc71f;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 7px 14px;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            transition: background 0.2s, border-color 0.2s;
+        }
+        #btn-modo:hover { background: rgba(31,199,31,0.15); border-color: #1fc71f; }
+
+        /* ── Crosshair central ── */
+        #crosshair {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 6;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: #1fc71f;
+            border-radius: 2px;
+        }
+        #crosshair::before { width: 18px; height: 2px; top: -1px; left: -9px; }
+        #crosshair::after  { width: 2px; height: 18px; top: -9px; left: -1px; }
+
+        /* ── HUD de teclas ── */
+        #keyhud {
+            position: fixed;
+            bottom: 22px;
+            left: 22px;
+            z-index: 100;
+            display: grid;
+            grid-template-columns: repeat(3, 34px);
+            grid-template-rows: repeat(2, 34px);
+            gap: 4px;
+        }
+        .key {
+            width: 34px; height: 34px;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(31,199,31,0.35);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            transition: background 0.1s, color 0.1s, border-color 0.1s;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+        }
+        .key.active {
+            background: rgba(31,199,31,0.25);
+            border-color: #1fc71f;
+            color: #1fc71f;
+        }
+        #key-up    { grid-column: 2; grid-row: 1; }
+        #key-left  { grid-column: 1; grid-row: 2; }
+        #key-down  { grid-column: 2; grid-row: 2; }
+        #key-right { grid-column: 3; grid-row: 2; }
+
+        /* ── Auto del parabrisas ── */
+        #car-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 7;
+            pointer-events: none;
+            animation: roadBump 0.14s ease-in-out infinite;
+        }
+        @keyframes roadBump {
+            0%   { transform: translateY(0px)    rotate(0deg); }
+            25%  { transform: translateY(-2px)   rotate(0.12deg); }
+            55%  { transform: translateY(1px)    rotate(-0.08deg); }
+            80%  { transform: translateY(-0.8px) rotate(0.05deg); }
+            100% { transform: translateY(0px)    rotate(0deg); }
+        }
+        #car-frame-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+        /* Volante */
+        #steering-wheel {
+            position: absolute;
+            bottom: -13%;
+            left: 50%;
+            transform: translateX(-50%) rotate(0deg);
+            width: 20%;
+            max-width: 210px;
+            min-width: 130px;
+            opacity: 0.82;
+            transition: transform 0.12s ease;
+        }
+        /* Sombra suave desde los pilares hacia el interior */
+        #pillar-shadow-l {
+            position: absolute;
+            top: 0; left: 0;
+            width: 22%; height: 80%;
+            background: linear-gradient(to right, rgba(0,0,0,0.35) 0%, transparent 100%);
+            clip-path: polygon(0 0, 100% 14%, 72% 100%, 0 100%);
+        }
+        #pillar-shadow-r {
+            position: absolute;
+            top: 0; right: 0;
+            width: 22%; height: 80%;
+            background: linear-gradient(to left, rgba(0,0,0,0.35) 0%, transparent 100%);
+            clip-path: polygon(100% 0, 0 14%, 28% 100%, 100% 100%);
+        }
+        /* Brillo sutil del vidrio */
+        #glass-sheen {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                138deg,
+                rgba(255,255,255,0.028) 0%,
+                transparent 38%,
+                transparent 72%,
+                rgba(255,255,255,0.012) 100%
+            );
+        }
+
+        /* ── Responsive mobile ── */
+        @media (max-width: 480px) {
+            #minimap { width: 150px; height: 125px; }
+            #panel { width: 100vw; border-radius: 14px 14px 0 0; }
+            #keyhud { display: none; }
+            #steering-wheel { width: 34%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Login screen estilo Sims ── -->
+<div id="login-screen">
+    <!-- Plumbob SVG animado -->
+    <svg class="plumbob" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="27,2 52,27 27,52 2,27" fill="#1fc71f" opacity="0.9"/>
+        <polygon points="27,2 52,27 27,28"       fill="#14a014" opacity="0.95"/>
+        <polygon points="27,2 2,27  27,28"        fill="#25e025" opacity="0.85"/>
+        <polygon points="2,27 27,52 27,28"        fill="#0e8a0e" opacity="0.95"/>
+        <polygon points="52,27 27,52 27,28"       fill="#1ab51a" opacity="0.9"/>
+        <polygon points="27,8 27,28 40,27"        fill="rgba(255,255,255,0.18)"/>
+    </svg>
+
+    <h1>General Pinto</h1>
+    <p class="sub">Tour Virtual · Comercios Locales</p>
+
+    <p style="font-size:0.68rem;font-weight:700;letter-spacing:2px;color:rgba(31,199,31,0.6);margin-bottom:10px;text-transform:uppercase">
+        ✦ Elegí tu personaje ✦
+    </p>
+
+    <!-- Grilla generada por JS -->
+    <div class="personajes-grid" id="personajes-grid"></div>
+
+    <div class="login-row">
+        <input id="login-nombre" type="text" placeholder="O escribí tu nombre…" maxlength="24">
+        <button id="login-btn">▶ JUGAR</button>
+    </div>
+
+    <input type="file" id="file-input" accept="image/*">
+</div>
+
+<div id="pano"></div>
+<div id="vignette"></div>
+<div id="colorgrade"></div>
+<div id="scanlines"></div>
+<div id="crosshair"></div>
+
+<!-- ── Parabrisas del auto ── -->
+<div id="car-overlay">
+    <svg id="car-frame-svg" xmlns="http://www.w3.org/2000/svg"
+         viewBox="0 0 1000 600" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="roofGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#04040a"/>
+          <stop offset="100%" stop-color="#111118"/>
+        </linearGradient>
+        <linearGradient id="dashGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#1a1a2a"/>
+          <stop offset="40%"  stop-color="#0e0e1c"/>
+          <stop offset="100%" stop-color="#05050e"/>
+        </linearGradient>
+        <linearGradient id="dashLow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#090914"/>
+          <stop offset="100%" stop-color="#030308"/>
+        </linearGradient>
+        <linearGradient id="plL" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stop-color="#060609"/>
+          <stop offset="75%"  stop-color="#13131e"/>
+          <stop offset="100%" stop-color="#1a2038" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="plR" x1="1" y1="0" x2="0" y2="0">
+          <stop offset="0%"   stop-color="#060609"/>
+          <stop offset="75%"  stop-color="#13131e"/>
+          <stop offset="100%" stop-color="#1a2038" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+
+      <!-- ══ TECHO / HEADLINER ══ -->
+      <rect x="0" y="0" width="1000" height="92" fill="url(#roofGrad)"/>
+      <line x1="0" y1="28" x2="1000" y2="28" stroke="#0c0c16" stroke-width="1" opacity="0.9"/>
+      <line x1="0" y1="56" x2="1000" y2="56" stroke="#0c0c16" stroke-width="1" opacity="0.9"/>
+      <line x1="0" y1="82" x2="1000" y2="82" stroke="#0c0c16" stroke-width="1" opacity="0.7"/>
+      <!-- Luz domo -->
+      <ellipse cx="500" cy="52" rx="52" ry="18" fill="#0b0b16" opacity="0.8"/>
+      <ellipse cx="500" cy="52" rx="34" ry="11" fill="#0e0e1c" opacity="0.7"/>
+      <ellipse cx="500" cy="52" rx="18" ry="5"  fill="#141428" opacity="0.5"/>
+
+      <!-- ══ VISERAS PARASOL ══ -->
+      <rect x="58"  y="0" width="118" height="22" rx="3" fill="#0a0a14"/>
+      <line x1="70"  y1="11" x2="164" y2="11" stroke="#111120" stroke-width="1.5"/>
+      <rect x="824" y="0" width="118" height="22" rx="3" fill="#0a0a14"/>
+      <line x1="836" y1="11" x2="930" y2="11" stroke="#111120" stroke-width="1.5"/>
+
+      <!-- ══ PILAR A IZQUIERDO ══ -->
+      <polygon points="0,0 158,0 158,92 62,462 0,462" fill="#0b0b12"/>
+      <!-- Brillo de borde interior 3D -->
+      <polygon points="158,0 158,92 62,462 96,462 192,92 192,0" fill="url(#plL)"/>
+      <!-- Línea de brillo interior -->
+      <line x1="158" y1="2" x2="62" y2="462" stroke="#2a2a3c" stroke-width="2.5" opacity="0.6"/>
+      <!-- Detalle de goma de sellado (weatherstrip) -->
+      <line x1="154" y1="2" x2="58" y2="462" stroke="#0e0e18" stroke-width="4" opacity="0.8"/>
+
+      <!-- ══ PILAR A DERECHO ══ -->
+      <polygon points="1000,0 842,0 842,92 938,462 1000,462" fill="#0b0b12"/>
+      <polygon points="842,0 842,92 938,462 904,462 808,92 808,0" fill="url(#plR)"/>
+      <line x1="842" y1="2" x2="938" y2="462" stroke="#2a2a3c" stroke-width="2.5" opacity="0.6"/>
+      <line x1="846" y1="2" x2="942" y2="462" stroke="#0e0e18" stroke-width="4" opacity="0.8"/>
+
+      <!-- ══ ESPEJO RETROVISOR ══ -->
+      <!-- Brazo -->
+      <rect x="485" y="88" width="14" height="30" rx="4" fill="#0d0d18"/>
+      <!-- Carcasa -->
+      <rect x="412" y="64" width="176" height="66" rx="7" fill="#0d0d18"/>
+      <!-- Vidrio -->
+      <rect x="418" y="69" width="164" height="56" rx="5" fill="#141628"/>
+      <!-- Reflejos sutiles -->
+      <line x1="424" y1="70" x2="578" y2="124" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+      <line x1="445" y1="70" x2="580" y2="117" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="472" y1="70" x2="580" y2="108" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+      <!-- Marco del espejo -->
+      <rect x="418" y="69" width="164" height="56" rx="5"
+            fill="none" stroke="#1e2030" stroke-width="2"/>
+
+      <!-- ══ TABLERO ══ -->
+      <!-- Curva principal -->
+      <path d="M 0,462 Q 500,392 1000,462 L 1000,600 L 0,600 Z" fill="url(#dashGrad)"/>
+      <!-- Borde superior iluminado del tablero -->
+      <path d="M 0,462 Q 500,392 1000,462" stroke="#28283c" stroke-width="3.5" fill="none"/>
+      <!-- Sub-superficie baja del tablero -->
+      <path d="M 0,516 Q 500,484 1000,516 L 1000,600 L 0,600 Z" fill="url(#dashLow)"/>
+
+      <!-- Cluster de instrumentos izq. -->
+      <ellipse cx="278" cy="484" rx="148" ry="56" fill="#0c0c1a"/>
+      <!-- Velocímetro -->
+      <circle cx="230" cy="482" r="42" fill="none" stroke="#161626" stroke-width="6"/>
+      <circle cx="230" cy="482" r="34" fill="#08081a"/>
+      <circle cx="230" cy="482" r="30" fill="none" stroke="#1e1e32" stroke-width="1.5"/>
+      <!-- Marcas de escala velocímetro -->
+      <line x1="230" y1="452" x2="230" y2="456" stroke="#2a2a42" stroke-width="2"/>
+      <line x1="248" y1="456" x2="246" y2="459" stroke="#2a2a42" stroke-width="2"/>
+      <line x1="258" y1="469" x2="255" y2="471" stroke="#2a2a42" stroke-width="2"/>
+      <line x1="212" y1="456" x2="214" y2="459" stroke="#2a2a42" stroke-width="2"/>
+      <!-- Aguja velocímetro -->
+      <line x1="230" y1="482" x2="214" y2="458" stroke="#1fc71f" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+      <circle cx="230" cy="482" r="4" fill="#1fc71f" opacity="0.6"/>
+      <!-- Tacómetro -->
+      <circle cx="328" cy="482" r="34" fill="none" stroke="#161626" stroke-width="5"/>
+      <circle cx="328" cy="482" r="27" fill="#08081a"/>
+      <circle cx="328" cy="482" r="23" fill="none" stroke="#1e1e32" stroke-width="1.5"/>
+      <line x1="328" y1="482" x2="316" y2="462" stroke="#c84040" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+      <circle cx="328" cy="482" r="3.5" fill="#c84040" opacity="0.5"/>
+
+      <!-- Pantalla infotainment central -->
+      <rect x="424" y="426" width="152" height="104" rx="8" fill="#0a0a18"/>
+      <rect x="430" y="432" width="140" height="92"  rx="6" fill="#060612"/>
+      <!-- Borde de pantalla -->
+      <rect x="430" y="432" width="140" height="92" rx="6"
+            fill="none" stroke="#181828" stroke-width="2"/>
+
+      <!-- Rejillas ventilación izquierda -->
+      <rect x="172" y="508" width="80" height="20" rx="4" fill="#0c0c1c"/>
+      <line x1="180" y1="509" x2="180" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="192" y1="509" x2="192" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="204" y1="509" x2="204" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="216" y1="509" x2="216" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="228" y1="509" x2="228" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="240" y1="509" x2="240" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="174" y1="514" x2="180" y2="514" stroke="#161628" stroke-width="2.5"/>
+      <line x1="174" y1="520" x2="180" y2="520" stroke="#161628" stroke-width="2.5"/>
+
+      <!-- Rejillas ventilación derecha -->
+      <rect x="748" y="508" width="80" height="20" rx="4" fill="#0c0c1c"/>
+      <line x1="756" y1="509" x2="756" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="768" y1="509" x2="768" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="780" y1="509" x2="780" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="792" y1="509" x2="792" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="804" y1="509" x2="804" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="816" y1="509" x2="816" y2="527" stroke="#161628" stroke-width="3"/>
+      <line x1="820" y1="514" x2="826" y2="514" stroke="#161628" stroke-width="2.5"/>
+      <line x1="820" y1="520" x2="826" y2="520" stroke="#161628" stroke-width="2.5"/>
+
+      <!-- Línea decorativa de acabado del tablero -->
+      <path d="M 68,462 Q 500,408 932,462" stroke="#1c1c2e" stroke-width="2" fill="none" opacity="0.8"/>
+
+      <!-- Zona guantera lado pasajero -->
+      <path d="M 595,456 Q 800,436 1000,458 L 1000,525 Q 800,506 595,520 Z"
+            fill="#0b0b1a" opacity="0.55"/>
+      <line x1="608" y1="488" x2="992" y2="492" stroke="#131322" stroke-width="1" opacity="0.5"/>
+    </svg>
+
+    <!-- Volante deportivo fondo plano -->
+    <div id="steering-wheel">
+        <svg viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+          <!-- Paleta izquierda -->
+          <rect x="2" y="62" width="14" height="22" rx="2.5" fill="#16162a"/>
+          <rect x="3" y="63" width="12" height="20" rx="2"   fill="#1c1c32"/>
+          <!-- Paleta derecha -->
+          <rect x="94" y="62" width="14" height="22" rx="2.5" fill="#16162a"/>
+          <rect x="95" y="63" width="12" height="20" rx="2"   fill="#1c1c32"/>
+          <!-- Aro exterior (fondo plano abajo) -->
+          <path d="M 55,10 A 45,45 0 1 1 13,78 L 97,78 A 45,45 0 0 1 55,10 Z"
+                fill="none" stroke="#16162a" stroke-width="10" stroke-linejoin="round"/>
+          <!-- Textura cuero -->
+          <path d="M 55,10 A 45,45 0 1 1 13,78 L 97,78 A 45,45 0 0 1 55,10 Z"
+                fill="none" stroke="#222238" stroke-width="5" stroke-dasharray="7 5"/>
+          <!-- Franja roja deportiva en el tope -->
+          <path d="M 40,11 A 45,45 0 0 1 70,11"
+                fill="none" stroke="#8b1a1a" stroke-width="4"/>
+          <!-- Radio superior -->
+          <line x1="55" y1="14"  x2="55" y2="44"  stroke="#1c1c2c" stroke-width="8" stroke-linecap="round"/>
+          <!-- Radio inferior izquierdo -->
+          <line x1="15" y1="74"  x2="40" y2="58"  stroke="#1c1c2c" stroke-width="8" stroke-linecap="round"/>
+          <!-- Radio inferior derecho -->
+          <line x1="95" y1="74"  x2="70" y2="58"  stroke="#1c1c2c" stroke-width="8" stroke-linecap="round"/>
+          <!-- Barra inferior plana -->
+          <line x1="14" y1="78"  x2="96" y2="78"  stroke="#16162a" stroke-width="10" stroke-linecap="round"/>
+          <!-- Hub -->
+          <circle cx="55" cy="55" r="14" fill="#101020"/>
+          <circle cx="55" cy="55" r="10" fill="#18182a"/>
+          <circle cx="55" cy="55" r="5.5" fill="#222238"/>
+          <!-- Botones hub -->
+          <rect x="47" y="49" width="6" height="3.5" rx="0.8" fill="#1c1c30"/>
+          <rect x="57" y="49" width="6" height="3.5" rx="0.8" fill="#1c1c30"/>
+          <rect x="47" y="58" width="6" height="3.5" rx="0.8" fill="#1c1c30"/>
+          <rect x="57" y="58" width="6" height="3.5" rx="0.8" fill="#1c1c30"/>
+        </svg>
+    </div>
+
+    <div id="pillar-shadow-l"></div>
+    <div id="pillar-shadow-r"></div>
+    <div id="glass-sheen"></div>
+</div>
+
+<!-- Botón de modo y nombre -->
+<button id="btn-modo">🚗 MODO AUTO</button>
+<div id="hud-nombre"></div>
+
+<!-- Avatar en el espejo (se muestra tras login) -->
+<img id="mirror-avatar" style="
+    display:none; position:fixed; z-index:8; pointer-events:none;
+    border-radius:3px; object-fit:cover; opacity:0.75;
+    /* posición del espejo — se ajusta via JS según viewport */" alt="">
+
+<!-- HUD teclas -->
+<div id="keyhud">
+    <div class="key" id="key-up">▲</div>
+    <div class="key" id="key-left">◀</div>
+    <div class="key" id="key-down">▼</div>
+    <div class="key" id="key-right">▶</div>
+</div>
+
+<!-- Overlay para zonas sin cobertura Street View -->
+<div id="no-cobertura" style="
+    display:none; position:fixed; inset:0; z-index:5;
+    background:#0a0a14; align-items:center; justify-content:center;
+    flex-direction:column; text-align:center; pointer-events:none;">
+    <div style="font-size:2.5rem;margin-bottom:12px">🗺</div>
+    <p style="color:rgba(255,255,255,0.4);font-size:0.85rem;letter-spacing:1px;line-height:1.6">
+        Sin cobertura Street View en este punto<br>
+        <span style="color:#1fc71f;font-size:0.75rem">Seleccioná otro comercio en el mapa</span>
+    </p>
+</div>
+
+<div class="header">
+    <h1>
+        <svg width="15" height="15" viewBox="0 0 54 54" style="flex-shrink:0;filter:drop-shadow(0 0 5px #1fc71f)">
+            <polygon points="27,2 52,27 27,52 2,27" fill="#1fc71f" opacity="0.9"/>
+            <polygon points="27,2 52,27 27,28"       fill="#14a014"/>
+            <polygon points="27,2 2,27  27,28"        fill="#25e025" opacity="0.85"/>
+            <polygon points="27,8 27,28 40,27"        fill="rgba(255,255,255,0.2)"/>
+        </svg>
+        General Pinto
+    </h1>
+    <p>Tour Virtual · Comercios Locales</p>
+</div>
+
+<div id="minimap-wrap">
+    <div id="minimap"></div>
+    <p class="minimap-label">Tocá un comercio</p>
+</div>
+
+<div id="hint">
+    <span class="pulse">📍</span>
+    <p>Hacé clic en los puntos del mapa<br>para explorar los comercios</p>
+</div>
+
+<div id="panel">
+    <button class="panel-close" onclick="cerrarPanel()">✕</button>
+    <span id="panel-badge" class="activo">Comercio</span>
+    <h2 id="panel-nombre"></h2>
+    <p id="panel-dir"></p>
+    <div class="btn-row" id="panel-btns"></div>
+</div>
+
+<script>
+    // ──────────────────────────────────────────
+    //  CONFIGURACIÓN
+    // ──────────────────────────────────────────
+    const WA_CONTACTO = "541125328861";
+
+    const comercios = [
+        {
+            nombre: "Casa Cantora",
+            direccion: "Av. Mitre 185",
+            telefono: "02356420008",
+            whatsapp: null,
+            instagram: null,
+            lat: -34.7680167,
+            lng: -61.8913835,
+            panoid: "b2KjVTxAN0SjvlULdT1X-Q",
+            heading: 105.48,
+            pitch: 7.38,
+            activo: true
+        },
+        {
+            nombre: "Local Felisa",
+            direccion: "San Martín 300",
+            telefono: "02356405048",
+            whatsapp: null,
+            instagram: null,
+            lat: -34.7669158,
+            lng: -61.8927301,
+            activo: true
+        },
+        // ── Slots disponibles (generan leads) ──
+        {
+            direccion: "Belgrano 240",
+            lat: -34.7630,
+            lng: -61.8895,
+            activo: false
+        },
+        {
+            direccion: "Rivadavia 185",
+            lat: -34.7660,
+            lng: -61.8925,
+            activo: false
+        },
+        {
+            direccion: "Av. Mitre 380",
+            lat: -34.7638,
+            lng: -61.8935,
+            activo: false
+        },
+        {
+            direccion: "España 155",
+            lat: -34.7625,
+            lng: -61.8910,
+            activo: false
+        }
+    ];
+
+    // ──────────────────────────────────────────
+    //  INICIALIZACIÓN
+    // ──────────────────────────────────────────
+    let map, panorama, svService, hintOculto = false;
+
+    const estiloOscuro = [
+        { elementType: "geometry",                 stylers: [{ color: "#0d0d1a" }] },
+        { elementType: "labels.text.fill",         stylers: [{ color: "#a89060" }] },
+        { elementType: "labels.text.stroke",       stylers: [{ color: "#0d0d1a" }] },
+        { featureType: "road",        elementType: "geometry",         stylers: [{ color: "#2a2a3e" }] },
+        { featureType: "road.arterial", elementType: "geometry",       stylers: [{ color: "#3d3d5c" }] },
+        { featureType: "road.highway", elementType: "geometry",        stylers: [{ color: "#1fc71f" }] },
+        { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1a1200" }] },
+        { featureType: "poi",          stylers: [{ visibility: "off" }] },
+        { featureType: "transit",      stylers: [{ visibility: "off" }] },
+        { featureType: "water",        elementType: "geometry",        stylers: [{ color: "#050510" }] },
+    ];
+
+    function initTour() {
+        const centro = { lat: -34.7644, lng: -61.8908 };
+
+        svService = new google.maps.StreetViewService();
+
+        // Crear panorama SIN posición inicial, la buscamos con el servicio
+        panorama = new google.maps.StreetViewPanorama(
+            document.getElementById("pano"),
+            {
+                pov: { heading: 90, pitch: 0 },
+                zoom: 1,
+                visible: false,
+                addressControl: false,
+                fullscreenControl: false,
+                motionTracking: false,
+                motionTrackingControl: false,
+                showRoadLabels: true,
+            }
+        );
+
+
+        // Mapa oscuro (minimap)
+        map = new google.maps.Map(document.getElementById("minimap"), {
+            center: centro,
+            zoom: 16,
+            styles: estiloOscuro,
+            disableDefaultUI: true,
+            gestureHandling: "none",
+        });
+
+        map.setStreetView(panorama);
+
+        // Sincronizar minimap cuando el panorama se mueve entre calles
+        panorama.addListener("position_changed", () => {
+            if (map) map.setCenter(panorama.getPosition());
+        });
+
+        // Buscar el primer panorama disponible cerca del centro
+        buscarYCargarPanorama(centro);
+
+        // Crear markers
+        comercios.forEach(c => crearMarker(c));
+    }
+
+    // Busca el panorama disponible más cercano a una posición dada
+    function buscarYCargarPanorama(pos) {
+        svService.getPanorama(
+            { location: pos, radius: 500, preference: google.maps.StreetViewPreference.NEAREST },
+            (data, status) => {
+                if (status === google.maps.StreetViewStatus.OK) {
+                    document.getElementById("no-cobertura").style.display = "none";
+                    panorama.setPano(data.location.pano);
+                    panorama.setPov({ heading: 90, pitch: 0 });
+                    panorama.setVisible(true);
+                    iniciarMovimiento();
+                } else {
+                    // Sin cobertura — ampliar radio a 2 km
+                    svService.getPanorama(
+                        { location: pos, radius: 2000, preference: google.maps.StreetViewPreference.NEAREST },
+                        (data2, status2) => {
+                            if (status2 === google.maps.StreetViewStatus.OK) {
+                                document.getElementById("no-cobertura").style.display = "none";
+                                panorama.setPano(data2.location.pano);
+                                panorama.setPov({ heading: 90, pitch: 0 });
+                                panorama.setVisible(true);
+                                iniciarMovimiento();
+                            } else {
+                                mostrarSinCobertura();
+                            }
+                        }
+                    );
+                }
+            }
+        );
+    }
+
+    function mostrarSinCobertura() {
+        const overlay = document.getElementById("no-cobertura");
+        overlay.style.display = "flex";
+    }
+
+    function crearMarker(c) {
+        const marker = new google.maps.Marker({
+            position: { lat: c.lat, lng: c.lng },
+            map,
+            title: c.activo ? c.nombre : "Espacio disponible — " + c.direccion,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: c.activo ? 9 : 6,
+                fillColor: c.activo ? "#1fc71f" : "#3a3a4a",
+                fillOpacity: 1,
+                strokeColor: c.activo ? "#ffffff" : "#555",
+                strokeWeight: c.activo ? 2 : 1.5,
+            },
+            animation: c.activo ? google.maps.Animation.DROP : null,
+            zIndex: c.activo ? 10 : 1,
+        });
+
+        marker.addListener("click", () => {
+            ocultarHint();
+            abrirPanel(c);
+            if (c.panoid) {
+                // Panorama exacto conocido — carga directo
+                document.getElementById("no-cobertura").style.display = "none";
+                panorama.setPano(c.panoid);
+                panorama.setPov({ heading: c.heading || 0, pitch: c.pitch || 0 });
+                panorama.setVisible(true);
+            } else {
+                buscarYCargarPanorama({ lat: c.lat, lng: c.lng });
+            }
+        });
+    }
+
+    function abrirPanel(c) {
+        const badge = document.getElementById("panel-badge");
+        const nombre = document.getElementById("panel-nombre");
+        const dir = document.getElementById("panel-dir");
+        const btns = document.getElementById("panel-btns");
+
+        if (c.activo) {
+            badge.textContent = "Comercio local";
+            badge.className = "activo";
+            nombre.textContent = c.nombre;
+            dir.textContent = "📍 " + c.direccion;
+
+            let html = "";
+            if (c.telefono) {
+                html += `<a class="btn btn-phone" href="tel:${c.telefono}">📞 ${c.telefono}</a>`;
+            }
+            if (c.whatsapp) {
+                html += `<a class="btn btn-wa" href="https://wa.me/${c.whatsapp}" target="_blank">💬 WhatsApp</a>`;
+            }
+            if (c.instagram) {
+                html += `<a class="btn btn-ig" href="https://instagram.com/${c.instagram}" target="_blank">📸 Instagram</a>`;
+            }
+            btns.innerHTML = html;
+
+        } else {
+            const msg = encodeURIComponent(
+                "Hola! Vi el Tour Virtual de General Pinto y quiero anunciar mi negocio en " + c.direccion
+            );
+            badge.textContent = "Espacio disponible";
+            badge.className = "disponible";
+            nombre.textContent = "¿Tu negocio va aquí?";
+            dir.textContent = "📍 " + c.direccion;
+            btns.innerHTML = `
+                <a class="btn btn-anunciar"
+                   href="https://wa.me/${WA_CONTACTO}?text=${msg}"
+                   target="_blank">
+                    📣 Anunciate aquí
+                </a>
+            `;
+        }
+
+        document.getElementById("panel").classList.add("visible");
+    }
+
+    function cerrarPanel() {
+        document.getElementById("panel").classList.remove("visible");
+    }
+
+    // ──────────────────────────────────────────
+    //  MOVIMIENTO Y CONTROLES
+    // ──────────────────────────────────────────
+    const AUTO_SPEED  = 0.012;
+    const TURN_SPEED  = 1.8;
+    let autoRotating  = true;
+    let moveCooldown  = 0;
+    let resumeTimer   = null;
+    let steerAngle    = 0;
+    const keys        = {};
+    const steeringEl  = document.getElementById("steering-wheel");
+
+    document.addEventListener("keydown", e => {
+        if (!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) return;
+        e.preventDefault();
+        keys[e.key] = true;
+        autoRotating = false;
+        clearTimeout(resumeTimer);
+        document.getElementById("key-" + {
+            ArrowUp:"up", ArrowDown:"down", ArrowLeft:"left", ArrowRight:"right"
+        }[e.key]).classList.add("active");
+    });
+
+    document.addEventListener("keyup", e => {
+        if (!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) return;
+        keys[e.key] = false;
+        document.getElementById("key-" + {
+            ArrowUp:"up", ArrowDown:"down", ArrowLeft:"left", ArrowRight:"right"
+        }[e.key]).classList.remove("active");
+        // Reanudar auto-rotación si no hay ninguna tecla apretada
+        if (!keys.ArrowLeft && !keys.ArrowRight && !keys.ArrowUp && !keys.ArrowDown) {
+            resumeTimer = setTimeout(() => { autoRotating = true; }, 4000);
+        }
+    });
+
+    // Avanza al panorama más cercano en la dirección actual
+    function moverPanorama(adelante) {
+        if (moveCooldown > 0 || !panorama) return;
+        const links = panorama.getLinks();
+        if (!links || !links.length) return;
+
+        const pov = panorama.getPov();
+        const objetivo = adelante ? pov.heading : (pov.heading + 180) % 360;
+
+        let mejor = null, mejorDiff = 180;
+        links.forEach(l => {
+            const diff = Math.abs(((l.heading - objetivo + 540) % 360) - 180);
+            if (diff < mejorDiff) { mejorDiff = diff; mejor = l; }
+        });
+
+        if (mejor && mejorDiff < 100) {
+            panorama.setPano(mejor.pano);
+            moveCooldown = 70; // ~1.1 seg de cooldown entre pasos
+        }
+    }
+
+    function gameLoop() {
+        if (moveCooldown > 0) moveCooldown--;
+
+        if (panorama && panorama.getVisible()) {
+            const pov = panorama.getPov();
+            let h = pov.heading, p = pov.pitch, moved = false;
+
+            if (keys.ArrowLeft)  { h -= TURN_SPEED; moved = true; }
+            if (keys.ArrowRight) { h += TURN_SPEED; moved = true; }
+            if (keys.ArrowUp)    { moverPanorama(true);  }
+            if (keys.ArrowDown)  { moverPanorama(false); }
+
+            if (moved) {
+                panorama.setPov({ heading: h, pitch: p });
+            } else if (autoRotating) {
+                panorama.setPov({ heading: h + AUTO_SPEED, pitch: p });
+            }
+
+            // Rotar volante según teclas
+            if (keys.ArrowLeft)  steerAngle = Math.max(steerAngle - 2.5, -32);
+            if (keys.ArrowRight) steerAngle = Math.min(steerAngle + 2.5,  32);
+            if (!keys.ArrowLeft && !keys.ArrowRight) steerAngle *= 0.88;
+            steeringEl.style.transform = `translateX(-50%) rotate(${steerAngle}deg)`;
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Arrancar el loop cuando el panorama esté listo
+    function iniciarMovimiento() {
+        requestAnimationFrame(gameLoop);
+    }
+
+    function ocultarHint() {
+        if (hintOculto) return;
+        hintOculto = true;
+        document.getElementById("hint").classList.add("hidden");
+    }
+
+    // ──────────────────────────────────────────
+    //  PERSONAJES DEL PUEBLO
+    // ──────────────────────────────────────────
+    const personajes = [
+        { nombre: "Don Ramón",      rol: "El Almacenero",      emoji: "🧑‍🦳", bg: "#3a1800", fg: "#f08030" },
+        { nombre: "La Seño Marta",  rol: "Maestra Rural",      emoji: "👩‍🏫", bg: "#001840", fg: "#4090e0" },
+        { nombre: "El Ruso",        rol: "Chacarero",          emoji: "👨‍🌾", bg: "#102000", fg: "#50a020" },
+        { nombre: "Doña Carmen",    rol: "La Abuela",          emoji: "👵",   bg: "#2a0018", fg: "#c04070" },
+        { nombre: "El Turco",       rol: "Dueño del Bazar",    emoji: "🧔",   bg: "#1a1400", fg: "#c0a000" },
+        { nombre: "El Comisario",   rol: "Jefe de la Comisaría", emoji: "👮", bg: "#001428", fg: "#3060a0" },
+        { nombre: "La Pelusa",      rol: "Peluquera",          emoji: "💇‍♀️", bg: "#280028", fg: "#c040c0" },
+        { nombre: "El Pibe Lucas",  rol: "Delivery en moto",   emoji: "🛵",   bg: "#001200", fg: "#1fc71f" },
+    ];
+
+    // Genera un avatar circular con emoji en canvas → dataURL
+    function generarAvatar(emoji, bg, size = 200) {
+        const c = document.createElement("canvas");
+        c.width = c.height = size;
+        const ctx = c.getContext("2d");
+        // Fondo circular con gradiente
+        const grad = ctx.createRadialGradient(size/2, size/2.5, 0, size/2, size/2, size/2);
+        grad.addColorStop(0, bg + "ff");
+        grad.addColorStop(1, "#050505");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+        ctx.fill();
+        // Emoji
+        ctx.font = `${size*0.52}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(emoji, size/2, size/2 + size*0.04);
+        return c.toDataURL();
+    }
+
+    // Construir grilla de personajes
+    let pjSeleccionado = null;
+    const grid = document.getElementById("personajes-grid");
+
+    personajes.forEach((pj, i) => {
+        const card = document.createElement("div");
+        card.className = "pj-card";
+        card.style.setProperty("--fg", pj.fg);
+        card.innerHTML = `
+            <span class="pj-emoji">${pj.emoji}</span>
+            <span class="pj-nombre">${pj.nombre}</span>
+            <span class="pj-rol">${pj.rol}</span>`;
+        card.addEventListener("click", () => {
+            document.querySelectorAll(".pj-card").forEach(c => c.classList.remove("seleccionado"));
+            card.classList.add("seleccionado");
+            pjSeleccionado = pj;
+            document.getElementById("login-nombre").value = pj.nombre;
+            // Generar avatar para el espejo
+            avatarDataURL = generarAvatar(pj.emoji, pj.bg);
+        });
+        grid.appendChild(card);
+    });
+
+    // Opción "yo mismo" con foto propia
+    const cardCustom = document.createElement("div");
+    cardCustom.className = "pj-card pj-custom";
+    cardCustom.innerHTML = `
+        <span class="pj-emoji">📷</span>
+        <span class="pj-nombre">Personalizado</span>
+        <span class="pj-rol">Tu foto</span>`;
+    cardCustom.addEventListener("click", () => {
+        document.getElementById("file-input").click();
+        document.querySelectorAll(".pj-card").forEach(c => c.classList.remove("seleccionado"));
+        cardCustom.classList.add("seleccionado");
+    });
+    grid.appendChild(cardCustom);
+
+    // ──────────────────────────────────────────
+    //  LOGIN + AVATAR
+    // ──────────────────────────────────────────
+    let avatarDataURL = null;
+    let modoAuto = true;
+
+    const fileInput    = document.getElementById("file-input");
+    const mirrorAvatar = document.getElementById("mirror-avatar");
+    const btnModo      = document.getElementById("btn-modo");
+    const carOverlay   = document.getElementById("car-overlay");
+
+    // Preview de foto propia
+    fileInput.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => { avatarDataURL = ev.target.result; };
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById("login-btn").addEventListener("click", () => {
+        const nombre = document.getElementById("login-nombre").value.trim()
+            || (pjSeleccionado ? pjSeleccionado.nombre : "Viajero");
+
+        // Mostrar nombre en HUD
+        document.getElementById("hud-nombre").innerHTML = `<span>${nombre}</span>`;
+        document.getElementById("hud-nombre").style.top = "46px";
+
+        // Poner avatar en el espejo
+        if (avatarDataURL) {
+            posicionarMirrorAvatar();
+            mirrorAvatar.src = avatarDataURL;
+            mirrorAvatar.style.display = "block";
+        }
+
+        // Cerrar pantalla de login
+        document.getElementById("login-screen").style.display = "none";
+    });
+
+    // Calcular posición del avatar en el espejo (relativa al viewport)
+    function posicionarMirrorAvatar() {
+        const vw = window.innerWidth, vh = window.innerHeight;
+        // El espejo en el SVG está en ~41.2%-58.8% horizontal, ~10.8%-20.7% vertical
+        const left   = vw * 0.418;
+        const top    = vh * 0.108;
+        const width  = vw * 0.164;
+        const height = vh * 0.095;
+        Object.assign(mirrorAvatar.style, {
+            left:   left   + "px",
+            top:    top    + "px",
+            width:  width  + "px",
+            height: height + "px",
+        });
+    }
+    window.addEventListener("resize", () => {
+        if (mirrorAvatar.style.display === "block") posicionarMirrorAvatar();
+    });
+
+    // ── Toggle modo auto / caminando ──
+    btnModo.addEventListener("click", () => {
+        modoAuto = !modoAuto;
+        carOverlay.style.display   = modoAuto ? "block" : "none";
+        mirrorAvatar.style.display = (modoAuto && avatarDataURL) ? "block" : "none";
+        btnModo.textContent = modoAuto ? "🚗 MODO AUTO" : "🚶 MODO CAMINAR";
+    });
+</script>
+
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDS-i56aB57KNVA36Y5E-IHU-h8Ns8lXX4&callback=initTour"
+    async defer>
+</script>
+
+</body>
+</html>

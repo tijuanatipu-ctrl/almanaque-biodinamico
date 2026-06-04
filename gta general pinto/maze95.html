@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Maze.scr — General Pinto</title>
+<style>
+/* ── Windows 95 Desktop ── */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    background:#008080;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; font-family:'Arial',sans-serif;
+    overflow:hidden;
+}
+
+/* ── Ventana W95 ── */
+.win95 {
+    border:2px solid;
+    border-color:#fff #555 #555 #fff;
+    box-shadow:2px 2px 0 #000;
+    user-select:none;
+}
+.title-bar {
+    background:linear-gradient(to right, #000088, #1084d0);
+    padding:3px 5px;
+    display:flex; align-items:center; justify-content:space-between;
+    cursor:default;
+}
+.title-bar .icon { font-size:12px; margin-right:5px; }
+.title-bar span  { color:#fff; font-size:12px; font-weight:bold; letter-spacing:.3px; flex:1; }
+.win-btns { display:flex; gap:2px; }
+.win-btn {
+    width:16px; height:14px; font-size:9px; line-height:1;
+    background:#c0c0c0; border:1px solid; cursor:pointer;
+    border-color:#fff #555 #555 #fff;
+    display:flex; align-items:center; justify-content:center;
+}
+.win-btn:active { border-color:#555 #fff #fff #555; }
+
+/* ── Menu bar ── */
+.menubar {
+    background:#c0c0c0; border-bottom:1px solid #888;
+    padding:2px 4px; display:flex; gap:12px;
+    font-size:12px;
+}
+.menubar span { cursor:default; padding:2px 4px; }
+.menubar span:hover { background:#000080; color:#fff; }
+
+/* ── Canvas wrapper ── */
+.canvas-wrap {
+    background:#000; display:block; line-height:0;
+    position:relative; overflow:hidden;
+}
+#maze {
+    display:block;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+    cursor:crosshair;
+}
+
+/* Scanlines CRT */
+.canvas-wrap::after {
+    content:'';
+    position:absolute; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(
+        to bottom, transparent, transparent 2px,
+        rgba(0,0,0,.12) 2px, rgba(0,0,0,.12) 4px
+    );
+}
+
+/* ── Status bar ── */
+.statusbar {
+    background:#c0c0c0;
+    border-top:1px solid #fff;
+    display:flex; gap:2px;
+    padding:2px;
+}
+.status-cell {
+    flex:1; border:1px solid; border-color:#555 #fff #fff #555;
+    padding:1px 6px; font-size:11px; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#st-street { flex:2; }
+
+/* ── Loading splash ── */
+#splash {
+    position:absolute; inset:0; background:#000;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:16px; z-index:10;
+}
+#splash .logo {
+    font-family:'Courier New',monospace; color:#0f0;
+    font-size:12px; white-space:pre; line-height:1.2; text-align:center;
+}
+.splash-bar-wrap { width:200px; height:12px; border:1px solid #0f0; }
+.splash-bar { height:100%; background:#0f0; width:0%; transition:width .2s; }
+#splash p { color:#0a0; font-size:10px; font-family:monospace; }
+</style>
+</head>
+<body>
+
+<div class="win95" id="win">
+
+    <!-- Title bar -->
+    <div class="title-bar">
+        <span class="icon">🌀</span>
+        <span>3D Maze.scr — General Pinto</span>
+        <div class="win-btns">
+            <div class="win-btn">_</div>
+            <div class="win-btn">□</div>
+            <div class="win-btn" onclick="location.href='index.html'">✕</div>
+        </div>
+    </div>
+
+    <!-- Menu bar -->
+    <div class="menubar">
+        <span>Archivo</span>
+        <span>Ver</span>
+        <span onclick="toggleAuto()">Modo: <b id="modo-label">Auto</b></span>
+        <span onclick="location.href='index.html'">Salir</span>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-wrap" id="wrap">
+        <canvas id="maze"></canvas>
+
+        <!-- Loading splash -->
+        <div id="splash">
+            <div class="logo">
+ ██████╗ ███████╗███╗  ██╗
+██╔════╝ ╚════██║████╗ ██║
+██║  ███╗   ██╔╝██╔██╗██║
+██║   ██║  ██╔╝ ██║╚████║
+╚██████╔╝  ██║  ██║ ╚███║
+ ╚═════╝   ╚═╝  ╚═╝  ╚══╝
+  General Pinto — 3D MAZE
+            </div>
+            <div class="splash-bar-wrap"><div class="splash-bar" id="sbar"></div></div>
+            <p id="splash-msg">Cargando texturas del pueblo…</p>
+        </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="statusbar">
+        <div class="status-cell" id="st-street">📍 Cargando…</div>
+        <div class="status-cell" id="st-pos">X:0 Y:0</div>
+        <div class="status-cell">↑↓←→ mover · ESC auto</div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  CONFIGURACIÓN
+// ═══════════════════════════════════════════════════════
+const SV_KEY   = "AIzaSyAp-V7FJhkOirJXJS_1-XgFgY-It5QSwTc"; // Street View Static API
+const RW = 480, RH = 240;   // más columnas = imágenes más fluidas
+const FOV = Math.PI / 3;    // 60°
+const MOVE_SPEED  = 0.025;
+const TURN_SPEED  = Math.PI / 2; // 90° turn
+
+// ── Mapa: 1=pared, 0=corredor ──
+// Basado en la grilla real de General Pinto
+// Calles E-O: filas 2 (Mitre), 6 (Rivadavia), 10 (Sarmiento)
+// Calles N-S: cols 3 (San Martín), 7 (9 de Julio), 11 (Belgrano)
+const MAP = [
+//  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  // 0
+    [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],  // 1
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  // 2 Mitre
+    [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],  // 3
+    [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],  // 4
+    [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],  // 5
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  // 6 Rivadavia
+    [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],  // 7
+    [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],  // 8
+    [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],  // 9
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  // 10 Sarmiento
+    [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1],  // 11
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  // 12
+];
+
+const STREET_NAMES = {
+    row: { 2:"Av. Mitre", 6:"Rivadavia", 10:"Sarmiento" },
+    col: { 3:"San Martín", 7:"9 de Julio", 11:"Belgrano" }
+};
+
+// Coordenadas Street View reales para cada dirección cardinal
+// format: [lat, lng, heading]
+const SV_VIEWS = {
+    N: [-34.7660, -61.8920, 0],    // mirando al norte sobre San Martín
+    S: [-34.7660, -61.8920, 180],  // mirando al sur
+    E: [-34.7655, -61.8915, 90],   // mirando al este sobre Mitre
+    W: [-34.7655, -61.8915, 270],  // mirando al oeste
+};
+
+// ═══════════════════════════════════════════════════════
+//  CANVAS Y RENDER
+// ═══════════════════════════════════════════════════════
+const canvas = document.getElementById("maze");
+canvas.width  = RW;
+canvas.height = RH;
+const ctx = canvas.getContext("2d");
+
+function sizeWindow() {
+    const avW = Math.min(window.innerWidth  - 40, 820);
+    const avH = Math.min(window.innerHeight - 80, 520);
+    const scale = Math.min(avW / RW, avH / RH);
+    const dw = Math.floor(RW * scale);
+    const dh = Math.floor(RH * scale);
+    canvas.style.width  = dw + "px";
+    canvas.style.height = dh + "px";
+    document.getElementById("wrap").style.width  = dw + "px";
+    document.getElementById("wrap").style.height = dh + "px";
+}
+sizeWindow();
+window.addEventListener("resize", sizeWindow);
+
+// ── Imágenes: guardamos el HTMLImageElement directo, sin canvas intermedio ──
+// ctx.drawImage(img, ...) funciona aunque la imagen sea cross-origin
+// siempre que NO llamemos getImageData() después (el canvas queda "tainted" pero no nos importa)
+const texImgs = { N:null, S:null, E:null, W:null };
+
+// ═══════════════════════════════════════════════════════
+//  CARGA DE TEXTURAS STREET VIEW
+// ═══════════════════════════════════════════════════════
+function svUrl(lat, lng, heading) {
+    return `https://maps.googleapis.com/maps/api/streetview`
+         + `?size=640x640&location=${lat},${lng}`
+         + `&heading=${Math.round(heading)}&pitch=5&fov=80`
+         + `&key=${SV_KEY}`;
+}
+
+async function cargarTextura(key, lat, lng, heading) {
+    return new Promise(resolve => {
+        const img = new Image();
+        // SIN crossOrigin → la imagen siempre carga desde la API de Google
+        img.onload  = () => { texImgs[key] = img; resolve(true);  };
+        img.onerror = () => { texImgs[key] = null; resolve(false); };
+        img.src = svUrl(lat, lng, heading);
+    });
+}
+
+// ═══════════════════════════════════════════════════════
+//  CLIMA REAL — Open-Meteo (gratuito, sin key)
+// ═══════════════════════════════════════════════════════
+let weatherType = "clear"; // clear | cloudy | fog | rain | storm | snow
+let isDay = true;
+let weatherLabel = "Despejado";
+
+async function fetchWeather() {
+    try {
+        const url = "https://api.open-meteo.com/v1/forecast"
+            + "?latitude=-34.7644&longitude=-61.8908"
+            + "&current=weather_code,is_day,temperature_2m";
+        const d = await (await fetch(url)).json();
+        const code = d.current.weather_code;
+        isDay = d.current.is_day === 1;
+        const t = d.current.temperature_2m;
+
+        if      (code <= 1)               { weatherType = "clear";  weatherLabel = `Despejado ${t}°C`; }
+        else if (code <= 3)               { weatherType = "cloudy"; weatherLabel = `Nublado ${t}°C`;   }
+        else if (code <= 48)              { weatherType = "fog";    weatherLabel = `Neblina ${t}°C`;   }
+        else if (code <= 67)              { weatherType = "rain";   weatherLabel = `Lluvia ${t}°C`;    }
+        else if (code <= 86)              { weatherType = "snow";   weatherLabel = `Nieve ${t}°C`;     }
+        else                              { weatherType = "storm";  weatherLabel = `Tormenta ${t}°C`;  }
+
+        document.getElementById("st-pos").textContent = "☁ " + weatherLabel;
+    } catch(e) { /* sin conexión: mantiene clear */ }
+}
+
+// Gotas de lluvia / nieve
+const drops = Array.from({ length: 120 }, () => ({
+    x: Math.random() * RW,
+    y: Math.random() * RH,
+    spd: 2.5 + Math.random() * 3,
+    len: 3 + Math.random() * 5,
+    wind: weatherType === "snow" ? (Math.random() - .5) * .5 : .8,
+}));
+
+// ── Cielo según clima ──
+function drawSky() {
+    let top, bot;
+    if (!isDay) {
+        top = "#000005"; bot = "#050818";
+    } else if (weatherType === "clear") {
+        top = "#0a3d8a"; bot = "#6ab4f0";
+    } else if (weatherType === "cloudy") {
+        top = "#4a5060"; bot = "#7a8898";
+    } else if (weatherType === "fog") {
+        top = "#8a9a9a"; bot = "#b8c8c8";
+    } else if (weatherType === "rain") {
+        top = "#151820"; bot = "#2a2f3a";
+    } else if (weatherType === "storm") {
+        // Parpadeo ocasional de relámpago
+        const flash = Math.random() < .008;
+        top = flash ? "#8a9aaa" : "#0a0c12";
+        bot = flash ? "#aabbcc" : "#151820";
+    } else {
+        top = "#556070"; bot = "#8899aa";
+    }
+    const g = ctx.createLinearGradient(0, 0, 0, RH / 2);
+    g.addColorStop(0, top); g.addColorStop(1, bot);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, RW, RH / 2);
+
+    // Sol (solo si despejado de día)
+    if (weatherType === "clear" && isDay) {
+        ctx.save();
+        ctx.fillStyle = "#fff8a0";
+        ctx.shadowColor = "#ffe060";
+        ctx.shadowBlur  = 12;
+        ctx.beginPath();
+        ctx.arc(RW * .78, RH * .14, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+    // Luna (noche despejada)
+    if (weatherType === "clear" && !isDay) {
+        ctx.fillStyle = "#dde8f0";
+        ctx.beginPath();
+        ctx.arc(RW * .75, RH * .12, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // Estrellitas
+        for (let i = 0; i < 25; i++) {
+            const sx = (i * 137.5) % RW;
+            const sy = ((i * 73) % (RH / 2 - 10)) + 2;
+            ctx.fillStyle = `rgba(255,255,255,${.3 + Math.random() * .5})`;
+            ctx.fillRect(sx, sy, 1, 1);
+        }
+    }
+
+    // Nubes simples (modo nublado)
+    if (weatherType === "cloudy" || weatherType === "rain" || weatherType === "storm") {
+        ctx.fillStyle = weatherType === "storm" ? "rgba(20,25,35,.7)" : "rgba(180,190,200,.35)";
+        [[RW*.1,RH*.08,30,12],[RW*.4,RH*.05,45,15],[RW*.7,RH*.1,38,13]].forEach(([x,y,w,h]) => {
+            ctx.beginPath();
+            ctx.ellipse(x, y, w, h, 0, 0, Math.PI*2);
+            ctx.fill();
+        });
+    }
+}
+
+// ── Piso estilo calle de hormigón ──
+function drawFloor() {
+    // Base hormigón
+    const g = ctx.createLinearGradient(0, RH / 2, 0, RH);
+    g.addColorStop(0, weatherType === "rain" ? "#1a1c20" : "#222");
+    g.addColorStop(1, weatherType === "rain" ? "#2a2e34" : "#383838");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, RH / 2, RW, RH / 2);
+
+    const cx = RW / 2, hy = RH / 2;
+
+    // Juntas de hormigón (líneas horizontales con perspectiva)
+    ctx.strokeStyle = "rgba(0,0,0,.25)";
+    ctx.lineWidth   = .5;
+    [.15, .3, .5, .75, 1].forEach(t => {
+        const y = hy + (RH - hy) * t;
+        const spread = (RW / 2) * t;
+        ctx.beginPath();
+        ctx.moveTo(cx - spread, y);
+        ctx.lineTo(cx + spread, y);
+        ctx.stroke();
+    });
+
+    // Líneas laterales de perspectiva (borde de acera)
+    ctx.strokeStyle = "rgba(255,255,255,.08)";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx, hy); ctx.lineTo(0,   RH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, hy); ctx.lineTo(RW,  RH); ctx.stroke();
+
+    // Línea central discontinua (señalización horizontal)
+    ctx.setLineDash([4, 7]);
+    ctx.strokeStyle = "rgba(240,220,60,.35)";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx, hy + 2); ctx.lineTo(cx, RH); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Reflejo de lluvia en el piso
+    if (weatherType === "rain" || weatherType === "storm") {
+        ctx.fillStyle = "rgba(80,110,160,.08)";
+        ctx.fillRect(0, RH / 2, RW, RH / 2);
+    }
+}
+
+// ── Precipitación animada ──
+let dropFrame = 0;
+function drawPrecipitation() {
+    if (weatherType !== "rain" && weatherType !== "storm" && weatherType !== "snow") return;
+    const isSnow = weatherType === "snow";
+    ctx.save();
+    ctx.strokeStyle = isSnow ? "rgba(220,230,255,.7)" : "rgba(140,180,220,.55)";
+    ctx.lineWidth   = isSnow ? 1.5 : .8;
+    drops.forEach(d => {
+        d.y += d.spd;
+        d.x += d.wind;
+        if (d.y > RH || d.x < 0 || d.x > RW) {
+            d.y = -d.len; d.x = Math.random() * RW;
+        }
+        ctx.beginPath();
+        if (isSnow) {
+            ctx.arc(d.x, d.y, .8, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(220,230,255,.7)";
+            ctx.fill();
+        } else {
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(d.x + d.wind * d.len * .3, d.y + d.len);
+            ctx.stroke();
+        }
+    });
+    ctx.restore();
+
+    // Niebla adicional con lluvia
+    ctx.fillStyle = "rgba(30,35,50,.12)";
+    ctx.fillRect(0, 0, RW, RH);
+}
+
+// ═══════════════════════════════════════════════════════
+//  JUGADOR Y ESTADO
+// ═══════════════════════════════════════════════════════
+const player = { x:3.5, y:2.5, angle:0 };
+let autoMode  = true;
+let autoState = "walk"; // walk | pause | turn
+let autoTimer = 0;
+let autoTarget = 0;
+let lastDir = { x:1, y:0 };
+
+const keys = {};
+document.addEventListener("keydown", e => {
+    keys[e.code] = true;
+    if (e.code === "Escape") { autoMode = true; updateModoLabel(); }
+    else if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code)) {
+        autoMode = false; updateModoLabel();
+    }
+});
+document.addEventListener("keyup",   e => { keys[e.code] = false; });
+
+function toggleAuto() {
+    autoMode = !autoMode; updateModoLabel();
+}
+function updateModoLabel() {
+    document.getElementById("modo-label").textContent = autoMode ? "Auto" : "Manual";
+}
+
+// ═══════════════════════════════════════════════════════
+//  LÓGICA DE MOVIMIENTO
+// ═══════════════════════════════════════════════════════
+function isWall(x, y) {
+    const mx = Math.floor(x), my = Math.floor(y);
+    if (my < 0 || my >= MAP.length || mx < 0 || mx >= MAP[0].length) return true;
+    return MAP[my][mx] === 1;
+}
+
+function getOpenDirs(x, y) {
+    const mx = Math.floor(x), my = Math.floor(y);
+    const dirs = [];
+    if (!isWall(mx+1, my+.5)) dirs.push({ dx:1, dy:0, a:0 });
+    if (!isWall(mx-1, my+.5)) dirs.push({ dx:-1,dy:0, a:Math.PI });
+    if (!isWall(mx+.5,my+1 )) dirs.push({ dx:0, dy:1, a:Math.PI/2 });
+    if (!isWall(mx+.5,my-1 )) dirs.push({ dx:0, dy:-1,a:-Math.PI/2 });
+    return dirs;
+}
+
+function updateAuto() {
+    if (autoState === "walk") {
+        const dx = Math.cos(player.angle) * MOVE_SPEED;
+        const dy = Math.sin(player.angle) * MOVE_SPEED;
+        const nx = player.x + dx, ny = player.y + dy;
+
+        if (!isWall(nx + Math.cos(player.angle)*.2, player.y)) player.x = nx;
+        if (!isWall(player.x, ny + Math.sin(player.angle)*.2)) player.y = ny;
+
+        // Detección de pared adelante o intersección
+        const ahead = isWall(
+            player.x + Math.cos(player.angle) * .5,
+            player.y + Math.sin(player.angle) * .5
+        );
+        const open = getOpenDirs(player.x, player.y);
+
+        if (ahead || (open.length > 2 && Math.random() < .012)) {
+            autoState = "pause";
+            autoTimer = 55 + Math.floor(Math.random() * 30);
+        }
+    } else if (autoState === "pause") {
+        autoTimer--;
+        if (autoTimer <= 0) {
+            // Elegir nueva dirección (no la opuesta a la actual)
+            const open = getOpenDirs(player.x, player.y);
+            const forward = { dx: Math.round(Math.cos(player.angle)), dy: Math.round(Math.sin(player.angle)) };
+            const backward = { dx:-forward.dx, dy:-forward.dy };
+            const options = open.filter(d =>
+                !(d.dx === backward.dx && d.dy === backward.dy)
+            );
+            const chosen = options.length > 0
+                ? options[Math.floor(Math.random() * options.length)]
+                : open[Math.floor(Math.random() * open.length)];
+            if (chosen) {
+                player.angle = chosen.a;
+                lastDir = { x: chosen.dx, y: chosen.dy };
+            }
+            autoState = "walk";
+        }
+    }
+}
+
+function updateManual() {
+    const spd = MOVE_SPEED * 2;
+    if (keys.ArrowLeft)  player.angle -= .05;
+    if (keys.ArrowRight) player.angle += .05;
+    if (keys.ArrowUp) {
+        const nx = player.x + Math.cos(player.angle) * spd;
+        const ny = player.y + Math.sin(player.angle) * spd;
+        if (!isWall(nx + Math.cos(player.angle)*.3, player.y)) player.x = nx;
+        if (!isWall(player.x, ny + Math.sin(player.angle)*.3)) player.y = ny;
+    }
+    if (keys.ArrowDown) {
+        const nx = player.x - Math.cos(player.angle) * spd;
+        const ny = player.y - Math.sin(player.angle) * spd;
+        if (!isWall(nx - Math.cos(player.angle)*.3, player.y)) player.x = nx;
+        if (!isWall(player.x, ny - Math.sin(player.angle)*.3)) player.y = ny;
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  RAYCASTER DDA + RENDER CON drawImage
+// ═══════════════════════════════════════════════════════
+function dda(angle) {
+    const rdx = Math.cos(angle), rdy = Math.sin(angle);
+    let mapX = Math.floor(player.x), mapY = Math.floor(player.y);
+    const ddx = Math.abs(1 / (rdx || 1e-10));
+    const ddy = Math.abs(1 / (rdy || 1e-10));
+    const stepX = rdx < 0 ? -1 : 1;
+    const stepY = rdy < 0 ? -1 : 1;
+    let sdx = rdx < 0 ? (player.x-mapX)*ddx : (mapX+1-player.x)*ddx;
+    let sdy = rdy < 0 ? (player.y-mapY)*ddy : (mapY+1-player.y)*ddy;
+    let side, steps = 32;
+    while (steps-- > 0) {
+        if (sdx < sdy) { sdx += ddx; mapX += stepX; side = 0; }
+        else            { sdy += ddy; mapY += stepY; side = 1; }
+        if (MAP[mapY]?.[mapX] === 1) break;
+    }
+    const perp = side === 0 ? sdx - ddx : sdy - ddy;
+    let wallHit = side === 0
+        ? player.y + perp * rdy
+        : player.x + perp * rdx;
+    wallHit -= Math.floor(wallHit);
+    let texKey = side === 0
+        ? (rdx > 0 ? "E" : "W")
+        : (rdy > 0 ? "S" : "N");
+    return { perp, wallHit, texKey };
+}
+
+function render() {
+    drawSky();
+    drawFloor();
+
+    // ── Paredes: una columna de 1px por rayo ──
+    for (let col = 0; col < RW; col++) {
+        const angle = player.angle - FOV / 2 + (col / RW) * FOV;
+        const { perp, wallHit, texKey } = dda(angle);
+        if (perp <= 0.01) continue;
+
+        const wallH = Math.round(RH / perp);          // altura en pantalla
+        const y0    = Math.round((RH - wallH) / 2);   // tope (puede ser negativo)
+
+        const img = texImgs[texKey];
+
+        if (img && img.complete && img.naturalWidth > 0) {
+            // srcX: columna en la imagen original según wallHit (0..1)
+            const srcX = Math.floor(wallHit * img.naturalWidth);
+            // Dibujamos 1px de ancho desde la columna srcX, toda la altura de la imagen,
+            // escalado a wallH px de alto. Canvas 2D clipea solo a sus límites.
+            ctx.drawImage(
+                img,
+                srcX, 0, 1, img.naturalHeight,   // fuente: franja de 1px
+                col,  y0, 1, wallH                // destino: 1px × wallH
+            );
+        } else {
+            // Placeholder mientras carga (gris según distancia)
+            const bright = Math.max(15, 110 - perp * 12) | 0;
+            ctx.fillStyle = `rgb(${bright*.4|0},${bright*.5|0},${bright})`;
+            const cy = Math.max(0, y0), ch = Math.min(RH - cy, wallH - Math.max(0, -y0));
+            ctx.fillRect(col, cy, 1, ch);
+        }
+
+        // Niebla
+        const fog = Math.min(0.85, perp / 8);
+        if (fog > 0.04) {
+            const cy = Math.max(0, y0), ch = Math.min(RH - cy, wallH - Math.max(0,-y0));
+            ctx.fillStyle = `rgba(0,0,0,${fog.toFixed(2)})`;
+            ctx.fillRect(col, cy, 1, ch);
+        }
+    }
+
+    // ── Lluvia / nieve encima de todo ──
+    drawPrecipitation();
+
+    // ── Crosshair ──
+    ctx.strokeStyle = "rgba(255,255,255,0.55)";
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(RW/2 - 7, RH/2); ctx.lineTo(RW/2 + 7, RH/2);
+    ctx.moveTo(RW/2, RH/2 - 7); ctx.lineTo(RW/2, RH/2 + 7);
+    ctx.stroke();
+
+    // ── Minimap (esquina superior derecha) ──
+    const ms = 5, ox = RW - MAP[0].length * ms - 4, oy = 4;
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(ox - 2, oy - 2, MAP[0].length * ms + 4, MAP.length * ms + 4);
+    MAP.forEach((row, ry) => row.forEach((cell, rx) => {
+        ctx.fillStyle = cell ? "#1a2a1a" : "#1fc71f22";
+        ctx.fillRect(ox + rx*ms, oy + ry*ms, ms-1, ms-1);
+    }));
+    // Punto del jugador
+    ctx.fillStyle = "#1fc71f";
+    ctx.fillRect(
+        ox + Math.floor(player.x) * ms + 1,
+        oy + Math.floor(player.y) * ms + 1,
+        ms - 2, ms - 2
+    );
+}
+
+// ═══════════════════════════════════════════════════════
+//  STATUS BAR
+// ═══════════════════════════════════════════════════════
+function updateStatus() {
+    const mx = Math.floor(player.x), my = Math.floor(player.y);
+    let street = STREET_NAMES.row[my] || STREET_NAMES.col[mx] || "—";
+    document.getElementById("st-street").textContent = "📍 " + street;
+    document.getElementById("st-pos").textContent    =
+        `X:${mx} Y:${my}`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  GAME LOOP
+// ═══════════════════════════════════════════════════════
+let frame = 0;
+function loop() {
+    requestAnimationFrame(loop);
+    if (autoMode) updateAuto();
+    else          updateManual();
+    render();
+    if (frame++ % 8 === 0) updateStatus();
+}
+
+// ═══════════════════════════════════════════════════════
+//  INICIO — CARGAR TEXTURAS
+// ═══════════════════════════════════════════════════════
+(async () => {
+    const setSplash = (pct, msg) => {
+        document.getElementById("sbar").style.width = pct + "%";
+        document.getElementById("splash-msg").textContent = msg;
+    };
+
+    await fetchWeather();
+
+    const labels = {
+        N: "San Martín mirando Norte…",
+        E: "Av. Mitre mirando Este…",
+        W: "Av. Mitre mirando Oeste…",
+        S: "San Martín mirando Sur…",
+    };
+    const pcts  = { N:10, E:35, W:60, S:85 };
+    let loaded  = 0;
+
+    for (const [key, view] of Object.entries(SV_VIEWS)) {
+        setSplash(pcts[key], `Cargando ${labels[key]}`);
+        const ok = await cargarTextura(key, ...view);
+        if (ok) loaded++;
+    }
+
+    setSplash(100, loaded === 4
+        ? "¡Fotos cargadas! Entrando al laberinto…"
+        : `${loaded}/4 fotos cargadas (${4-loaded} sin cobertura → ladrillo)`
+    );
+
+    // Miniatura de debug en status bar
+    Object.entries(texImgs).forEach(([k, img]) => {
+        if (!img) return;
+        const thumb = document.createElement("img");
+        thumb.src   = img.src;
+        thumb.title = k;
+        thumb.style.cssText = "height:16px;width:24px;object-fit:cover;border:1px solid #888;vertical-align:middle;margin:0 2px";
+        document.getElementById("st-street").appendChild(thumb);
+    });
+
+    await new Promise(r => setTimeout(r, 800));
+    document.getElementById("splash").style.display = "none";
+    loop();
+})();
+</script>
+</body>
+</html>

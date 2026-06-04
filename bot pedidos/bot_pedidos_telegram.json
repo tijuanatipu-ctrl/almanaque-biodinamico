@@ -1,0 +1,98 @@
+{
+  "name": "Bot Pedidos - El Huerto de Lucas",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "node1",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [200, 300],
+      "webhookId": "huerto-bot-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst chatId = $json.message.chat.id.toString();\nconst text = $json.message.text || '';\n\nif (!staticData.sessions) staticData.sessions = {};\nif (!staticData.sessions[chatId]) staticData.sessions[chatId] = { step: 0, data: {} };\n\nconst session = staticData.sessions[chatId];\nlet response = '';\nlet sendToLucas = false;\nlet orderSummary = '';\n\nif (text === '/start' || session.step === 0) {\n  session.step = 1;\n  response = 'Hola! Bienvenido a El Huerto de Lucas.\\nPara hacer tu pedido necesito algunos datos.\\n\\nCual es tu nombre?';\n} else if (session.step === 1) {\n  session.data.name = text;\n  session.step = 2;\n  response = 'Gracias ' + text + '!\\nQue productos queres pedir?\\n(Ej: 2 atados de acelga, 1 docena de huevos)';\n} else if (session.step === 2) {\n  session.data.products = text;\n  session.step = 3;\n  response = 'Anotado!\\nCual es tu direccion de entrega?';\n} else if (session.step === 3) {\n  session.data.address = text;\n  session.step = 4;\n  response = 'Perfecto!\\nCual es tu numero de telefono?';\n} else if (session.step === 4) {\n  session.data.phone = text;\n  orderSummary = 'NUEVO PEDIDO - El Huerto de Lucas\\n\\nNombre: ' + session.data.name + '\\nProductos: ' + session.data.products + '\\nDireccion: ' + session.data.address + '\\nTelefono: ' + session.data.phone;\n  response = 'Tu pedido fue recibido! Te vamos a contactar para confirmar la entrega. Gracias por elegirnos!';\n  sendToLucas = true;\n  staticData.sessions[chatId] = { step: 0, data: {} };\n}\n\nreturn [{ json: { chatId, response, sendToLucas, orderSummary } }];"
+      },
+      "id": "node2",
+      "name": "Manejar Conversacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.response }}",
+        "additionalFields": {}
+      },
+      "id": "node3",
+      "name": "Responder Cliente",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [640, 180]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.sendToLucas }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node4",
+      "name": "Pedido Completo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 420]
+    },
+    {
+      "parameters": {
+        "chatId": "8325134029",
+        "text": "={{ $json.orderSummary }}",
+        "additionalFields": {}
+      },
+      "id": "node5",
+      "name": "Notificar Lucas",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [860, 420]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [{ "node": "Manejar Conversacion", "type": "main", "index": 0 }]
+      ]
+    },
+    "Manejar Conversacion": {
+      "main": [
+        [
+          { "node": "Responder Cliente", "type": "main", "index": 0 },
+          { "node": "Pedido Completo?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Pedido Completo?": {
+      "main": [
+        [{ "node": "Notificar Lucas", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,244 @@
+{
+  "name": "Portal General Pinto - RSS Automático",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 12 }]
+        }
+      },
+      "id": "rss-01",
+      "name": "Schedule 2x dia",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// === CONFIGURACION ===\nconst CHAT_ID = 'TU_TELEGRAM_CHAT_ID'; // Reemplazar con tu chat ID\nconst FEEDS = [\n  { url: 'https://www.distritointerior.com.ar/feed/', source: 'Distrito Interior' },\n  { url: 'https://diariodemocracia.com.ar/feed/', source: 'Diario Democracia' }\n];\n\nlet allItems = [];\n\nfor (const feed of FEEDS) {\n  try {\n    const resp = await fetch(feed.url, {\n      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RSS reader)' }\n    });\n    const xml = await resp.text();\n    const itemBlocks = xml.match(/<item>([\\s\\S]*?)<\\/item>/gi) || [];\n    for (const block of itemBlocks) {\n      const get = (tag) => {\n        const m = block.match(new RegExp('<' + tag + '><!\\\\[CDATA\\\\[([\\\\s\\\\S]*?)\\\\]\\\\]><\\\\/' + tag + '>', 'i'))\n                || block.match(new RegExp('<' + tag + '>([^<]*)<\\\\/' + tag + '>', 'i'));\n        return m ? m[1].trim() : '';\n      };\n      const rawLink = block.match(/<link>([^<]+)<\\/link>/i) || block.match(/<link\\s*\\/>\\s*([^<]+)/i);\n      const link = rawLink ? rawLink[1].trim() : get('guid');\n      const title = get('title');\n      const pubDate = get('pubDate');\n      if (link && link.startsWith('http')) {\n        allItems.push({ link, title, pubDate, source: feed.source });\n      }\n    }\n  } catch(e) {}\n}\n\n// Ordenar por fecha desc (mas recientes primero)\nallItems.sort((a, b) => new Date(b.pubDate || 0) - new Date(a.pubDate || 0));\n\n// Deduplicar contra articulos ya publicados\nconst staticData = $getWorkflowStaticData('global');\nif (!staticData.processedUrls) staticData.processedUrls = [];\n\nconst newItems = allItems.filter(item => !staticData.processedUrls.includes(item.link));\n\nif (newItems.length === 0) {\n  return []; // Sin novedades - workflow se detiene\n}\n\n// Tomar el articulo mas reciente\nconst article = newItems[0];\n\n// Marcar como procesado (mantener ultimos 500)\nstaticData.processedUrls = [article.link, ...staticData.processedUrls].slice(0, 500);\n\nreturn [{ json: {\n  contentType: 'url',\n  rawContent: article.link,\n  jinaFetchUrl: 'https://r.jina.ai/' + article.link,\n  photoFileId: null,\n  chatId: CHAT_ID,\n  source: article.source,\n  rssTitle: article.title\n} }];"
+      },
+      "id": "rss-02",
+      "name": "RSS Leer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.jinaFetchUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Accept", "value": "application/json" },
+            { "name": "User-Agent", "value": "Mozilla/5.0" }
+          ]
+        },
+        "options": { "timeout": 20000 }
+      },
+      "id": "rss-03",
+      "name": "Jina Fetch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const jinaInput = $input.first().json;\nconst d = $('RSS Leer').first().json;\n\nlet title = '', metaDesc = '', bodyText = '', featuredImage = '';\nconst source = d.source || 'RSS';\nconst sourceUrl = d.rawContent || '';\n\nconst jinaData = jinaInput.data || jinaInput;\nconst jinaContent = jinaData.content || jinaData.text || '';\n\nif (jinaContent.length > 100) {\n  title = jinaData.title || d.rssTitle || '';\n  metaDesc = jinaData.description || '';\n  bodyText = jinaContent.substring(0, 8000);\n\n  const isArticleImg = (url) =>\n    /\\.(jpg|jpeg|png|webp)/i.test(url) &&\n    !/gif|cropped|icon|weather|pixel\\.wp|spinner|banner|placeholder/i.test(url);\n\n  const jinaImgs = jinaData.images || {};\n  const fromImgsObj = Object.keys(jinaImgs).find(k => k.startsWith('http') && isArticleImg(k) && k.includes('uploads'));\n\n  let fromText = '';\n  if (!fromImgsObj) {\n    const allInline = [...jinaContent.matchAll(/!\\[.*?\\]\\((https?:\\/\\/[^\\s)]+)\\)/g)];\n    fromText = (allInline.map(m => m[1]).find(u => isArticleImg(u) && u.includes('uploads'))) || '';\n    if (!fromText) fromText = (allInline.map(m => m[1]).find(u => isArticleImg(u))) || '';\n  }\n\n  featuredImage = fromImgsObj || fromText || '';\n} else {\n  title = d.rssTitle || '';\n  bodyText = jinaContent || JSON.stringify(jinaInput).substring(0, 1000);\n}\n\nconst scrapeOk = bodyText.length > 80;\nconst rawNewsText = 'TITULO: ' + title + '\\n\\nDESCRIPCION: ' + metaDesc + '\\n\\nCONTENIDO:\\n' + bodyText;\n\nreturn [{ json: { title, metaDesc, bodyText, featuredImage, externalPhotoUrl: '', source, sourceUrl, rawNewsText, scrapeOk, chatId: d.chatId, contentType: 'url' } }];"
+      },
+      "id": "rss-04",
+      "name": "Obtener Contenido",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\n\nconst instruccion = `INSTRUCCION: Resumí FIELMENTE esta noticia para redes sociales. NO inventes ni agregues datos que no estén en el texto. Si el contenido es escaso, basate solo en el titulo.\n\nDevolvé UNICAMENTE este JSON (sin texto adicional):\n{\"titulo\": \"titulo fiel al articulo, max 80 caracteres\", \"caption_instagram\": \"resumen fiel con emoji al inicio, max 150 palabras, hashtags al final: #GeneralPinto #BsAs #Argentina + hashtags del tema\", \"caption_facebook\": \"resumen informativo fiel, 150-200 palabras, tono periodistico\", \"prompt_imagen\": \"descripcion en ingles de imagen ilustrativa para el articulo, sin texto en la imagen, realista, max 80 palabras\", \"categoria\": \"Politica|Economia|Sociedad|Deportes|Cultura|Salud|Seguridad|Educacion|Tecnologia\"}`;\n\nconst aviso = d.scrapeOk ? '' : '\\n[AVISO: contenido limitado, usar solo titulo disponible]';\nconst userContent = 'Fuente: ' + d.source + aviso + '\\n\\n' + d.rawNewsText + '\\n\\n' + instruccion;\nreturn [{ json: { ...d, userContent } }];"
+      },
+      "id": "rss-04b",
+      "name": "Armar Request GPT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.httpHeaderAuth.value }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"model\":\"gpt-4o\",\"max_tokens\":1500,\"response_format\":{\"type\":\"json_object\"},\"messages\":[{\"role\":\"system\",\"content\":\"Sos el redactor de Portal General Pinto, medio digital local de General Pinto, Buenos Aires, Argentina. Respondés solo con JSON valido.\"},{\"role\":\"user\",\"content\":{{ JSON.stringify($json.userContent) }}}]}",
+        "options": { "timeout": 60000 }
+      },
+      "id": "rss-05",
+      "name": "GPT-4o Reescribir",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "emxxwqNYBU6NRo0D",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const gpt = $input.first().json;\nconst prev = $('Obtener Contenido').first().json;\nlet d = {};\ntry {\n  d = JSON.parse(gpt.choices[0].message.content);\n} catch(e) {\n  d = {\n    titulo: prev.title || 'Noticia de General Pinto',\n    caption_instagram: '📰 ' + prev.title + '\\n\\n#GeneralPinto #Noticias #BsAs',\n    caption_facebook: prev.title + '\\n\\n' + (prev.bodyText || '').substring(0, 300),\n    prompt_imagen: 'Professional news photo, Argentine context, photorealistic: ' + prev.title,\n    categoria: 'Sociedad'\n  };\n}\nreturn [{ json: {\n  ...d,\n  featuredImage: prev.featuredImage || '',\n  externalPhotoUrl: '',\n  sourceUrl: prev.sourceUrl || '',\n  source: prev.source || '',\n  chatId: prev.chatId,\n  contentType: 'url'\n} }];"
+      },
+      "id": "rss-06",
+      "name": "Procesar GPT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst prompt = d.prompt_imagen || 'Professional news illustration, Argentina, realistic photo style';\nconst PIAPI_KEY = 'a6d29c06675da41c8d28f561a71ca93a944b5454051275c9f3cad81cc7768ddd';\n\nlet imageUrl = '';\ntry {\n  const submitResp = await fetch('https://api.piapi.ai/api/v1/task', {\n    method: 'POST',\n    headers: { 'x-api-key': PIAPI_KEY, 'Content-Type': 'application/json' },\n    body: JSON.stringify({ model: 'Qubico/flux1-schnell', task_type: 'txt2img', input: { prompt, width: 1024, height: 1024 } })\n  });\n  const submitData = await submitResp.json();\n  const taskId = submitData.data?.task_id;\n  if (taskId) {\n    for (let i = 0; i < 30; i++) {\n      await new Promise(r => setTimeout(r, 2000));\n      const pollResp = await fetch('https://api.piapi.ai/api/v1/task/' + taskId, { headers: { 'x-api-key': PIAPI_KEY } });\n      const pollData = await pollResp.json();\n      const status = pollData.data?.status;\n      if (status === 'Completed') {\n        imageUrl = pollData.data?.output?.image_url || pollData.data?.output?.image_urls?.[0] || '';\n        break;\n      }\n      if (status === 'Failed') break;\n    }\n  }\n} catch(e) { imageUrl = ''; }\n\nreturn [{ json: { data: [{ url: imageUrl }] } }];"
+      },
+      "id": "rss-07",
+      "name": "PiAPI Imagen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const piapi = $input.first().json;\nconst prev = $('Procesar GPT').first().json;\nconst directUrl = piapi?.data?.[0]?.url || '';\nlet finalImageUrl = prev.featuredImage || directUrl || '';\nreturn [{ json: { ...prev, finalImageUrl, hasImage: !!finalImageUrl } }];"
+      },
+      "id": "rss-08",
+      "name": "Preparar Imagen Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst blotatoCaption = d.caption_instagram || d.titulo || 'Noticias de General Pinto';\nlet imgUrl = d.finalImageUrl || '';\nif (imgUrl.startsWith('http')) {\n  if (imgUrl.includes('i0.wp.com') || imgUrl.includes('.wp.com')) {\n    imgUrl = imgUrl.split('?')[0] + '?resize=1080%2C1080&ssl=1';\n  } else if (imgUrl.includes('?fit=') || imgUrl.includes('?resize=')) {\n    imgUrl = imgUrl.split('?')[0];\n  }\n}\nconst blotatoImageUrl = imgUrl;\nreturn [{ json: { ...d, blotatoCaption, blotatoImageUrl } }];"
+      },
+      "id": "rss-09a",
+      "name": "Preparar Blotato",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2220, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://backend.blotato.com/v2/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "blotato-api-key", "value": "blt_yDz6vhxK+JvD2q1m9k+ZXVZZZIApno72jk7wazPkQNE=" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"post\":{\"accountId\":\"47740\",\"content\":{\"text\":{{ JSON.stringify($json.blotatoCaption) }},\"platform\":\"instagram\",\"mediaUrls\":{{ $json.blotatoImageUrl ? JSON.stringify([$json.blotatoImageUrl]) : '[]' }}},\"target\":{\"targetType\":\"instagram\"}}}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "rss-09b",
+      "name": "Blotato Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2440, 300],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const blotatoResp = $input.first().json;\nconst prev = $('Preparar Blotato').first().json;\nconst igResult = blotatoResp?.error ? { error: blotatoResp.error } : blotatoResp;\nreturn [{ json: { ...prev, igResult } }];"
+      },
+      "id": "rss-09c",
+      "name": "Consolidar Blotato",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2660, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst ig = d.igResult || {};\nconst submitId = ig?.postSubmissionId || ig?.id || ig?.postId || ig?.success;\nconst ok = submitId ? '✅ Instagram: Publicado (auto)' : '⚠️ Instagram: ' + JSON.stringify(ig);\nconst hora = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });\nconst msg = '🤖 Auto-publicado\\n\\n' + (d.titulo || '') + '\\n' + (d.categoria || '') + ' - ' + (d.source || '') + '\\n\\n' + ok + '\\n' + (d.sourceUrl || '') + '\\n\\n' + hora;\nreturn [{ json: { chatId: d.chatId, message: msg } }];"
+      },
+      "id": "rss-10",
+      "name": "Preparar Confirmacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2880, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "id": "rss-11",
+      "name": "Telegram Confirmar",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [3100, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "GCHW6diUHaIMtCxz",
+          "name": "Telegram Bot - Portal GP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule 2x dia": {
+      "main": [[{ "node": "RSS Leer", "type": "main", "index": 0 }]]
+    },
+    "RSS Leer": {
+      "main": [[{ "node": "Jina Fetch", "type": "main", "index": 0 }]]
+    },
+    "Jina Fetch": {
+      "main": [[{ "node": "Obtener Contenido", "type": "main", "index": 0 }]]
+    },
+    "Obtener Contenido": {
+      "main": [[{ "node": "Armar Request GPT", "type": "main", "index": 0 }]]
+    },
+    "Armar Request GPT": {
+      "main": [[{ "node": "GPT-4o Reescribir", "type": "main", "index": 0 }]]
+    },
+    "GPT-4o Reescribir": {
+      "main": [[{ "node": "Procesar GPT", "type": "main", "index": 0 }]]
+    },
+    "Procesar GPT": {
+      "main": [[{ "node": "PiAPI Imagen", "type": "main", "index": 0 }]]
+    },
+    "PiAPI Imagen": {
+      "main": [[{ "node": "Preparar Imagen Final", "type": "main", "index": 0 }]]
+    },
+    "Preparar Imagen Final": {
+      "main": [[{ "node": "Preparar Blotato", "type": "main", "index": 0 }]]
+    },
+    "Preparar Blotato": {
+      "main": [[{ "node": "Blotato Instagram", "type": "main", "index": 0 }]]
+    },
+    "Blotato Instagram": {
+      "main": [[{ "node": "Consolidar Blotato", "type": "main", "index": 0 }]]
+    },
+    "Consolidar Blotato": {
+      "main": [[{ "node": "Preparar Confirmacion", "type": "main", "index": 0 }]]
+    },
+    "Preparar Confirmacion": {
+      "main": [[{ "node": "Telegram Confirmar", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "America/Argentina/Buenos_Aires"
+  }
+}

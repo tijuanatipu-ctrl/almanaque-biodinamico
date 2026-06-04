@@ -1,0 +1,22 @@
+{
+  "name": "Almanaque Biodinámico Hemisferio Sur",
+  "short_name": "Almanaque",
+  "description": "Calendario biodinámico para el huerto — General Pinto, Buenos Aires",
+  "start_url": "./almanaque_biodinamico.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a1a",
+  "theme_color": "#ec008c",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "utilities"],
+  "screenshots": []
+}
