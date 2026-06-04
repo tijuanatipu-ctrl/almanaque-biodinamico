@@ -641,11 +641,11 @@ const JUNIO_2026 = {
   18:{tipo:'hoja', signo:'Cáncer → Leo @17h', vent:'hasta las 17hs',
       tip:'Hojas (Cáncer) hasta 17hs. Frutos (Leo, Fuego) desde 17hs. LA activa. Mañana: cosechar hojas frescas (mejor en LA). Tarde: cosecha frutos.'},
   19:{tipo:'fruto', signo:'Leo', vent:'todo el día',
-      tip:'Día de Frutos (Fuego). ⚠ NA:i10h - NA:f19h. ⚠ NAME:i21h - NAME:f23:59h. LA activa. Período desfavorable NA: 10-19hs. Período desfavorable NAME (Nodo Ascendente Mercurio): 21h-23:59h. Cosechar frutos para semilla: mañana o noche.'},
+      tip:'Día de Frutos (Fuego). ⚠ RAYADO: Nodo Ascendente NA @15hs. Período desfavorable ~9hs (5h antes + 4h después: 10-19hs). Evitar siembras/trasplantes 10-19hs. LA activa. Cosechar frutos para semilla: mañana o noche.'},
   20:{tipo:'fruto', signo:'Leo', vent:'restringido',
-      tip:'Día de Frutos (Leo). ⚠ NAME:i0h - NAME:f23:59h. LA activa pero restringida por NAME. Período desfavorable NAME: 0-23:59hs. Evitar trabajos agrícolas importantes. Observar y planificar.'},
+      tip:'Día de Frutos (Leo). ⚠ RAYADO: Nodo Ascendente en Escorpio (NAE) @22hs. Período desfavorable 21h día 19 a 11h día 21 (14h aprox). LA activa pero restringida por NAE. Evitar trabajos agrícolas importantes 21h-11h. Observar y planificar.'},
   21:{tipo:'fruto', signo:'Leo → Virgo @7h', vent:'hasta las 7hs',
-      tip:'Frutos (Leo) hasta 7hs. Raíces (Virgo, Tierra) desde 7hs. ⚠ NAME:i0h - NAME:f11h. ☉ SOGE. LA activa. Período desfavorable NAME: 0-11hs. Mañana: cosechar frutos después de 11hs. Día: laborear suelo, trasplantar raíces.'},
+      tip:'Frutos (Leo) hasta 7hs. Raíces (Virgo, Tierra) desde 7hs. ☉ Sol en Géminis (SOGE). LA activa. Mañana: cosechar frutos. Día: laborear suelo, trasplantar raíces.'},
   22:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
       tip:'Día de Raíces (Tierra). Luna ascendente ↑ activa. Excelente: laborear, compostar, cosechar raíces, trabajar tierra, injertos radicales. Atardecer: cosechar raíces para conserva.'},
   23:{tipo:'raiz', signo:'Virgo', vent:'todo el día',
@@ -1878,85 +1878,11 @@ function getTransicion(year, month, day){
   return {tipo1, tipo2, hora};
 }
 
-// ── EVENTOS LUNARES Y ASTRONÓMICOS ────────────────────────────────────────────
-function extractLunarEvents(tip){
-  const t=tip||'';
-  const events={};
-
-  // Luna Descendente (LD)
-  const ldMatch=t.match(/\bLD\s*:?(\d{1,2})\s*h/i);
-  if(ldMatch) events.ld={hora:ldMatch[1]};
-
-  // Luna Ascendente (LA)
-  const laMatch=t.match(/\bLA\s*:?(\d{1,2})\s*h/i);
-  if(laMatch) events.la={hora:laMatch[1]};
-
-  // Luna Nueva (LN)
-  const lnMatch=t.match(/\bLN\s*:?(\d{1,2})\s*h/i);
-  if(lnMatch) events.ln={hora:lnMatch[1]};
-
-  // Luna Llena (LL)
-  const llMatch=t.match(/\bLL\s*:?(\d{1,2})\s*h/i);
-  if(llMatch) events.ll={hora:llMatch[1]};
-
-  // Apogeo (AG)
-  const agMatch=t.match(/\bAG\s*:?(\d{1,2})\s*h/i);
-  if(agMatch) events.ag={hora:agMatch[1]};
-
-  // Perigeo (PG) con inicio/fin
-  const pgMatch=t.match(/\bPG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
-  if(pgMatch) events.pg={inicio:pgMatch[1], fin:pgMatch[2]+(pgMatch[3]?':'+pgMatch[3]:'')};
-
-  // Eclipse Venus (ECVE)
-  const ecveMatch=t.match(/\bECVE\s*:?i(\d{1,2})\s*h.*?ECVE\s*:?f(\d{1,2})\s*h/i);
-  if(ecveMatch) events.ecve={inicio:ecveMatch[1], fin:ecveMatch[2]};
-
-  // Nodo Descendente (ND)
-  const ndMatch=t.match(/\bND\s*:?i(\d{1,2})\s*h/i);
-  if(ndMatch) events.nd={inicio:ndMatch[1]};
-  const ndFMatch=t.match(/\bND\s*:?f(\d{1,2})\s*h/i);
-  if(ndFMatch) {if(events.nd) events.nd.fin=ndFMatch[1]; else events.nd={fin:ndFMatch[1]};}
-
-  // Nodo Ascendente (NA)
-  const naMatch=t.match(/\bNA\s*:?i(\d{1,2})\s*h/i);
-  if(naMatch) events.na={inicio:naMatch[1]};
-  const naFMatch=t.match(/\bNA\s*:?f(\d{1,2})\s*h/i);
-  if(naFMatch) {if(events.na) events.na.fin=naFMatch[1]; else events.na={fin:naFMatch[1]};}
-
-  // Nodo Descendente en constelación (NDXX) con inicio/fin
-  const ndesMatch=t.match(/\bND([A-Z]{2})\s*:?i(\d{1,2})\s*h/i);
-  if(ndesMatch) events['nd'+ndesMatch[1].toLowerCase()]={inicio:ndesMatch[2]};
-  const ndesFMatch=t.match(/\bND([A-Z]{2})\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
-  if(ndesFMatch) {const key='nd'+ndesFMatch[1].toLowerCase(); if(events[key]) events[key].fin=ndesFMatch[2]+(ndesFMatch[3]?':'+ndesFMatch[3]:''); else events[key]={fin:ndesFMatch[2]+(ndesFMatch[3]?':'+ndesFMatch[3]:'')};}
-
-  // Nodo Ascendente en constelación/planeta (NAXX) con inicio/fin
-  const naMatch=t.match(/\bNA([A-Z]{2})\s*:?i(\d{1,2})\s*h/i);
-  if(naMatch) events['na'+naMatch[1].toLowerCase()]={inicio:naMatch[2]};
-  const naFMatch=t.match(/\bNA([A-Z]{2})\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
-  if(naFMatch) {const key='na'+naFMatch[1].toLowerCase(); if(events[key]) events[key].fin=naFMatch[2]+(naFMatch[3]?':'+naFMatch[3]:''); else events[key]={fin:naFMatch[2]+(naFMatch[3]?':'+naFMatch[3]:'')};}
-
-  // Nodo Descendente genérico (ND sin especificar) solo hora
-  const ndesSimpleMatch=t.match(/\bND\s*:?(\d{1,2})\s*h(?!\s*[-:])/i);
-  if(ndesSimpleMatch && !events.nd) events.nd={hora:ndesSimpleMatch[1]};
-
-  // Nodo Ascendente genérico (NA sin especificar) solo hora
-  const naSimpleMatch=t.match(/\bNA\s*:?(\d{1,2})\s*h(?!\s*[-:])/i);
-  if(naSimpleMatch && !events.na) events.na={hora:naSimpleMatch[1]};
-
-  // Sol en (SOGE)
-  const soleMatch=t.match(/SOL\s*en\s+(\w+)|SO(\w{2})/i);
-  if(soleMatch) events.sol=soleMatch[1]||soleMatch[2];
-
-  return Object.keys(events).length>0 ? events : null;
-}
-
 // ── RAYADOS — períodos desfavorables ─────────────────────────────────────────
 function isRayado(tip){
   const t=(tip||'').toLowerCase();
-  const hasEclipse=t.includes('eclipse')||t.includes('ecve');
-  const hasPeriodo=t.includes('período desfavorable')||t.includes('periodo desfavorable');
-  const hasNodo=t.includes('nodo')&&(t.includes(':i')||t.includes(':f'));
-  return hasEclipse || hasPeriodo || hasNodo;
+  return t.includes('eclipse')||t.includes('perigeo')||
+    (t.includes('nodo')&&(t.includes('ascendente de')||t.includes('descendente de')));
 }
 function getRayadoEvento(tip){
   const t=tip||'';
@@ -1970,37 +1896,34 @@ function getRayadoEvento(tip){
 }
 function getRayadoPeriodo(tip, day){
   const t=tip||'';
-  const periodos=[];
-
-  // Buscar "Período desfavorable" en descripción NA/ND/NAME/NDES
-  const naMatch=t.match(/Período\s+desfavorable\s+NA:\s*(\d{1,2})-(\d{1,2})\s*hs/i);
-  if(naMatch) periodos.push(`${naMatch[1]} a ${naMatch[2]} hs`);
-
-  const nameMatch=t.match(/Período\s+desfavorable\s+NAME\s*\(Nodo\s+Ascendente\s+Mercurio\):\s*(\d{1,2})h-(\d{1,2}):?(\d{2})?h/i);
-  if(nameMatch) periodos.push(`${nameMatch[1]} a ${nameMatch[2]}${nameMatch[3]?':'+nameMatch[3]:''}hs`);
-
-  // Buscar patrones genéricos "X a Y horas"
-  const allMatches=t.matchAll(/(\d{1,2})\s+a\s+(\d{1,2}):?(\d{2})?\s*(?:horas?|hs)/gi);
-  for(const match of allMatches){
-    const existente=periodos.some(p => p.startsWith(match[1]+'a'));
-    if(!existente) periodos.push(`${match[1]} a ${match[2]}${match[3]?':'+match[3]:''}hs`);
+  // Buscar patrón "Período desfavorable XXX a XXX"
+  const per=t.match(/período\s+desfavorable\s+([^\.]+)/i);
+  if(per){
+    let periodoTxt=per[1].trim();
+    // Primero buscar patrón multi-día: "~Xh día Y a ~Zh día W"
+    const multiDiaMatch=periodoTxt.match(/~?(\d{1,2})h?\s+día\s+(\d{1,2})\s+a\s+~?(\d{1,2})h?\s+día\s+(\d{1,2})/);
+    if(multiDiaMatch){
+      const h1=multiDiaMatch[1];
+      const dia1=parseInt(multiDiaMatch[2]);
+      const h2=multiDiaMatch[3];
+      const dia2=parseInt(multiDiaMatch[4]);
+      // Si estamos en el día que comienza
+      if(day && day===dia1) return `${h1}hs a 23:59hs`;
+      // Si estamos en el día que continúa
+      if(day && day===dia2) return `0hs a ${h2}hs`;
+      // Fallback para días intermedios
+      if(day && day > dia1 && day < dia2) return `0hs a 23:59hs`;
+    }
+    // Buscar patrón simple "X a Y horas" o "X-Y hs"
+    const simpleMatch=periodoTxt.match(/(\d{1,2})\s*(?:a|–|-|hs)\s*(\d{1,2})/);
+    if(simpleMatch){
+      const h1=simpleMatch[1];
+      const h2=simpleMatch[2];
+      return `${h1}hs a ${h2}hs`;
+    }
+    return periodoTxt;
   }
-
-  // Buscar patrón multi-día: "~Xh día Y a ~Zh día W"
-  const multiDiaMatch=t.match(/~?(\d{1,2})h?\s+día\s+(\d{1,2})\s+a\s+~?(\d{1,2})h?\s+día\s+(\d{1,2})/);
-  if(multiDiaMatch){
-    const h1=multiDiaMatch[1];
-    const dia1=parseInt(multiDiaMatch[2]);
-    const h2=multiDiaMatch[3];
-    const dia2=parseInt(multiDiaMatch[4]);
-    if(day && day===dia1) periodos.push(`${h1} a 23:59 hs`);
-    if(day && day===dia2) periodos.push(`0 a ${h2} hs`);
-    if(day && day > dia1 && day < dia2) periodos.push(`0 a 23:59 hs`);
-  }
-
-  if(periodos.length===0) return null;
-  if(periodos.length===1) return periodos[0];
-  return periodos.join(' y de ');
+  return null;
 }
 
 // ── ZODIAC GLYPHS ─────────────────────────────────────────────────────────────
@@ -2160,30 +2083,12 @@ function render(date){
   const asc=moonAscending(date);
   const astro=getAstroTimes(date,userLoc.lat,userLoc.lon);
   const isDefaultLoc=(userLoc.name===LOC_DEFAULT.name);
-  const lunarEvents=extractLunarEvents(tip);
   const rayado=isRayado(tip);
   const rayadoEvento=rayado?getRayadoEvento(tip):null;
   const rayadoPeriodo=rayado?getRayadoPeriodo(tip,day):null;
   const rayadoHtml=rayado?`<div class="rayado-wrap">
-    <div class="rayado-ttl" style="color:#ff4444; font-weight:bold;">⚠ PERIODO DESFAVORABLE: ${rayadoPeriodo?'DE '+rayadoPeriodo.toUpperCase():''}</div>
+    <div class="rayado-ttl" style="color:#ff4444; font-weight:bold;">⚠ PERIODO DESFAVORABLE: ${rayadoPeriodo?rayadoPeriodo.toUpperCase():''}</div>
     <div class="rayado-sub">Evitar siembras, trasplantes y trabajos intensos con la tierra. Ideal para desmalezar o podar lo que se quiere debilitar.</div>
-  </div>`:'';
-  const eventsHtml=lunarEvents?`<div style="padding:4px 18px 8px; flex-shrink:0;">
-    <div style="font-size:8px; color:var(--c-muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; font-family:'Josefin Sans',sans-serif; font-weight:300;">Eventos</div>
-    <div style="font-size:11px; color:var(--c-primary); line-height:1.6; font-family:'Josefin Sans',sans-serif;">
-      ${lunarEvents.ld?`🌙 LD ${lunarEvents.ld.hora}hs<br>`:''}
-      ${lunarEvents.la?`🌙 LA ${lunarEvents.la.hora}hs<br>`:''}
-      ${lunarEvents.ln?`🌑 LN ${lunarEvents.ln.hora}hs<br>`:''}
-      ${lunarEvents.ll?`🌕 LL ${lunarEvents.ll.hora}hs<br>`:''}
-      ${lunarEvents.ag?`📍 AG ${lunarEvents.ag.hora}hs<br>`:''}
-      ${lunarEvents.pg?`📍 PG ${lunarEvents.pg.inicio}hs-${lunarEvents.pg.fin}hs<br>`:''}
-      ${lunarEvents.nd?`☋ ND ${lunarEvents.nd.inicio}hs${lunarEvents.nd.fin?'-'+lunarEvents.nd.fin+'hs':lunarEvents.nd.hora?'-'+lunarEvents.nd.hora+'hs':''}<br>`:''}
-      ${lunarEvents.na?`☊ NA ${lunarEvents.na.inicio}hs${lunarEvents.na.fin?'-'+lunarEvents.na.fin+'hs':lunarEvents.na.hora?'-'+lunarEvents.na.hora+'hs':''}<br>`:''}
-      ${lunarEvents.name?`☊ NA-ME ${lunarEvents.name.inicio}hs${lunarEvents.name.fin?'-'+lunarEvents.name.fin+'hs':lunarEvents.name.hora?'-'+lunarEvents.name.hora+'hs':''}<br>`:''}
-      ${lunarEvents.ndes?`☋ ND-ES ${lunarEvents.ndes.inicio}hs${lunarEvents.ndes.fin?'-'+lunarEvents.ndes.fin+'hs':lunarEvents.ndes.hora?'-'+lunarEvents.ndes.hora+'hs':''}<br>`:''}
-      ${lunarEvents.ecve?`⭐ ECVE ${lunarEvents.ecve.inicio}hs-${lunarEvents.ecve.fin}hs<br>`:''}
-      ${lunarEvents.sol?`☉ SOL en ${lunarEvents.sol}<br>`:''}
-    </div>
   </div>`:'';
   const ventInline=fmtVentInline(vent);
   const bioHtml=trans
@@ -2253,8 +2158,6 @@ function render(date){
         <span class="astro-val">${astro.pueLuna}</span>
       </span>
     </div>
-
-    ${eventsHtml}
 
     <div class="win-wrap">
       <div class="win-lbl">Mejor horario del día</div>
