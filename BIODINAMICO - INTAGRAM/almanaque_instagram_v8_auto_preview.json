@@ -119,27 +119,13 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://api.cloudinary.com/v1_1/dswpdeego/raw/upload",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ file: 'data:text/html;base64,' + Buffer.from($node['Generar HTML Preview'].json.htmlContent).toString('base64'), upload_preset: 'ml_default', folder: 'almanaque', resource_type: 'raw', public_id: 'preview_' + $node['Datos del día'].json.day }) }}"
-      },
-      "id": "node-upload-html",
-      "name": "Guardar HTML en Cloudinary",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [1880, 300]
-    },
-    {
-      "parameters": {
-        "jsCode": "const previewUrl = $json.secure_url || 'HTML generado localmente';\nreturn [{ json: { id: 'preview-' + Math.random().toString(36).substr(2, 9), status: 'FINISHED', simulate: true, previewUrl, mensaje: '✅ SIMULADO: Post generado - Abre el HTML para ver la preview' } }];"
+        "jsCode": "const day = $node['Datos del día'].json.day;\nreturn [{ json: { id: 'preview-' + day, status: 'FINISHED', simulate: true, mensaje: '✅ SIMULADO: Post generado con preview HTML', htmlContent: $node['Generar HTML Preview'].json.htmlContent } }];"
       },
       "id": "node-publish-fake",
       "name": "IG Publicar (SIMULADO - HTML Auto)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2120, 300]
+      "position": [1880, 300]
     }
   ],
   "connections": {
@@ -149,8 +135,7 @@
     "Guard: ya publicado hoy": { "main": [[{ "node": "Screenshot", "type": "main", "index": 0 }]] },
     "Screenshot": { "main": [[{ "node": "Subir a Cloudinary", "type": "main", "index": 0 }]] },
     "Subir a Cloudinary": { "main": [[{ "node": "Generar HTML Preview", "type": "main", "index": 0 }]] },
-    "Generar HTML Preview": { "main": [[{ "node": "Guardar HTML en Cloudinary", "type": "main", "index": 0 }]] },
-    "Guardar HTML en Cloudinary": { "main": [[{ "node": "IG Publicar (SIMULADO - HTML Auto)", "type": "main", "index": 0 }]] }
+    "Generar HTML Preview": { "main": [[{ "node": "IG Publicar (SIMULADO - HTML Auto)", "type": "main", "index": 0 }]] }
   },
   "active": false,
   "settings": { "executionOrder": "v1" },
