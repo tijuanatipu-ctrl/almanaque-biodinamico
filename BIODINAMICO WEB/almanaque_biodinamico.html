@@ -1897,34 +1897,36 @@ function getRayadoEvento(tip){
 }
 function getRayadoPeriodo(tip, day){
   const t=tip||'';
-  // Buscar patrón "Período desfavorable XXX a XXX"
-  const per=t.match(/período\s+desfavorable\s+([^\.]+)/i);
-  if(per){
+  const periodos=[];
+
+  // Buscar TODOS los patrones "Período desfavorable XXX a XXX"
+  const perMatches=t.matchAll(/período\s+desfavorable\s+([^\n\.]+)/gi);
+  for(const per of perMatches){
     let periodoTxt=per[1].trim();
-    // Primero buscar patrón multi-día: "~Xh día Y a ~Zh día W"
+
+    // Patrón multi-día: "~Xh día Y a ~Zh día W"
     const multiDiaMatch=periodoTxt.match(/~?(\d{1,2})h?\s+día\s+(\d{1,2})\s+a\s+~?(\d{1,2})h?\s+día\s+(\d{1,2})/);
     if(multiDiaMatch){
       const h1=multiDiaMatch[1];
       const dia1=parseInt(multiDiaMatch[2]);
       const h2=multiDiaMatch[3];
       const dia2=parseInt(multiDiaMatch[4]);
-      // Si estamos en el día que comienza
-      if(day && day===dia1) return `${h1}hs a 23:59hs`;
-      // Si estamos en el día que continúa
-      if(day && day===dia2) return `0hs a ${h2}hs`;
-      // Fallback para días intermedios
-      if(day && day > dia1 && day < dia2) return `0hs a 23:59hs`;
+      if(day && day===dia1) periodos.push(`${h1} a 23:59 hs`);
+      else if(day && day===dia2) periodos.push(`0 a ${h2} hs`);
+      else if(day && day > dia1 && day < dia2) periodos.push(`0 a 23:59 hs`);
+      continue;
     }
-    // Buscar patrón simple "X a Y horas" o "X-Y hs"
-    const simpleMatch=periodoTxt.match(/(\d{1,2})\s*(?:a|–|-|hs)\s*(\d{1,2})/);
-    if(simpleMatch){
-      const h1=simpleMatch[1];
-      const h2=simpleMatch[2];
-      return `${h1}hs a ${h2}hs`;
+
+    // Patrón "X a Y horas" o "X a Y hs"
+    const simpleMatches=periodoTxt.matchAll(/(\d{1,2})\s+a\s+(\d{1,2}(?::\d{2})?)\s*(?:horas?|hs)/gi);
+    for(const match of simpleMatches){
+      periodos.push(`${match[1]} a ${match[2]} hs`);
     }
-    return periodoTxt;
   }
-  return null;
+
+  if(periodos.length===0) return null;
+  if(periodos.length===1) return periodos[0];
+  return periodos.join(' y de ');
 }
 
 // ── ZODIAC GLYPHS ─────────────────────────────────────────────────────────────
