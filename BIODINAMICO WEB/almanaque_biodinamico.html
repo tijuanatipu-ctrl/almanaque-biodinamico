@@ -285,7 +285,7 @@ body.dark .rayado-wrap { background:rgba(200,120,0,.12); }
 }
 
 /* ══════════════════════════════════════════════════
-   IG SCREENSHOT MODE — ?ig=1  (1000×1250 → 1080×1350)
+   IG SCREENSHOT MODE — ?ig=1  (1080×1920 para Instagram Stories)
    ══════════════════════════════════════════════════ */
 body.ig-mode {
   padding:0 !important;
@@ -307,16 +307,20 @@ body.ig-mode {
   --c-tipline:   #444444;
 }
 body.ig-mode #card {
-  width:100vw !important;
-  max-width:100vw !important;
-  min-height:100vh !important;
+  width:100% !important;
+  max-width:1080px !important;
+  aspect-ratio:9/16 !important;
   box-shadow:none !important;
   border:none !important;
   display:flex; flex-direction:column;
-  justify-content:space-between;
+  padding:0 !important;
+  margin:0 auto;
+  overflow-x:hidden;
+  overflow-y:auto;
 }
 body.ig-mode .controls { display:none !important; }
 body.ig-mode .cal-wrap  { display:none !important; }
+body.ig-mode .mes-ov { display:none !important; }
 
 /* — TIPOGRAFÍA IG — */
 body.ig-mode { font-family:'Josefin Sans', sans-serif !important; }
@@ -326,54 +330,65 @@ body.ig-mode .hdr-name,
 body.ig-mode .mnav-label { font-family:'Oswald', sans-serif !important; }
 
 /* — HEADER — */
-body.ig-mode .hdr        { padding:1vw 6vw; background:#1a1a1a !important; border-bottom:1px solid rgba(255,255,255,.06); }
-body.ig-mode .hdr-name   { font-size:1.8vw; letter-spacing:.25vw; font-weight:300; }
+body.ig-mode .hdr        { padding:clamp(10px,2vw,15px) clamp(15px,4vw,25px) clamp(8px,1.5vw,12px); background:#1a1a1a !important; border-bottom:2px solid rgba(236,0,140,.3); flex-shrink:0; }
+body.ig-mode .hdr-name   { font-size:clamp(11px,2.5vw,14px); letter-spacing:2px; font-weight:400; }
 body.ig-mode .hdr-sub    { display:none; }
-body.ig-mode .hdr-season { font-size:1.8vw; line-height:1.4; font-family:'Josefin Sans',sans-serif; font-weight:300; }
-body.ig-mode .hdr-icon   { font-size:2.2vw; }
+body.ig-mode .hdr-season { font-size:clamp(10px,2.2vw,12px); line-height:1.3; font-family:'Josefin Sans',sans-serif; font-weight:300; }
+body.ig-mode .hdr-icon   { font-size:clamp(14px,3vw,18px); }
 
 /* — MONTH NAV — */
-body.ig-mode .month-nav  { padding:1.2vw 6vw; }
-body.ig-mode .mnav-label { font-size:3.2vw; letter-spacing:.8vw; font-weight:400; }
+body.ig-mode .month-nav  { padding:clamp(8px,2vw,12px) clamp(15px,4vw,25px); flex-shrink:0; }
+body.ig-mode .mnav-label { font-size:clamp(24px,6vw,32px); letter-spacing:4px; font-weight:700; margin:0; }
 body.ig-mode .mnav-btn   { opacity:0; pointer-events:none; }
+body.ig-mode .mnav-day   { font-size:clamp(10px,2.2vw,12px); letter-spacing:2px; font-weight:300; margin:0; }
 
 /* — DATE — */
-body.ig-mode .date-wrap  { padding:.3vw 6vw 0; }
-body.ig-mode .mnav-day   { font-size:2vw; letter-spacing:1.5vw; font-weight:300; }
-body.ig-mode .date-num   { font-size:17vw; line-height:.88; font-weight:900; }
+body.ig-mode .date-wrap  { padding:clamp(10px,2.5vw,15px) clamp(15px,4vw,25px) clamp(6px,1.5vw,10px); text-align:center; flex-shrink:0; }
+body.ig-mode .date-num   { font-size:clamp(80px,20vw,140px); line-height:.85; font-weight:900; margin:0; }
 
 /* — BIO TYPE (DÍA DE RAÍCES) — */
-body.ig-mode .bio-wrap   { padding:1vw 6vw; gap:1.8vw; }
-body.ig-mode .bio-icon   { font-size:4.5vw; }
-body.ig-mode .bio-lbl    { font-size:4.2vw; letter-spacing:.2vw; font-weight:700; font-style:italic; }
+body.ig-mode .bio-wrap   { padding:clamp(10px,2.5vw,15px) clamp(15px,4vw,25px); gap:clamp(8px,2vw,12px); justify-content:center; flex-shrink:0; }
+body.ig-mode .bio-icon   { font-size:clamp(32px,8vw,45px); }
+body.ig-mode .bio-lbl    { font-size:clamp(16px,4vw,20px); letter-spacing:.5px; font-weight:700; font-style:italic; }
+body.ig-mode .bio-vent   { font-size:11px; }
+body.ig-mode .bio-arrow  { font-size:14px; }
+body.ig-mode .bio-trans-hora { font-size:10px; }
+
+/* — DIVIDERS — */
+body.ig-mode .div-line { margin:clamp(2px,1vw,4px) clamp(12px,4vw,20px); flex-shrink:0; }
 
 /* — MOON — */
-body.ig-mode .moon-wrap  { margin:0 5vw; padding:1.8vw 4vw; }
-body.ig-mode .moon-em    { font-size:4.2vw; }
-body.ig-mode .moon-txt   { font-size:2.8vw; line-height:1.5; font-weight:300; color:var(--c-secondary); }
-body.ig-mode .moon-sign  { font-size:3.5vw; font-family:'Oswald',sans-serif; font-style:normal; font-weight:700; color:var(--c-primary); }
-body.ig-mode .moon-asc-ctx { font-size:2.4vw; letter-spacing:.4vw; font-weight:600; color:var(--c-secondary); }
+body.ig-mode .moon-wrap  { margin:clamp(8px,2vw,12px) clamp(12px,3.5vw,20px); padding:clamp(10px,2vw,14px) clamp(12px,3vw,16px); border-radius:8px; flex-shrink:0; }
+body.ig-mode .moon-em    { font-size:clamp(20px,5vw,28px); }
+body.ig-mode .moon-txt   { font-size:clamp(11px,2.5vw,13px); line-height:1.6; font-weight:300; color:var(--c-secondary); }
+body.ig-mode .moon-sign  { font-size:clamp(12px,2.8vw,14px); font-family:'Oswald',sans-serif; font-style:normal; font-weight:700; color:var(--c-primary); }
+body.ig-mode .moon-asc-ctx { font-size:clamp(10px,2.4vw,12px); letter-spacing:.5px; font-weight:600; color:var(--c-secondary); }
 
-/* — PERÍODO FAVORABLE — */
-body.ig-mode .win-wrap   { display:block; padding:1vw 6vw; }
-body.ig-mode .win-lbl    { font-size:2vw; letter-spacing:.5vw; margin-bottom:.3vw; font-weight:300; }
-body.ig-mode .win-val    { font-size:3.5vw; font-family:'Playfair Display',serif; font-weight:700; }
+/* — PERÍODO FAVORABLE (ASTRO TIMES) — */
+body.ig-mode .astro-wrap { padding:clamp(6px,1.5vw,8px) clamp(15px,4vw,25px); justify-content:center; flex-shrink:0; }
+body.ig-mode .astro-val  { font-size:clamp(11px,2.5vw,13px); }
+body.ig-mode .astro-icon { font-size:clamp(11px,2.5vw,13px); }
+
+/* — MEJOR HORARIO — */
+body.ig-mode .win-wrap   { display:none !important; }
+body.ig-mode .win-lbl    { display:none !important; }
+body.ig-mode .win-val    { display:none !important; }
 
 /* — SEMBRAR / COSECHAR — */
-body.ig-mode .crops-wrap { padding:1vw 6vw; }
-body.ig-mode .crops-ttl  { font-size:2vw; letter-spacing:.5vw; margin-bottom:.4vw; }
-body.ig-mode .crops-val  { font-size:3vw; line-height:1.5; font-family:'Josefin Sans',sans-serif; }
-body.ig-mode .crops-nota { font-size:2vw; }
+body.ig-mode .crops-wrap { padding:clamp(6px,1.5vw,8px) clamp(15px,4vw,25px) clamp(8px,2vw,10px); flex-shrink:0; }
+body.ig-mode .crops-ttl  { font-size:clamp(8px,2vw,10px); letter-spacing:1px; margin-bottom:clamp(2px,1vw,4px); }
+body.ig-mode .crops-val  { font-size:clamp(11px,2.5vw,13px); line-height:1.6; }
+body.ig-mode .crops-nota { font-size:clamp(9px,2vw,10px); }
 
 /* — TIP DEL DÍA — */
-body.ig-mode .tip-wrap   { padding:1vw 6vw 1vw; }
-body.ig-mode .tip-ttl    { font-size:2vw; letter-spacing:.5vw; margin-bottom:.5vw; font-weight:300; }
-body.ig-mode .tip-body   { font-size:3vw; line-height:1.55; font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600; color:var(--c-tip); }
+body.ig-mode .tip-wrap   { padding:clamp(6px,1.5vw,8px) clamp(15px,4vw,25px) clamp(8px,2vw,12px); flex-shrink:0; }
+body.ig-mode .tip-ttl    { font-size:clamp(8px,2vw,10px); letter-spacing:1px; margin-bottom:clamp(2px,1vw,4px); font-weight:300; }
+body.ig-mode .tip-body   { font-size:clamp(11px,2.5vw,12px); line-height:1.6; font-family:'Josefin Sans',serif; font-style:italic; font-weight:400; color:var(--c-tip); }
 
 /* — FOOTER — */
-body.ig-mode .ftr        { padding:1vw 6vw; background:#1a1a1a !important; border-top:1px solid rgba(255,255,255,.06); }
-body.ig-mode .ftr-main   { font-size:1.8vw; letter-spacing:.3vw; font-weight:300; color:rgba(255,255,255,.6); }
-body.ig-mode .ftr-src    { font-size:2vw; letter-spacing:.15vw; font-weight:700; color:var(--c-accent); text-align:right; display:block !important; }
+body.ig-mode .ftr        { padding:clamp(8px,2vw,12px) clamp(15px,4vw,25px); background:#0d0d0d !important; border-top:2px solid rgba(236,0,140,.3); flex-shrink:0; }
+body.ig-mode .ftr-main   { font-size:clamp(8px,2vw,10px); letter-spacing:1px; font-weight:300; color:rgba(255,255,255,.6); }
+body.ig-mode .ftr-src    { font-size:clamp(9px,2.2vw,11px); letter-spacing:.5px; font-weight:700; color:var(--c-accent); text-align:right; display:block !important; }
 
 /* ── IG LIGHT MODE — illum > 0.5 ── */
 body.ig-mode.ig-light {
