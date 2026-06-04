@@ -2109,6 +2109,51 @@ function render(date){
       </div>`;
   const consejoBio = CONSEJOS[tipo][(day-1) % CONSEJOS[tipo].length];
 
+  // Extraer eventos para mostrar en consejos
+  const eventosTexto=(()=>{
+    const eventos=[];
+    if(tip.match(/LD\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/LD\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`🌙 Luna Descendente ${m[1]}hs`);
+    }
+    if(tip.match(/LA\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/LA\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`🌙 Luna Ascendente ${m[1]}hs`);
+    }
+    if(tip.match(/LN\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/LN\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`🌑 Luna Nueva ${m[1]}hs`);
+    }
+    if(tip.match(/LL\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/LL\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`🌕 Luna Llena ${m[1]}hs`);
+    }
+    if(tip.match(/AG\s*:?(\d{1,2})\s*h/i)) {
+      const m=tip.match(/AG\s*:?(\d{1,2})\s*h/i);
+      eventos.push(`📍 Apogeo ${m[1]}hs`);
+    }
+    if(tip.match(/PG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i)) {
+      const m=tip.match(/PG\s*:?i(\d{1,2})\s*h.*?PG\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
+      eventos.push(`📍 Perigeo ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs`);
+    }
+    if(tip.match(/ND\s*:?i(\d{1,2})\s*h.*?ND\s*:?f(\d{1,2})\s*h/i)) {
+      const m=tip.match(/ND\s*:?i(\d{1,2})\s*h.*?ND\s*:?f(\d{1,2})\s*h/i);
+      eventos.push(`☋ Nodo Descendente ${m[1]}hs-${m[2]}hs`);
+    }
+    if(tip.match(/NA\s*:?i(\d{1,2})\s*h.*?NA\s*:?f(\d{1,2})\s*h/i)) {
+      const m=tip.match(/NA\s*:?i(\d{1,2})\s*h.*?NA\s*:?f(\d{1,2})\s*h/i);
+      eventos.push(`☊ Nodo Ascendente ${m[1]}hs-${m[2]}hs`);
+    }
+    if(tip.match(/NAME\s*:?i(\d{1,2})\s*h.*?NAME\s*:?f(\d{1,2}):?(\d{2})?\s*h/i)) {
+      const m=tip.match(/NAME\s*:?i(\d{1,2})\s*h.*?NAME\s*:?f(\d{1,2}):?(\d{2})?\s*h/i);
+      eventos.push(`☊ NA-Mercurio ${m[1]}hs-${m[2]}${m[3]?':'+m[3]:''}hs`);
+    }
+    if(tip.match(/SOGE|Sol\s+en\s+(\w+)/i)) {
+      eventos.push(`☉ Sol en Géminis`);
+    }
+    return eventos.length > 0 ? eventos.join(' · ') : '';
+  })();
+
   document.getElementById('card').innerHTML=`
     <div class="hdr">
       <div>
@@ -2180,9 +2225,8 @@ function render(date){
     </div>
 
     <div class="tip-wrap">
-      <div class="tip-ttl">Consejos biodinámicos</div>
-      <div class="tip-body">${tip}</div>
-      <div class="tip-body">${consejoBio}</div>
+      <div class="tip-ttl">Eventos del día</div>
+      <div class="tip-body">${eventosTexto || 'Sin eventos especiales'}</div>
     </div>
 
     ${miniCal(year,mon,day,TODAY)}
