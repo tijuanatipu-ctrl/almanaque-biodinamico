@@ -1894,14 +1894,33 @@ function getRayadoEvento(tip){
   if(nod) return nod[0];
   return null;
 }
-function getRayadoPeriodo(tip){
+function getRayadoPeriodo(tip, day){
   const t=tip||'';
   // Buscar patrón "Período desfavorable XXX a XXX"
-  const per=t.match(/período\s+desfavorable\s+([^.]+)/i);
-  if(per) return per[1].trim();
-  // Buscar patrón "~XXh" o "XXh"
-  const hrs=t.match(/(\d{1,2}(?:[–\-]\d{1,2})?(?:h|hs)?)/i);
-  if(hrs) return hrs[1];
+  const per=t.match(/período\s+desfavorable\s+([^\.]+)/i);
+  if(per){
+    let periodoTxt=per[1].trim();
+    // Extraer horas: "7 a 9 horas", "7-33hs", "7h día 14 a ~9h día 15", etc.
+    const horaMatch=periodoTxt.match(/(\d{1,2})\s*(?:a|–|-)?\s*(\d{1,2})?/);
+    if(horaMatch){
+      const h1=horaMatch[1];
+      // Si hay "día X a ~Yh día Z", extraer las horas del día actual
+      if(periodoTxt.includes('día')){
+        const diaMatch=periodoTxt.match(/~?(\d{1,2})h?\s+día\s+(\d{1,2})/);
+        if(diaMatch){
+          const hora2=diaMatch[1];
+          const dia2=parseInt(diaMatch[2]);
+          // Si estamos en el día que continúa, mostrar desde 0
+          if(day && dia2===day) return `0hs a ${hora2}hs`;
+          // Si estamos en el día que comienza, mostrar hasta 24
+          if(day && day < dia2) return `${h1}hs a 24hs`;
+        }
+      }
+      const h2=horaMatch[2]||'24';
+      return `${h1}hs a ${h2}hs`;
+    }
+    return periodoTxt;
+  }
   return null;
 }
 
@@ -2064,10 +2083,9 @@ function render(date){
   const isDefaultLoc=(userLoc.name===LOC_DEFAULT.name);
   const rayado=isRayado(tip);
   const rayadoEvento=rayado?getRayadoEvento(tip):null;
-  const rayadoPeriodo=rayado?getRayadoPeriodo(tip):null;
+  const rayadoPeriodo=rayado?getRayadoPeriodo(tip,day):null;
   const rayadoHtml=rayado?`<div class="rayado-wrap">
-    <div class="rayado-ttl">⚠ Momento restrictivo${rayadoEvento?' · '+rayadoEvento:''}</div>
-    ${rayadoPeriodo?`<div style="color:#ff4444; font-weight:bold; margin-top:4px; font-size:12px;">📍 Período desfavorable: ${rayadoPeriodo}</div>`:''}
+    <div class="rayado-ttl" style="color:#ff4444; font-weight:bold;">⚠ PERIODO DESFAVORABLE: ${rayadoPeriodo?rayadoPeriodo.toUpperCase():''}</div>
     <div class="rayado-sub">Evitar siembras, trasplantes y trabajos intensos con la tierra. Ideal para desmalezar o podar lo que se quiere debilitar.</div>
   </div>`:'';
   const ventInline=fmtVentInline(vent);
