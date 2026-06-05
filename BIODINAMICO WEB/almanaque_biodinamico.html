@@ -2614,7 +2614,15 @@ function renderWeatherSection(weather){
   // Weather description text
   const descElement=document.getElementById('weather-description');
   if(descElement){
-    descElement.innerHTML=`Hoy ${emoji} está ${condition.toLowerCase()}. Hace <strong>${temp}°C</strong> con ${humidity}% de humedad`;
+    const hour=new Date().getHours();
+    let greeting='Buenos días';
+    if(hour>=12&&hour<18) greeting='Buenas tardes';
+    else if(hour>=18) greeting='Buenas noches';
+
+    const windDesc=wind<5?'muy calmo':wind<15?'ligero':wind<25?'moderado':'fuerte';
+    const cloudDesc=cloud<30?'despejado':cloud<70?'parcialmente nublado':'nublado';
+
+    descElement.innerHTML=`${greeting} en General Pinto ${emoji}. Está <strong>${condition.toLowerCase()}</strong>, hace <strong>${temp}°C</strong>, ${humidity}% humedad, viento ${windDesc}`;
     descElement.style.display='block';
   }
 
