@@ -133,9 +133,10 @@ body {
 .date-num { font-size:clamp(72px,24vw,108px); font-weight:700; color:var(--c-accent); line-height:.9; font-family:'Oswald', 'Arial Black', sans-serif; font-style:normal; letter-spacing:-2px; }
 .date-label { font-size:clamp(9px,2.2vw,11px); color:var(--c-muted); font-weight:400; font-family:'Josefin Sans', sans-serif; letter-spacing:1px; text-transform:uppercase; }
 .date-month { font-size:clamp(12px,3.2vw,16px); color:var(--c-accent); letter-spacing:2px; font-weight:700; font-family:'Oswald', sans-serif; text-transform:uppercase; }
-.date-weather { flex:1; text-align:right; display:flex; flex-direction:column; gap:3px; color:var(--c-muted); justify-content:center; }
-.date-weather-item { font-size:clamp(10px,2.4vw,12px); color:var(--c-muted); line-height:1.2; font-family:'Josefin Sans', sans-serif; font-weight:300; letter-spacing:.4px; }
-.date-weather-val { color:var(--c-primary); font-weight:700; font-size:inherit; }
+.date-weather { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:5px; justify-content:flex-end; }
+.date-weather-item { background:rgba(236,0,140,.08); border:1px solid rgba(236,0,140,.2); border-radius:6px; padding:8px; width:48px; height:48px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; text-align:center; }
+.date-weather-label { font-size:7px; color:var(--c-muted); text-transform:uppercase; letter-spacing:.3px; font-weight:400; font-family:'Josefin Sans', sans-serif; line-height:1; }
+.date-weather-val { color:var(--c-accent); font-weight:700; font-size:clamp(12px,2.2vw,14px); line-height:1; }
 
 /* HOY BADGE */
 .mnav-hoy {
@@ -2599,15 +2600,28 @@ function renderWeatherSection(weather){
   const cloud=weather.cloud_cover;
   const precip=weather.precipitation||0;
 
-  // Compact version in date-wrap (right side of day number)
+  // Compact version in date-wrap (4 square blocks)
   const dateWeather=document.getElementById('date-weather');
   if(dateWeather){
     dateWeather.innerHTML=`
-      <div class="date-weather-item">${emoji} <span class="date-weather-val">${condition}</span></div>
-      <div class="date-weather-item"><span class="date-weather-val">${temp}°C</span> <span style="color:var(--c-muted)">💧</span> <span class="date-weather-val">${humidity}%</span></div>
-      <div class="date-weather-item"><span class="date-weather-val">${wind} km/h</span> <span style="color:var(--c-muted)">☁️</span> <span class="date-weather-val">${cloud}%</span></div>
+      <div class="date-weather-item">
+        <div class="date-weather-label">Temp</div>
+        <div class="date-weather-val">${temp}°</div>
+      </div>
+      <div class="date-weather-item">
+        <div class="date-weather-label">Hum</div>
+        <div class="date-weather-val">${humidity}%</div>
+      </div>
+      <div class="date-weather-item">
+        <div class="date-weather-label">Viento</div>
+        <div class="date-weather-val">${wind}km</div>
+      </div>
+      <div class="date-weather-item">
+        <div class="date-weather-label">Nube</div>
+        <div class="date-weather-val">${cloud}%</div>
+      </div>
     `;
-    dateWeather.style.display='block';
+    dateWeather.style.display='grid';
   }
 
   // Full version in weather section (for reference)
