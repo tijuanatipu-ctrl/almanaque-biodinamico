@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Horticultural Advice</title>
+</head>
+<body>
+    <h1>Test Horticultural Advice</h1>
+    <div id="result"></div>
+
+    <script>
+        // Simular datos de prueba
+        const tipo = 'flor';
+        const mp = { ph: 'Creciente' };
+        const asc = true;
+        const sea = {
+            fruto: { p: ['tomates'], h: ['zapallos'] },
+            raiz: { p: ['zanahorias'], h: ['remolachas'] },
+            hoja: { p: ['lechugas'], h: ['espinaca'] },
+            flor: { p: ['lavanda'], h: ['romero', 'tomillo'] }
+        };
+        const trans = { tipo1: 'flor', tipo2: 'hoja', hora: '6–7 hs' };
+        const tip = 'Flores (Géminis) hasta 6hs. Hojas (Cáncer, Agua) desde 6hs. ⚠ ECLIPSE EC @17hs. Período desfavorable 14 a 19 horas. LA activa.';
+
+        // Generar consejo personalizado para horticultor
+        const hortAdvice=(()=>{
+            const iconMap={hoja:'🌿',fruto:'🍎',raiz:'🥕',flor:'🌸'};
+            const phases={
+                'Menguante':'**luna menguante**, óptimo para incorporar abono y fortalecer raíces',
+                'Creciente':'**luna creciente**, favorable para germinación pero plantas tiernas y susceptibles',
+                'Llena':'**luna llena**, período óptimo para siembras',
+                'Nueva':'**luna nueva**, período de renovación e inicio'
+            };
+
+            const tipo1=tipo;
+            const icon1=iconMap[tipo1]||'🌱';
+            const phaseInfo=phases[mp.ph]||mp.ph;
+            const lunaInfo=asc?'**luna ascendente** — cosechar, corte de malezas, injertos':'**luna descendente** — trasplante, poda, abonado';
+
+            let advice=`Hoy es un día favorable para ${icon1}`;
+
+            // Detectar si hay transición
+            if(trans) {
+                const tipo2=trans.tipo2;
+                const icon2=iconMap[tipo2]||'🌱';
+                advice+=` con transición hacia ${icon2}`;
+            }
+
+            advice+=`. ${phaseInfo}. Con ${lunaInfo}`;
+
+            // Agregar información de plantas
+            const dayPlants=sea[tipo1]||{p:[],h:[]};
+            if(dayPlants.h && dayPlants.h.length>0) {
+                advice+=`. Cosecha: **${dayPlants.h.join(', ')}**`;
+            }
+            if(dayPlants.p && dayPlants.p.length>0) {
+                advice+=`. Siembra: **${dayPlants.p.join(', ')}**`;
+            }
+
+            // Detectar períodos desfavorables
+            const unfavorable=[];
+            if(tip.match(/período\s+desfavorable\s+([^\n\.]+)/i)) {
+                const m=tip.match(/período\s+desfavorable\s+([^\n\.]+)/i);
+                unfavorable.push(m[1].trim());
+            }
+            if(unfavorable.length>0) {
+                advice+=` <span style="color:red;"><strong>⚠️ Período desfavorable: ${unfavorable.join(', ')}. Evita trabajos agrícolas intensos.</strong></span>`;
+            }
+
+            advice+=`.`;
+            return advice;
+        })();
+
+        document.getElementById('result').innerHTML = hortAdvice;
+    </script>
+</body>
+</html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Almanaque Biodinámico para Instagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background:#1a1a1a;
+  font-family:'Josefin Sans', sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  padding:20px;
+}
+
+#card {
+  width:1080px;
+  height:1920px;
+  background:#1a1a1a;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.8);
+}
+
+/* HEADER */
+.hdr {
+  background:#1a1a1a;
+  padding:30px 40px 20px;
+  border-bottom:2px solid rgba(236,0,140,.3);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+.hdr-left { display:flex; flex-direction:column; }
+.hdr-name {
+  color:#fff;
+  font-size:28px;
+  font-weight:400;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  font-family:'Oswald', sans-serif;
+}
+.hdr-season {
+  color:rgba(255,255,255,.6);
+  font-size:20px;
+  margin-top:8px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.hdr-season-emoji {
+  font-size:28px;
+}
+
+/* MONTH BANNER */
+.month-banner {
+  background:#ec008c;
+  padding:20px 40px;
+  text-align:center;
+  flex-shrink:0;
+}
+.month-label {
+  color:#fff;
+  font-size:48px;
+  font-weight:700;
+  letter-spacing:8px;
+  text-transform:uppercase;
+  font-family:'Oswald', sans-serif;
+  margin-bottom:8px;
+}
+.month-subtitle {
+  color:rgba(255,255,255,.8);
+  font-size:20px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+}
+
+/* MAIN CONTENT */
+.content {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:40px;
+  overflow-y:auto;
+}
+
+/* DAY NUMBER */
+.day-num {
+  font-size:240px;
+  font-weight:900;
+  color:#ec008c;
+  line-height:.9;
+  text-align:center;
+  font-family:'Oswald', sans-serif;
+  margin:20px 0;
+  text-shadow:0 4px 20px rgba(236,0,140,.3);
+}
+
+/* DAY EMOJI */
+.day-emoji {
+  font-size:80px;
+  text-align:center;
+  margin:20px 0;
+}
+
+/* MOON INFO */
+.moon-section {
+  background:rgba(236,0,140,.1);
+  border-left:4px solid #ec008c;
+  padding:24px;
+  border-radius:8px;
+  margin:30px 0;
+}
+.moon-header {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:12px;
+}
+.moon-emoji {
+  font-size:32px;
+}
+.moon-title {
+  color:#fff;
+  font-size:28px;
+  font-weight:700;
+  font-family:'Oswald', sans-serif;
+}
+.moon-sign {
+  color:#ec008c;
+  font-size:16px;
+  font-weight:600;
+  margin:8px 0 0 0;
+}
+.moon-description {
+  color:rgba(255,255,255,.7);
+  font-size:18px;
+  margin-top:8px;
+  font-weight:400;
+}
+
+/* TIMES */
+.times-section {
+  text-align:center;
+  margin:30px 0;
+}
+.times-label {
+  color:rgba(255,255,255,.5);
+  font-size:14px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.times {
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  flex-wrap:wrap;
+}
+.time-item {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:18px;
+  color:#fff;
+  font-weight:600;
+}
+.time-emoji {
+  font-size:20px;
+}
+
+/* BEST TIME */
+.best-time {
+  text-align:center;
+  margin:30px 0;
+  padding:24px;
+  background:rgba(236,0,140,.05);
+  border-radius:8px;
+}
+.best-time-label {
+  color:rgba(255,255,255,.5);
+  font-size:14px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.best-time-value {
+  color:#ec008c;
+  font-size:32px;
+  font-weight:700;
+  font-family:'Oswald', sans-serif;
+}
+
+/* PLANTS */
+.plants-section {
+  margin:30px 0;
+}
+.section-title {
+  color:rgba(255,255,255,.5);
+  font-size:14px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.section-title::after {
+  content:'';
+  flex:1;
+  height:1px;
+  background:rgba(255,255,255,.2);
+}
+.plant-name {
+  color:#fff;
+  font-size:24px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+.plant-description {
+  color:rgba(255,255,255,.7);
+  font-size:18px;
+  font-style:italic;
+}
+
+/* TIPS */
+.tip-section {
+  margin:30px 0;
+}
+.tip-text {
+  color:rgba(255,255,255,.8);
+  font-size:20px;
+  font-style:italic;
+  line-height:1.6;
+  font-family:'Cormorant Garamond', serif;
+  font-weight:600;
+}
+
+/* FOOTER */
+.footer {
+  background:#0d0d0d;
+  padding:24px 40px;
+  border-top:2px solid rgba(236,0,140,.3);
+  text-align:right;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.footer-brand {
+  color:#ec008c;
+  font-size:20px;
+  font-weight:700;
+  font-family:'Oswald', sans-serif;
+  letter-spacing:2px;
+}
+.footer-url {
+  color:rgba(255,255,255,.4);
+  font-size:14px;
+}
+
+/* PRINT STYLES */
+@media print {
+  body {
+    background:white;
+    padding:0;
+    margin:0;
+  }
+  #card {
+    box-shadow:none;
+    width:1080px;
+    height:1920px;
+  }
+}
+
+/* RESPONSIVE (para preview en escritorio) */
+@media (max-width:1200px) {
+  #card {
+    width:100%;
+    height:auto;
+    aspect-ratio:9/16;
+    max-width:600px;
+  }
+  * {
+    font-size:calc(var(--fs) * 0.6) !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="card">
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-name">CALENDARIO BIODINÁMICO ARGENTINO</div>
+    </div>
+    <div class="hdr-season">
+      <span id="seasonText">Estamos en Otoño</span>
+      <span class="hdr-season-emoji" id="seasonEmoji">🍂</span>
+    </div>
+  </div>
+
+  <!-- MONTH BANNER -->
+  <div class="month-banner">
+    <div class="month-label" id="monthLabel">JUNIO</div>
+    <div class="month-subtitle" id="yearLabel">2026</div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="content">
+    <!-- DAY NUMBER -->
+    <div class="day-num" id="dayNum">3</div>
+
+    <!-- DAY EMOJI -->
+    <div class="day-emoji" id="dayEmoji">🍅</div>
+
+    <!-- MOON SECTION -->
+    <div class="moon-section">
+      <div class="moon-header">
+        <span class="moon-emoji" id="moonEmoji">🌙</span>
+        <div>
+          <div class="moon-title" id="moonTitle">Luna en Sagitario</div>
+          <div class="moon-sign" id="moonSign">● Gibosa Menguante · Día 18</div>
+        </div>
+      </div>
+      <div class="moon-description" id="moonPhase">↓ Descendente — trasplantar · abonar · compostar</div>
+    </div>
+
+    <!-- TIMES -->
+    <div class="times-section">
+      <div class="times-label">Horarios Astronómicos</div>
+      <div class="times">
+        <div class="time-item">
+          <span class="time-emoji">🌅</span>
+          <span id="time1">11:05 - 21:00</span>
+        </div>
+        <div class="time-item">
+          <span class="time-emoji">🌤️</span>
+          <span id="time2">23:41 - 19:58</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEST TIME -->
+    <div class="best-time">
+      <div class="best-time-label">Mejor Horario del Día</div>
+      <div class="best-time-value" id="bestTime">todo el día ✓</div>
+    </div>
+
+    <!-- PLANTS -->
+    <div class="plants-section">
+      <div class="section-title">Plantas del Día</div>
+      <div class="plant-name" id="plantName">Haba</div>
+      <div class="plant-description" id="plantDesc">Conservar y clasificar semillas</div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="tip-section">
+      <div class="section-title">Consejos Biodinámicos</div>
+      <div class="tip-text" id="tipText">Los frutos cosechados en días de fuego son más aromáticos y concentrados. Aprovechar para elaborar conservas, salsas y fermentados.</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span></span>
+    <div class="footer-brand">App by @tijuanatipu</div>
+  </div>
+</div>
+
+<script>
+const JUNIO_2026 = {
+  1: {tipo:'hoja', signo:'Escorpio', vent:'todo el día', emoji:'🥬', nombrePlanta:'Hojas', descPlanta:'Riego y labores de suelo', tip:'🌙 Luna Descendente LD @15hs. Día de Hojas (Agua). Ideal: riego, compost, labores de suelo.'},
+  2: {tipo:'hoja', signo:'Escorpio → Sagitario @20h', vent:'hasta las 20hs', emoji:'🥬', nombrePlanta:'Hojas', descPlanta:'Cosechar hojas frescas', tip:'Hojas (Escorpio, Agua) hasta 20hs. Frutos (Sagitario, Fuego) desde 20hs. Mañana cosechar hojas.'},
+  3: {tipo:'fruto', signo:'Sagitario', vent:'todo el día', emoji:'🍅', nombrePlanta:'Haba', descPlanta:'Conservar y clasificar semillas', tip:'Los frutos cosechados en días de fuego son más aromáticos y concentrados. Aprovechar para elaborar conservas, salsas y fermentados.'},
+  4: {tipo:'fruto', signo:'Sagitario → Capricornio @9h', vent:'hasta las 9hs', emoji:'🍅', nombrePlanta:'Tomate', descPlanta:'Cosechar y secar semillas', tip:'Frutos (Sagitario) hasta 9hs. Raíces (Capricornio, Tierra) desde 9hs. Mañana frutos, tarde raíces.'},
+  5: {tipo:'raiz', signo:'Capricornio', vent:'todo el día', emoji:'🥕', nombrePlanta:'Bulbos', descPlanta:'Trasplantar a raíz desnuda', tip:'Día de Raíces (Tierra). LD activa. Trasplantar plantas con raíz desnuda. Abonar, laborer suelo, cosechar tubérculos.'},
+  6: {tipo:'raiz', signo:'Capricornio → Acuario @16h', vent:'hasta las 16hs', emoji:'🥔', nombrePlanta:'Tubérculos', descPlanta:'Cosechar papas y tubérculos', tip:'Raíces (Capricornio) hasta 16hs. Flores (Acuario, Aire) desde 16hs. Período desfavorable 23 a 23:59. LD activa.'},
+  7: {tipo:'flor', signo:'Acuario', vent:'restringido', emoji:'🌻', nombrePlanta:'Flores', descPlanta:'Cortar flores y aromáticas', tip:'Día de Flores (Aire). ⚠ ND:i0h - ND:f8h. Evitar siembras/trasplantes. Cortar flores: mañana (antes 8h) o noche.'},
+  8: {tipo:'flor', signo:'Acuario → Piscis @15h', vent:'hasta las 15hs', emoji:'🌺', nombrePlanta:'Aromáticas', descPlanta:'Cosecha de plantas aromáticas', tip:'Flores (Acuario) hasta 15hs. Hojas (Piscis, Agua) desde 15hs. Mañana: cortar flores, aromáticas.'},
+  9: {tipo:'hoja', signo:'Piscis', vent:'restringido', emoji:'🥬', nombrePlanta:'Descanso', descPlanta:'Riego y deshierbe', tip:'Día de Hojas (Agua). Luna descendente + Piscis = energía baja. Ideal: riego, deshierbe, descanso del huerto.'},
+  10:{tipo:'hoja', signo:'Piscis', vent:'restringido', emoji:'🌿', nombrePlanta:'Preparación', descPlanta:'Preparar canteros', tip:'Día de Hojas (Agua). LD con energía reducida. Riego y descanso. Preparar canteros para próximas siembras.'},
+  11:{tipo:'hoja', signo:'Piscis → Aries @9h', vent:'hasta las 9hs', emoji:'🥦', nombrePlanta:'Hojas', descPlanta:'Riego de hojas verdes', tip:'Hojas (Piscis) hasta 9hs. Frutos (Aries, Fuego) desde 9hs. LD activa. Mañana: riego hojas. Tarde: cosecha frutos.'},
+  12:{tipo:'fruto', signo:'Aries', vent:'todo el día', emoji:'🍎', nombrePlanta:'Frutos', descPlanta:'Cosechar y secar semillas', tip:'Día de Frutos (Fuego). LD activa. Excelente para cosechar y secar semillas. Frutos duran más en LD.'},
+  13:{tipo:'fruto', signo:'Aries → Tauro @1h', vent:'hasta las 1hs', emoji:'🍒', nombrePlanta:'Frutos', descPlanta:'Trasplante de frutos', tip:'Frutos (Aries) hasta 1hs. Raíces (Tauro, Tierra) desde 1hs. LD activa. Trasplante favorable.'},
+  14:{tipo:'raiz', signo:'Tauro', vent:'restringido', emoji:'🥕', nombrePlanta:'Cuidado', descPlanta:'Evitar trabajos importantes', tip:'Día de Raíces (Tierra). ⚠ RAYADO: Perigeo @20hs. Alto riesgo hongos/plagas. Evitar siembras/trasplantes. Bueno para podar.'},
+  15:{tipo:'raiz', signo:'Tauro → Géminis @9h', vent:'hasta las 9hs', emoji:'🥔', nombrePlanta:'Transición', descPlanta:'Cambio de dinámica lunar', tip:'🌙 Luna Ascendente LA @3hs. 🌙 Luna Nueva LN @0hs. Período desfavorable 0 a 9 horas.'},
+  16:{tipo:'flor', signo:'Géminis', vent:'todo el día', emoji:'🌹', nombrePlanta:'Flores', descPlanta:'Cosechar flores y aromáticas', tip:'Día de Flores (Aire). Luna ascendente ↑ activa. Ideal: cosechar flores (mejor duración), cortar malezas, injertos.'},
+  17:{tipo:'flor', signo:'Géminis → Cáncer @6h', vent:'hasta las 6hs', emoji:'🌼', nombrePlanta:'Aromáticas', descPlanta:'Corte de plantas aromáticas', tip:'Flores (Géminis) hasta 6hs. Hojas (Cáncer, Agua) desde 6hs. ⚠ ECLIPSE @17hs.'},
+  18:{tipo:'hoja', signo:'Cáncer → Leo @17h', vent:'hasta las 17hs', emoji:'🌿', nombrePlanta:'Hojas', descPlanta:'Cosechar hojas frescas', tip:'Hojas (Cáncer) hasta 17hs. Frutos (Leo, Fuego) desde 17hs. LA activa. Mañana: hojas frescas.'},
+  19:{tipo:'fruto', signo:'Leo', vent:'todo el día', emoji:'🍊', nombrePlanta:'Frutos', descPlanta:'Cosecha para semilla', tip:'Día de Frutos (Fuego). ⚠ NA:i10h - NA:f19h. LA activa. Cosechar frutos para semilla: mañana o noche.'},
+  20:{tipo:'fruto', signo:'Leo', vent:'restringido', emoji:'🍋', nombrePlanta:'Observar', descPlanta:'Planificar trabajos', tip:'Día de Frutos (Leo). ⚠ RAYADO: Nodo Ascendente @22hs. LA activa pero restringida. Evitar trabajos agrícolas importantes 21h-11h.'},
+  21:{tipo:'fruto', signo:'Leo → Virgo @7h', vent:'hasta las 7hs', emoji:'🍇', nombrePlanta:'Transición', descPlanta:'Cambio gradual de energía', tip:'Frutos (Leo) hasta 7hs. Raíces (Virgo, Tierra) desde 7hs. ⚠ Período desfavorable 0 a 11 horas.'},
+  22:{tipo:'raiz', signo:'Virgo', vent:'todo el día', emoji:'🥕', nombrePlanta:'Raíces', descPlanta:'Laborear y compostar', tip:'Día de Raíces (Tierra). Luna ascendente ↑ activa. Excelente: laborear, compostar, cosechar raíces, trabajar tierra.'},
+  23:{tipo:'raiz', signo:'Virgo', vent:'todo el día', emoji:'🥬', nombrePlanta:'Tubérculos', descPlanta:'Trasplantar bulbos', tip:'Día de Raíces (Tierra). LA activa. Muy favorable: trabajar tierra, trasplantar bulbos, abonar con compost, cosechar.'},
+  24:{tipo:'raiz', signo:'Virgo → Libra @23h', vent:'hasta las 23hs', emoji:'🌿', nombrePlanta:'Raíces', descPlanta:'Trabajar tierra y raíces', tip:'Raíces (Virgo) hasta 23hs. Flores (Libra, Aire) desde 23hs. LA activa. Día: trabajar raíces.'},
+  25:{tipo:'flor', signo:'Libra', vent:'todo el día', emoji:'🌸', nombrePlanta:'Flores', descPlanta:'Cosechar aromáticas medicinales', tip:'Día de Flores (Aire). LA activa (hasta ~29-30). Ideal: cosechar flores y aromáticas (mejor conserva).'},
+  26:{tipo:'flor', signo:'Libra → Escorpio @13h', vent:'hasta las 13hs', emoji:'💐', nombrePlanta:'Flores', descPlanta:'Corte de flores en la mañana', tip:'Flores (Libra) hasta 13hs. Hojas (Escorpio, Agua) desde 13hs. LA activa. Mañana: cortar flores.'},
+  27:{tipo:'hoja', signo:'Escorpio', vent:'todo el día', emoji:'🥒', nombrePlanta:'Hojas', descPlanta:'Cosechar hojas frescas', tip:'Día de Hojas (Agua). LA activa (fin de ciclo). Favorable: verduras de hoja, riego moderado, aromáticas foliares.'},
+  28:{tipo:'hoja', signo:'Escorpio', vent:'todo el día', emoji:'🌿', nombrePlanta:'Preparación', descPlanta:'Inicio de nuevo período', tip:'🌙 Luna Descendente LD @20hs. Fin LA, comienza LD. Inicio nuevo período trasplante (28-15). Tarde/noche: preparar.'},
+  29:{tipo:'hoja', signo:'Escorpio → Sagitario @2h', vent:'hasta las 2hs', emoji:'🍃', nombrePlanta:'Transición', descPlanta:'Trasplante activado', tip:'Hojas (Escorpio) hasta 2hs. Frutos (Sagitario, Fuego) desde 2hs. LD activa. Noche: trasplantar.'},
+  30:{tipo:'fruto', signo:'Sagitario', vent:'todo el día', emoji:'🍅', nombrePlanta:'Frutos', descPlanta:'Siembras de frutos favorecidas', tip:'🌙 Luna Llena LL @21hs. Día de Frutos (Fuego). LD activa. Período trasplante óptimo. Atardecer: trasplantar.'},
+};
+
+function renderDay(day) {
+  const data = JUNIO_2026[day];
+  if (!data) return;
+
+  document.getElementById('dayNum').textContent = day;
+  document.getElementById('dayEmoji').textContent = data.emoji;
+  document.getElementById('moonSign').textContent = `● ${data.signo}`;
+  document.getElementById('moonPhase').textContent = data.vent;
+  document.getElementById('bestTime').textContent = data.vent + ' ✓';
+  document.getElementById('plantName').textContent = data.nombrePlanta;
+  document.getElementById('plantDesc').textContent = data.descPlanta;
+  document.getElementById('tipText').textContent = data.tip;
+
+  // Update moon title based on type
+  const moonTitles = {
+    'flor': 'Luna en Flores',
+    'hoja': 'Luna en Hojas',
+    'fruto': 'Luna en Frutos',
+    'raiz': 'Luna en Raíces'
+  };
+  document.getElementById('moonTitle').textContent = moonTitles[data.tipo] || 'Luna';
+}
+
+// Get day from URL parameter or default to today
+const params = new URLSearchParams(window.location.search);
+const dayParam = params.get('day');
+const today = new Date();
+const day = dayParam ? parseInt(dayParam) : today.getDate();
+
+renderDay(day);
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  const currentDay = parseInt(document.getElementById('dayNum').textContent);
+  if (e.key === 'ArrowRight' && currentDay < 30) {
+    window.location.search = `?day=${currentDay + 1}`;
+  } else if (e.key === 'ArrowLeft' && currentDay > 1) {
+    window.location.search = `?day=${currentDay - 1}`;
+  }
+});
+</script>
+</body>
+</html>

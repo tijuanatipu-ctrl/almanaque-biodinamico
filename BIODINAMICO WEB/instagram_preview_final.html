@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Instagram - Almanaque Biodinámico</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid #efefef;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec008c, #ff6b9d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .username {
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+        }
+        .location {
+            font-size: 12px;
+            color: #65676b;
+        }
+        .image {
+            width: 100%;
+            aspect-ratio: 9/16;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+        .image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .actions {
+            padding: 8px 16px;
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid #efefef;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #262626;
+        }
+        .likes {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #262626;
+        }
+        .caption {
+            padding: 0 16px 16px;
+        }
+        .caption-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #262626;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .caption-author {
+            font-weight: 600;
+            margin-right: 6px;
+        }
+        .date {
+            padding: 8px 16px;
+            color: #65676b;
+            font-size: 12px;
+            border-top: 1px solid #efefef;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="badge">📸 Vista Previa - No se publica</div>
+
+        <div class="header">
+            <div class="user-info">
+                <div class="avatar">📅</div>
+                <div>
+                    <div class="username">calendariobiodinamicoargentino</div>
+                    <div class="location">Argentina 🌿</div>
+                </div>
+            </div>
+            <div>⋯</div>
+        </div>
+
+        <div class="image">
+            <img src="https://res.cloudinary.com/dswpdeego/image/upload/v1780585904/almanaque/screenshot_dvabvd.jpg" alt="Almanaque Biodinámico">
+        </div>
+
+        <div class="actions">
+            <button class="action-btn">❤️</button>
+            <button class="action-btn">💬</button>
+            <button class="action-btn">✈️</button>
+            <button class="action-btn" style="margin-left: auto;">🔖</button>
+        </div>
+
+        <div class="likes">
+            <strong>247</strong> likes
+        </div>
+
+        <div class="caption">
+            <div class="caption-text">
+                <span class="caption-author">calendariobiodinamicoargentino</span>
+🍎 DÍA DE FRUTOS · Martes 3 de Junio
+
+🌙 Luna en Sagitario · Luna Gibosa 🌔
+↓ Luna Descendente
+
+🌱 Sembrar hoy: Arvejas, Habas
+🌾 Cosechar hoy: Zapallos, Pepinos
+
+💡 CONSEJO AGRÍCOLA
+Día de Frutos (Fuego). Luna descendente ↓ activa (1-15). Período trasplante óptimo. Cosechar frutos: tarde. Trasplantar: atardecer.
+
+🌿 Almanaque biodinámico para el Hemisferio Sur.
+Aplicación desarrollada por @tijuanatipu
+
+#biodinamica #huertobiodinamico #luna #lunabiodinamica #almanaque #calendariobiodinamicoargentino #argentina #huerto #permacultura #agroecologia #organico #jardin #lunallena #siembra
+            </div>
+        </div>
+
+        <div class="date">Hace unos segundos</div>
+    </div>
+</body>
+</html>
