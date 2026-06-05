@@ -2611,12 +2611,27 @@ function renderWeatherSection(weather){
 }
 
 function initWeather(){
-  if(!('geolocation' in navigator)) return;
+  if(!('geolocation' in navigator)){
+    console.warn('Geolocation not available');
+    return;
+  }
   navigator.geolocation.getCurrentPosition(async(pos)=>{
-    const {latitude,longitude}=pos.coords;
-    const weather=await fetchWeatherData(latitude,longitude);
-    renderWeatherSection(weather);
-  },()=>{});
+    try{
+      const {latitude,longitude}=pos.coords;
+      console.log(`Got position: ${latitude}, ${longitude}`);
+      const weather=await fetchWeatherData(latitude,longitude);
+      if(weather){
+        console.log('Weather data received:', weather);
+        renderWeatherSection(weather);
+      }else{
+        console.warn('No weather data returned');
+      }
+    }catch(e){
+      console.error('Weather init error:',e);
+    }
+  },(err)=>{
+    console.warn('Geolocation error:',err.message);
+  });
 }
 
 if(!document.body.classList.contains('ig-mode')){
