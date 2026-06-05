@@ -138,6 +138,9 @@ body {
 .date-weather-label { font-size:7px; color:var(--c-primary); text-transform:uppercase; letter-spacing:.3px; font-weight:600; font-family:'Josefin Sans', sans-serif; line-height:1; }
 .date-weather-val { color:var(--c-accent); font-weight:700; font-size:clamp(12px,2.2vw,14px); line-height:1; }
 
+/* WEATHER DESCRIPTION */
+.weather-description { padding:8px 18px 6px; font-size:clamp(11px,2.5vw,13px); color:var(--c-secondary); font-family:'Josefin Sans', sans-serif; font-weight:400; line-height:1.5; text-align:center; flex-shrink:0; }
+
 /* HOY BADGE */
 .mnav-hoy {
   display:inline-block; background:rgba(255,255,255,.18); border:none;
@@ -2361,6 +2364,8 @@ function render(date){
       <div id="date-weather" class="date-weather" style="display:none"></div>
     </div>
 
+    <div id="weather-description" class="weather-description" style="display:none"></div>
+
     <div class="div-line"></div>
 
     ${bioHtml}
@@ -2622,6 +2627,13 @@ function renderWeatherSection(weather){
       </div>
     `;
     dateWeather.style.display='grid';
+  }
+
+  // Weather description text
+  const descElement=document.getElementById('weather-description');
+  if(descElement){
+    descElement.innerHTML=`Hoy en General Pinto está <strong>${condition.toLowerCase()}</strong>, hace <strong>${temp}°C</strong> con <strong>${humidity}% humedad</strong>`;
+    descElement.style.display='block';
   }
 
   // Full version in weather section (for reference)
