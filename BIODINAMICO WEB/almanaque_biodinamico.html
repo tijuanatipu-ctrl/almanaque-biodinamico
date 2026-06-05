@@ -538,6 +538,7 @@ body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-col
 <div class="controls">
   <button class="btn btn-jpg" onclick="exportJPG(this)">📸 JPG</button>
   <button class="btn btn-pdf" onclick="exportPDF(this)">📄 PDF</button>
+  <button class="btn btn-jpg" onclick="openInstagramMode()" style="background:#ec008c">📷 Instagram</button>
   <button class="btn btn-jpg" onclick="goToday()" style="background:#555">📅 Hoy</button>
   <button class="btn btn-jpg" onclick="openMesView()" style="background:#336699">📆 Mes</button>
   <button class="btn btn-theme" id="themeBtn" onclick="toggleTheme()">🌙</button>
@@ -2375,6 +2376,11 @@ async function exportPDF(btn){
     }
   } catch(e){ alert('Error al exportar PDF: '+e.message); }
   finally{ _btnBusy(btn,false,'📄 PDF'); }
+}
+
+function openInstagramMode(){
+  const date = pickedDate.toISOString().slice(0,10);
+  window.location.href = `${location.pathname}?ig=1&date=${date}`;
 }
 
 // ── THEME ────────────────────────────────────────────────────────────────────
