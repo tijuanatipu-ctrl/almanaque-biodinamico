@@ -127,10 +127,10 @@ body {
 .mnav-day   { display:block; color:rgba(255,255,255,.65); font-size:clamp(8px,2.2vw,10px); font-weight:300; letter-spacing:3px; text-transform:uppercase; font-family:'Josefin Sans', sans-serif; margin-top:1px; }
 
 /* DATE */
-.date-wrap { padding:4px 12px 2px; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.date-left { display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
-.date-num { font-size:clamp(72px,24vw,108px); font-weight:700; color:var(--c-accent); line-height:.85; font-family:'Oswald', 'Arial Black', sans-serif; font-style:normal; letter-spacing:-2px; min-width:fit-content; }
-.date-month { font-size:clamp(9px,2.6vw,12px); color:var(--c-muted); letter-spacing:1.5px; font-weight:300; font-family:'Josefin Sans', sans-serif; text-transform:uppercase; }
+.date-wrap { padding:2px 12px 0; flex-shrink:0; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.date-left { display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
+.date-num { font-size:clamp(72px,24vw,108px); font-weight:700; color:var(--c-accent); line-height:.9; font-family:'Oswald', 'Arial Black', sans-serif; font-style:normal; letter-spacing:-2px; min-width:fit-content; }
+.date-month { font-size:clamp(11px,3vw,14px); color:var(--c-accent); letter-spacing:1px; font-weight:700; font-family:'Oswald', sans-serif; text-transform:uppercase; }
 .date-weather { flex:1; text-align:right; display:flex; flex-direction:column; gap:3px; color:var(--c-muted); justify-content:center; }
 .date-weather-item { font-size:clamp(10px,2.4vw,12px); color:var(--c-muted); line-height:1.2; font-family:'Josefin Sans', sans-serif; font-weight:300; letter-spacing:.4px; }
 .date-weather-val { color:var(--c-primary); font-weight:700; font-size:inherit; }
@@ -2350,7 +2350,7 @@ function render(date){
     <div class="date-wrap">
       <div class="date-left">
         <div class="date-num">${day}</div>
-        <div class="date-month">DE ${MESES[mon].toUpperCase()}</div>
+        <div class="date-month">${MESES[mon].toUpperCase()}</div>
       </div>
       <div id="date-weather" class="date-weather" style="display:none"></div>
     </div>
