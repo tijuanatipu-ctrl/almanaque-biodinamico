@@ -271,11 +271,84 @@ body.dark .rayado-wrap { background:rgba(200,120,0,.12); }
 /* FOOTER */
 .ftr {
   background:var(--bg-ftr);
-  padding:9px 18px;
+  padding:10px 18px 8px;
   display:flex; align-items:center; justify-content:space-between;
   flex-shrink:0; transition:background .3s;
+  border-top:2px solid var(--c-accent);
 }
-.ftr-main { color:rgba(255,255,255,.65); font-size:9.5px; letter-spacing:1.5px; font-family:'Josefin Sans', sans-serif; font-weight:300; text-transform:uppercase; margin-left:auto; }
+.ftr-left {
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.ftr-right {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-left:auto;
+}
+.export-wrap {
+  position:relative;
+  z-index:30;
+}
+.export-btn {
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.24);
+  color:#fff;
+  font-size:18px;
+  letter-spacing:0;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  cursor:pointer;
+  transition:background .2s, transform .2s, box-shadow .2s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 8px 18px rgba(0,0,0,.2);
+  pointer-events:auto;
+}
+.export-btn:hover {
+  background:rgba(255,255,255,.2);
+  transform:translateY(-1px);
+  box-shadow:0 10px 22px rgba(0,0,0,.25);
+}
+.export-menu {
+  position:absolute;
+  top:calc(100% + 8px);
+  left:0;
+  min-width:120px;
+  background:rgba(20,20,20,.98);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  box-shadow:0 14px 30px rgba(0,0,0,.25);
+  padding:6px;
+  display:none;
+  z-index:20;
+}
+.export-wrap.open .export-menu {
+  display:block;
+}
+.export-menu {
+  z-index:40;
+}
+.export-menu button {
+  width:100%;
+  background:transparent;
+  border:none;
+  color:#fff;
+  text-align:left;
+  padding:8px 10px;
+  font-size:11px;
+  cursor:pointer;
+  border-radius:8px;
+  transition:background .15s;
+}
+.export-menu button:hover {
+  background:rgba(255,255,255,.08);
+}
+.ftr-main { color:var(--c-accent); font-size:9.5px; letter-spacing:1.5px; font-family:'Josefin Sans', sans-serif; font-weight:300; text-transform:uppercase; }
+.ftr-main a { color:inherit; text-decoration:none; font-weight:700; }
 .ftr-src  { color:rgba(255,255,255,.28); font-size:7px; letter-spacing:.5px; text-align:right; line-height:1.5; }
 
 /* CONTROLS (below card) */
@@ -416,11 +489,24 @@ body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-col
 .btn-jpg { background:#1a1a1a; color:#fff; }
 .btn-pdf { background:#ec008c; color:#fff; }
 .btn-theme {
-  background:none; border:2px solid var(--bd-card);
-  color:var(--c-primary); font-size:18px;
-  padding:8px 14px; border-radius:24px; cursor:pointer;
-  transition:border-color .3s, color .3s;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  color:var(--c-primary); font-size:22px;
+  width:48px;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  border-radius:50%;
+  cursor:pointer;
+  transition:border-color .3s, color .3s, transform .2s, box-shadow .2s;
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
   -webkit-tap-highlight-color:transparent;
+}
+.btn-theme:hover {
+  transform:translateY(-1px);
+  box-shadow:0 10px 22px rgba(0,0,0,.24);
 }
 
 /* ── MODAL (bottom sheet) ── */
@@ -534,15 +620,6 @@ body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-col
 <body>
 
 <div id="card"></div>
-
-<div class="controls">
-  <button class="btn btn-jpg" onclick="exportJPG(this)">📸 JPG</button>
-  <button class="btn btn-pdf" onclick="exportPDF(this)">📄 PDF</button>
-  <button class="btn btn-jpg" onclick="openInstagramMode()" style="background:#ec008c">📷 Instagram</button>
-  <button class="btn btn-jpg" onclick="goToday()" style="background:#555">📅 Hoy</button>
-  <button class="btn btn-jpg" onclick="openMesView()" style="background:#336699">📆 Mes</button>
-  <button class="btn btn-theme" id="themeBtn" onclick="toggleTheme()">🌙</button>
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -2311,8 +2388,19 @@ function render(date){
     ${miniCal(year,mon,day,TODAY)}
 
     <div class="ftr">
-      <div class="ftr-main">app by <a href="https://www.instagram.com/tijuanatipu/" target="_blank" style="color:inherit;text-decoration:none;font-weight:bold;">@tijuanatipu</a></div>
-      <div class="ftr-src"></div>
+      <div class="ftr-left">
+        <div class="export-wrap">
+          <button type="button" id="exportBtn" class="export-btn" title="Exportar">📤</button>
+          <div class="export-menu" id="exportMenu">
+            <button type="button" onclick="exportJPG(this)">JPG</button>
+            <button type="button" onclick="exportPDF(this)">PDF</button>
+          </div>
+        </div>
+      </div>
+      <div class="ftr-right">
+        <div class="ftr-main">app by <a href="https://www.instagram.com/tijuanatipu/" target="_blank">@tijuanatipu</a></div>
+        <button type="button" class="btn btn-theme" id="themeBtn" onclick="toggleTheme()">🌙</button>
+      </div>
     </div>`;
 }
 
@@ -2382,6 +2470,32 @@ function openInstagramMode(){
   const date = pickedDate.toISOString().slice(0,10);
   window.location.href = `${location.pathname}?ig=1&date=${date}`;
 }
+
+function toggleExportMenu(event){
+  event.preventDefault();
+  event.stopPropagation();
+  const wrap=document.querySelector('.export-wrap');
+  if(wrap) wrap.classList.toggle('open');
+}
+
+document.addEventListener('click', (event)=>{
+  if(!event.target.closest('.export-wrap')){
+    const wrap=document.querySelector('.export-wrap');
+    if(wrap) wrap.classList.remove('open');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const btn = document.getElementById('exportBtn');
+  const wrap = document.querySelector('.export-wrap');
+  if(btn && wrap){
+    btn.addEventListener('click',(event)=>{
+      event.preventDefault();
+      event.stopPropagation();
+      wrap.classList.toggle('open');
+    });
+  }
+});
 
 // ── THEME ────────────────────────────────────────────────────────────────────
 function toggleTheme(){
