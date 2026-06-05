@@ -127,7 +127,7 @@ body {
 .mnav-day   { display:block; color:rgba(255,255,255,.65); font-size:clamp(8px,2.2vw,10px); font-weight:300; letter-spacing:3px; text-transform:uppercase; font-family:'Josefin Sans', sans-serif; margin-top:1px; }
 
 /* DATE */
-.date-wrap { padding:2px 12px 0; flex-shrink:0; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.date-wrap { padding:2px 12px 0; flex-shrink:0; display:flex; align-items:flex-start; justify-content:center; gap:10px; }
 .date-left { display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
 .date-num-with-label { display:flex; align-items:baseline; gap:6px; }
 .date-num { font-size:clamp(72px,24vw,108px); font-weight:700; color:var(--c-accent); line-height:.9; font-family:'Oswald', 'Arial Black', sans-serif; font-style:normal; letter-spacing:-2px; }
@@ -2616,13 +2616,21 @@ function renderWeatherSection(weather){
   if(descElement){
     const hour=new Date().getHours();
     let greeting='Buenos días';
+    let nightDesc='';
+
     if(hour>=12&&hour<18) greeting='Buenas tardes';
-    else if(hour>=18) greeting='Buenas noches';
+    else if(hour>=18||hour<6) {
+      greeting='Buenas noches';
+      // Check if it's nighttime (after sunset, before sunrise)
+      if(hour>=20||hour<6) {
+        nightDesc=cloud<30?'estrellado':'nublado nocturno';
+      }
+    }
 
     const windDesc=wind<5?'muy calmo':wind<15?'ligero':wind<25?'moderado':'fuerte';
-    const cloudDesc=cloud<30?'despejado':cloud<70?'parcialmente nublado':'nublado';
+    const finalCondition=nightDesc||condition.toLowerCase();
 
-    descElement.innerHTML=`${greeting} en General Pinto ${emoji}. Está <strong>${condition.toLowerCase()}</strong>, hace <strong>${temp}°C</strong>, ${humidity}% humedad, viento ${windDesc}`;
+    descElement.innerHTML=`${greeting} en General Pinto ${emoji}. Está <strong>${finalCondition}</strong>, hace <strong>${temp}°C</strong>, ${humidity}% humedad, viento ${windDesc}`;
     descElement.style.display='block';
   }
 
