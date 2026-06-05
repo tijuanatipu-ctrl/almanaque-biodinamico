@@ -2605,28 +2605,10 @@ function renderWeatherSection(weather){
   const cloud=weather.cloud_cover;
   const precip=weather.precipitation||0;
 
-  // Compact version in date-wrap (4 square blocks)
+  // Weather blocks hidden - info in text description
   const dateWeather=document.getElementById('date-weather');
   if(dateWeather){
-    dateWeather.innerHTML=`
-      <div class="date-weather-item">
-        <div class="date-weather-label">Temp</div>
-        <div class="date-weather-val">${temp}°</div>
-      </div>
-      <div class="date-weather-item">
-        <div class="date-weather-label">Hum</div>
-        <div class="date-weather-val">${humidity}%</div>
-      </div>
-      <div class="date-weather-item">
-        <div class="date-weather-label">Viento</div>
-        <div class="date-weather-val">${wind}km</div>
-      </div>
-      <div class="date-weather-item">
-        <div class="date-weather-label">Nube</div>
-        <div class="date-weather-val">${cloud}%</div>
-      </div>
-    `;
-    dateWeather.style.display='grid';
+    dateWeather.style.display='none';
   }
 
   // Weather description text
