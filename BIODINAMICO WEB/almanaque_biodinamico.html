@@ -127,8 +127,11 @@ body {
 .mnav-day   { display:block; color:rgba(255,255,255,.65); font-size:clamp(8px,2.2vw,10px); font-weight:300; letter-spacing:3px; text-transform:uppercase; font-family:'Josefin Sans', sans-serif; margin-top:1px; }
 
 /* DATE */
-.date-wrap { text-align:center; padding:6px 18px 2px; flex-shrink:0; }
-.date-num { font-size:clamp(72px,24vw,108px); font-weight:700; color:var(--c-accent); line-height:.9; font-family:'Oswald', 'Arial Black', sans-serif; font-style:normal; letter-spacing:-2px; }
+.date-wrap { text-align:center; padding:6px 18px 2px; flex-shrink:0; display:flex; align-items:flex-start; gap:12px; }
+.date-num { font-size:clamp(72px,24vw,108px); font-weight:700; color:var(--c-accent); line-height:.9; font-family:'Oswald', 'Arial Black', sans-serif; font-style:normal; letter-spacing:-2px; min-width:80px; flex-shrink:0; }
+.date-weather { flex:1; text-align:left; padding-top:12px; }
+.date-weather-item { font-size:11px; color:var(--c-muted); line-height:1.4; font-family:'Josefin Sans', sans-serif; }
+.date-weather-val { color:var(--c-primary); font-weight:600; font-size:12px; }
 
 /* HOY BADGE */
 .mnav-hoy {
@@ -2335,6 +2338,7 @@ function render(date){
 
     <div class="date-wrap">
       <div class="date-num">${day}</div>
+      <div id="date-weather" class="date-weather" style="display:none"></div>
     </div>
 
     <div class="div-line"></div>
@@ -2567,9 +2571,6 @@ async function fetchWeatherData(lat,lon){
 
 function renderWeatherSection(weather){
   if(!weather) return;
-  const wrap=document.getElementById('weather-wrap');
-  const content=document.getElementById('weather-content');
-  if(!wrap||!content) return;
 
   const temp=Math.round(weather.temperature_2m);
   const humidity=weather.relative_humidity_2m;
@@ -2579,35 +2580,50 @@ function renderWeatherSection(weather){
   const cloud=weather.cloud_cover;
   const precip=weather.precipitation||0;
 
-  content.innerHTML=`
-    <div class="weather-item">
-      <div class="weather-icon">${emoji}</div>
-      <div class="weather-info">
-        <div class="weather-label">Condición</div>
-        <div class="weather-val">${condition}</div>
+  // Compact version in date-wrap (right side of day number)
+  const dateWeather=document.getElementById('date-weather');
+  if(dateWeather){
+    dateWeather.innerHTML=`
+      <div class="date-weather-item">${emoji} ${condition}</div>
+      <div class="date-weather-item">🌡️ <span class="date-weather-val">${temp}°C</span> 💧 <span class="date-weather-val">${humidity}%</span></div>
+      <div class="date-weather-item">💨 <span class="date-weather-val">${wind} km/h</span> ☁️ <span class="date-weather-val">${cloud}%</span></div>
+    `;
+    dateWeather.style.display='block';
+  }
+
+  // Full version in weather section (for reference)
+  const wrap=document.getElementById('weather-wrap');
+  const content=document.getElementById('weather-content');
+  if(wrap&&content){
+    content.innerHTML=`
+      <div class="weather-item">
+        <div class="weather-icon">${emoji}</div>
+        <div class="weather-info">
+          <div class="weather-label">Condición</div>
+          <div class="weather-val">${condition}</div>
+        </div>
       </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
-      <div>
-        <div class="weather-label">🌡️ Temperatura</div>
-        <div class="weather-val">${temp}°C</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+        <div>
+          <div class="weather-label">🌡️ Temperatura</div>
+          <div class="weather-val">${temp}°C</div>
+        </div>
+        <div>
+          <div class="weather-label">💧 Humedad</div>
+          <div class="weather-val">${humidity}%</div>
+        </div>
+        <div>
+          <div class="weather-label">☁️ Nubosidad</div>
+          <div class="weather-val">${cloud}%</div>
+        </div>
+        <div>
+          <div class="weather-label">💨 Viento</div>
+          <div class="weather-val">${wind} km/h</div>
+        </div>
+        ${precip>0?`<div style="grid-column:1/-1"><div class="weather-label">🌧️ Precipitación</div><div class="weather-val">${precip} mm</div></div>`:''}
       </div>
-      <div>
-        <div class="weather-label">💧 Humedad</div>
-        <div class="weather-val">${humidity}%</div>
-      </div>
-      <div>
-        <div class="weather-label">☁️ Nubosidad</div>
-        <div class="weather-val">${cloud}%</div>
-      </div>
-      <div>
-        <div class="weather-label">💨 Viento</div>
-        <div class="weather-val">${wind} km/h</div>
-      </div>
-      ${precip>0?`<div style="grid-column:1/-1"><div class="weather-label">🌧️ Precipitación</div><div class="weather-val">${precip} mm</div></div>`:''}
-    </div>
-  `;
-  wrap.style.display='block';
+    `;
+  }
 }
 
 function initWeather(){
