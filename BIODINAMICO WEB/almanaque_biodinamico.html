@@ -2389,13 +2389,7 @@ function render(date){
 
     <div class="ftr">
       <div class="ftr-left">
-        <div class="export-wrap">
-          <button type="button" id="exportBtn" class="export-btn" title="Exportar">📤</button>
-          <div class="export-menu" id="exportMenu">
-            <button type="button" onclick="exportJPG(this)">JPG</button>
-            <button type="button" onclick="exportPDF(this)">PDF</button>
-          </div>
-        </div>
+        <button type="button" id="exportBtn" class="export-btn" title="Exportar JPG" onclick="exportJPG(this)">📤</button>
       </div>
       <div class="ftr-right">
         <div class="ftr-main">app by <a href="https://www.instagram.com/tijuanatipu/" target="_blank">@tijuanatipu</a></div>
@@ -2471,28 +2465,6 @@ function openInstagramMode(){
   window.location.href = `${location.pathname}?ig=1&date=${date}`;
 }
 
-function toggleExportMenu(event){
-  event.preventDefault();
-  event.stopPropagation();
-  const wrap=document.querySelector('.export-wrap');
-  if(wrap) wrap.classList.toggle('open');
-}
-
-document.addEventListener('click', (event)=>{
-  const exportBtn = event.target.closest('#exportBtn');
-  if(exportBtn){
-    event.preventDefault();
-    event.stopPropagation();
-    const wrap = exportBtn.closest('.export-wrap');
-    if(wrap) wrap.classList.toggle('open');
-    return;
-  }
-
-  if(!event.target.closest('.export-wrap')){
-    const wrap=document.querySelector('.export-wrap');
-    if(wrap) wrap.classList.remove('open');
-  }
-});
 
 // ── THEME ────────────────────────────────────────────────────────────────────
 function toggleTheme(){
