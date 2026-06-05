@@ -241,6 +241,21 @@ body.dark .rayado-wrap { background:rgba(200,120,0,.12); }
 .tip-body { font-size:13px; color:var(--c-tip); line-height:1.7; font-style:normal; font-family:'Josefin Sans', sans-serif; font-weight:400; }
 .tip-body + .tip-body { margin-top:8px; color:var(--c-secondary); font-size:12.5px; }
 
+/* WEATHER */
+.weather-wrap { padding:4px 18px 10px; flex-shrink:0; }
+.weather-ttl {
+  font-size:9px; color:var(--c-muted); letter-spacing:2.5px; text-transform:uppercase;
+  margin-bottom:6px; display:flex; align-items:center; gap:7px;
+  font-family:'Oswald', sans-serif; font-weight:400;
+}
+.weather-ttl::after { content:''; flex:1; height:1px; background:var(--c-tipline); }
+.weather-body { font-size:13px; color:var(--c-primary); line-height:1.6; font-family:'Josefin Sans', sans-serif; font-weight:400; }
+.weather-item { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.weather-icon { font-size:18px; min-width:20px; }
+.weather-info { display:flex; flex-direction:column; }
+.weather-label { font-size:10px; color:var(--c-muted); text-transform:uppercase; letter-spacing:.5px; }
+.weather-val { font-size:13px; color:var(--c-primary); font-weight:600; }
+
 /* MINI CALENDAR */
 .cal-wrap {
   margin:0 12px 6px;
@@ -2385,6 +2400,13 @@ function render(date){
       <div class="tip-body">${hortAdvice}</div>
     </div>
 
+    <div id="weather-wrap" class="weather-wrap" style="display:none">
+      <div class="weather-ttl">Condiciones Climáticas</div>
+      <div class="weather-body">
+        <div id="weather-content">Obteniendo datos...</div>
+      </div>
+    </div>
+
     ${miniCal(year,mon,day,TODAY)}
 
     <div class="ftr">
@@ -2517,6 +2539,89 @@ function toggleTheme(){
 const _igDate = new URLSearchParams(location.search).get('date');
 if (_igDate) pickedDate = new Date(_igDate + 'T12:00:00');
 render(pickedDate);
+
+// ── WEATHER ──────────────────────────────────────────────────────────────────
+const WMO_CODES={0:'Despejado',1:'Despejado',2:'Parcialmente nublado',3:'Nublado',45:'Neblina',48:'Neblina',51:'Lluvia ligera',53:'Lluvia moderada',55:'Lluvia fuerte',61:'Lluvia ligera',63:'Lluvia moderada',65:'Lluvia fuerte',71:'Nieve ligera',73:'Nieve moderada',75:'Nieve fuerte',77:'Granos de nieve',80:'Lluvia ligera',81:'Lluvia moderada',82:'Lluvia fuerte',85:'Nieve ligera',86:'Nieve fuerte',95:'Tormenta',96:'Tormenta con granizo',99:'Tormenta con granizo'};
+const WMO_EMOJI={0:'☀️',1:'☀️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌧️',53:'🌧️',55:'⛈️',61:'🌧️',63:'🌧️',65:'⛈️',71:'❄️',73:'❄️',75:'❄️',77:'❄️',80:'🌧️',81:'🌧️',82:'⛈️',85:'❄️',86:'❄️',95:'⛈️',96:'⛈️',99:'⛈️'};
+
+function getWeatherDescription(code){
+  return WMO_CODES[code]||'Desconocido';
+}
+
+function getWeatherEmoji(code){
+  return WMO_EMOJI[code]||'🌡️';
+}
+
+async function fetchWeatherData(lat,lon){
+  try{
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,precipitation,wind_speed_10m&timezone=auto`;
+    const res=await fetch(url);
+    if(!res.ok) throw new Error('Weather API error');
+    const data=await res.json();
+    return data.current;
+  }catch(e){
+    console.error('Weather fetch error:',e);
+    return null;
+  }
+}
+
+function renderWeatherSection(weather){
+  if(!weather) return;
+  const wrap=document.getElementById('weather-wrap');
+  const content=document.getElementById('weather-content');
+  if(!wrap||!content) return;
+
+  const temp=Math.round(weather.temperature_2m);
+  const humidity=weather.relative_humidity_2m;
+  const condition=getWeatherDescription(weather.weather_code);
+  const emoji=getWeatherEmoji(weather.weather_code);
+  const wind=Math.round(weather.wind_speed_10m);
+  const cloud=weather.cloud_cover;
+  const precip=weather.precipitation||0;
+
+  content.innerHTML=`
+    <div class="weather-item">
+      <div class="weather-icon">${emoji}</div>
+      <div class="weather-info">
+        <div class="weather-label">Condición</div>
+        <div class="weather-val">${condition}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+      <div>
+        <div class="weather-label">🌡️ Temperatura</div>
+        <div class="weather-val">${temp}°C</div>
+      </div>
+      <div>
+        <div class="weather-label">💧 Humedad</div>
+        <div class="weather-val">${humidity}%</div>
+      </div>
+      <div>
+        <div class="weather-label">☁️ Nubosidad</div>
+        <div class="weather-val">${cloud}%</div>
+      </div>
+      <div>
+        <div class="weather-label">💨 Viento</div>
+        <div class="weather-val">${wind} km/h</div>
+      </div>
+      ${precip>0?`<div style="grid-column:1/-1"><div class="weather-label">🌧️ Precipitación</div><div class="weather-val">${precip} mm</div></div>`:''}
+    </div>
+  `;
+  wrap.style.display='block';
+}
+
+function initWeather(){
+  if(!('geolocation' in navigator)) return;
+  navigator.geolocation.getCurrentPosition(async(pos)=>{
+    const {latitude,longitude}=pos.coords;
+    const weather=await fetchWeatherData(latitude,longitude);
+    renderWeatherSection(weather);
+  },()=>{});
+}
+
+if(!document.body.classList.contains('ig-mode')){
+  initWeather();
+}
 
 if(document.body.classList.contains('ig-mode')){
   const n=document.querySelector('.hdr-name');
