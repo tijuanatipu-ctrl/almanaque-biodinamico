@@ -2654,7 +2654,7 @@ function renderWeatherSection(weather){
     const precipText=precip>0?` con lluvia (${precip}mm)`:' sin lluvia';
     const frostText=frostRisk?`, ${frostRisk}`:' (sin heladas)';
 
-    descElement.innerHTML=`${greeting} en General Pinto ${emoji}. Está <strong>${finalCondition}</strong>, hace <strong>${temp}°C</strong> (se siente ${feelsLike}°C), ${humidity}% humedad${precipText}, viento ${windDesc} del ${windDir}, rocío ${dewPoint}°C${frostText}`;
+    descElement.innerHTML=`${greeting} en <strong>General Pinto</strong> ${emoji}. Está <strong>${finalCondition}</strong>, hace <strong>${temp}°C</strong> (se siente ${feelsLike}°C), <strong>${humidity}%</strong> humedad${precipText}, viento ${windDesc} del <strong>${windDir}</strong>, rocío <strong>${dewPoint}°C</strong>${frostText}`;
     descElement.style.display='block';
   }
 
