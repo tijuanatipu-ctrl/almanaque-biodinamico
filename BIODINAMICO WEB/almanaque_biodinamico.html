@@ -649,6 +649,15 @@ body.ig-mode.ig-light .moon-wrap { background:var(--ig-moon,#f4f4f4); border-col
 const TODAY = new Date();
 let pickedDate = new Date();
 
+// Get week number of the year (ISO 8601)
+function getWeekNumber(date){
+  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  const dayNum=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d-yearStart)/86400000)+1)/7);
+}
+
 // ── MAYO 2026 DATA (fuente: AABDA · Calendario Astronómico Digital 2026) ────
 const MAYO_2026 = {
   1: {tipo:'flor', signo:'Virgo → Libra @11-12hs',     vent:'tarde (desde 11hs)',
@@ -2332,8 +2341,8 @@ function render(date){
     <div class="month-nav">
       <button class="mnav-btn" onclick="prevMonth()">&#8249;</button>
       <div class="mnav-center">
-        <span class="mnav-label">${MESES[mon].toUpperCase()} ${year}</span>
-        <span class="mnav-day">${DIAS[dow].toUpperCase()}${day!==TODAY.getDate()||mon!==TODAY.getMonth()||year!==TODAY.getFullYear()?` &nbsp;<button class="mnav-hoy" onclick="goToday()">↩ hoy</button>`:''}</span>
+        <span class="mnav-label">${DIAS[dow].toUpperCase()} <span style="font-size:0.8em;font-weight:300;letter-spacing:1px">(SEMANA ${getWeekNumber(new Date(year,mon,day))})</span></span>
+        <span class="mnav-day">${day!==TODAY.getDate()||mon!==TODAY.getMonth()||year!==TODAY.getFullYear()?` &nbsp;<button class="mnav-hoy" onclick="goToday()">↩ hoy</button>`:''}</span>
       </div>
       <button class="mnav-btn" onclick="nextMonth()">&#8250;</button>
     </div>
