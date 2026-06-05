@@ -2610,32 +2610,33 @@ function renderWeatherSection(weather){
   wrap.style.display='block';
 }
 
-async function initWeather(){
-  let lat=-35.276944, lon=-63.215556; // Default: General Pinto, Argentina
+function initWeather(){
+  let lat=-35.276944, lon=-63.215556;
+
+  const loadWeather=(latitude,longitude)=>{
+    fetchWeatherData(latitude,longitude).then(weather=>{
+      if(weather){
+        console.log('Weather data:', weather);
+        renderWeatherSection(weather);
+      }
+    }).catch(e=>console.error('Weather error:',e));
+  };
 
   if('geolocation' in navigator){
-    try{
-      const pos=await new Promise((resolve,reject)=>{
-        navigator.geolocation.getCurrentPosition(resolve,reject,{timeout:5000});
-      });
-      lat=pos.coords.latitude;
-      lon=pos.coords.longitude;
-      console.log(`Got position: ${lat}, ${lon}`);
-    }catch(e){
-      console.log('Using default location (General Pinto):', e.message);
-    }
-  }
-
-  try{
-    const weather=await fetchWeatherData(lat,lon);
-    if(weather){
-      console.log('Weather data received:', weather);
-      renderWeatherSection(weather);
-    }else{
-      console.warn('No weather data returned');
-    }
-  }catch(e){
-    console.error('Weather fetch error:',e);
+    navigator.geolocation.getCurrentPosition(
+      (pos)=>{
+        const {latitude,longitude}=pos.coords;
+        console.log('Got location:',latitude,longitude);
+        loadWeather(latitude,longitude);
+      },
+      (err)=>{
+        console.log('Geo denied, using default');
+        loadWeather(lat,lon);
+      },
+      {timeout:4000,maximumAge:300000}
+    );
+  }else{
+    loadWeather(lat,lon);
   }
 }
 
