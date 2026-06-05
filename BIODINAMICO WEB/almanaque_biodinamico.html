@@ -1749,6 +1749,11 @@ function closeFicha(){
   document.getElementById('ficha-modal')?.remove();
 }
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeFicha(); });
+document.addEventListener('click', e => {
+  if(e.target.dataset.action === 'go-today') {
+    goToday();
+  }
+});
 
 // ── SELECT DAY ───────────────────────────────────────────────────────────────
 function selectDay(y,m,d){
@@ -2348,7 +2353,7 @@ function render(date){
       <button class="mnav-btn" onclick="prevMonth()">&#8249;</button>
       <div class="mnav-center">
         <span class="mnav-label">${DIAS[dow].toUpperCase()} <span style="font-size:0.8em;font-weight:300;letter-spacing:1px">(SEMANA ${getWeekNumber(new Date(year,mon,day))})</span></span>
-        <span class="mnav-day">${day!==TODAY.getDate()||mon!==TODAY.getMonth()||year!==TODAY.getFullYear()?` &nbsp;<button class="mnav-hoy" onclick="goToday()">↩ hoy</button>`:''}</span>
+        <span class="mnav-day">${day!==TODAY.getDate()||mon!==TODAY.getMonth()||year!==TODAY.getFullYear()?` &nbsp;<button class="mnav-hoy" data-action="go-today">↩ hoy</button>`:''}</span>
       </div>
       <button class="mnav-btn" onclick="nextMonth()">&#8250;</button>
     </div>
