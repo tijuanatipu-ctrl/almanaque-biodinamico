@@ -2632,7 +2632,7 @@ function renderWeatherSection(weather){
   // Weather description text
   const descElement=document.getElementById('weather-description');
   if(descElement){
-    descElement.innerHTML=`Hoy en General Pinto está <strong>${condition.toLowerCase()}</strong>, hace <strong>${temp}°C</strong> con <strong>${humidity}% humedad</strong>`;
+    descElement.innerHTML=`Hoy ${emoji} está ${condition.toLowerCase()}. Hace <strong>${temp}°C</strong> con ${humidity}% de humedad`;
     descElement.style.display='block';
   }
 
