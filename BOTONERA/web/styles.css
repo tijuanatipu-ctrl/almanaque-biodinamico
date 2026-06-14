@@ -18,12 +18,18 @@
 }
 
 html.dark-mode {
+    --blanco: #0a0a0a;
+    --negro: #f0f0f0;
     --fondo: #0a0a0a;
     --fondo-secundario: #1a1a1a;
     --texto-primario: #f0f0f0;
     --texto-secundario: #b0b0b0;
     --gris-claro: #2d2d2d;
     --gris-medio: #444444;
+    --gris-oscuro: #999999;
+    --sombra: 0 2px 8px rgba(0, 0, 0, 0.5);
+    --sombra-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+    --sombra-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
 }
 
 * {
