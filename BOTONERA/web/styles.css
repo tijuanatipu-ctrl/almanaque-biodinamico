@@ -1,6 +1,7 @@
 /* MATERIAL DESIGN - Moderno tipo Android */
 :root {
-    --verde: #2d5016;
+    --verde: #7cb342;
+    --verde-oscuro: #558b2f;
     --naranja: #d97706;
     --blanco: #ffffff;
     --negro: #000000;
@@ -62,7 +63,7 @@ body {
 
 /* HEADER */
 .header {
-    background: linear-gradient(135deg, var(--verde) 0%, #1f4012 100%);
+    background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
     color: var(--blanco);
     padding: 1rem;
     display: flex;
@@ -76,6 +77,10 @@ body {
     font-size: 1.3rem;
     font-weight: 700;
     letter-spacing: 0.5px;
+}
+
+.logo-header {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .header-info {
@@ -262,7 +267,7 @@ body {
 
 /* BOTÓN TOTAL */
 .btn-total {
-    background: linear-gradient(135deg, var(--verde) 0%, #1f4012 100%);
+    background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
     color: var(--blanco);
     border: none;
     padding: 1.2rem;
@@ -403,7 +408,7 @@ body {
 }
 
 .resumen-totales {
-    background: linear-gradient(135deg, var(--verde) 0%, #1f4012 100%);
+    background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1rem;
@@ -428,7 +433,7 @@ body {
 
 /* BOTONES ACCIÓN */
 .btn-volver, .btn-confirmar, .btn-whatsapp, .btn-limpiar {
-    background: linear-gradient(135deg, var(--verde) 0%, #1f4012 100%);
+    background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
     color: var(--blanco);
     border: none;
     padding: 1rem;
@@ -618,7 +623,7 @@ body {
 }
 
 .btn-modal-agregar {
-    background: linear-gradient(135deg, var(--verde) 0%, #1f4012 100%);
+    background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
     color: var(--blanco);
     box-shadow: var(--sombra-md);
 }
