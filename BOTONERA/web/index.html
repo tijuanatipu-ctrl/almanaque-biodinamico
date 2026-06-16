@@ -8,6 +8,19 @@
 </head>
 <body>
     <div id="app">
+        <!-- NAVEGACIÓN GLOBAL -->
+        <nav class="nav-global">
+            <button class="nav-btn activo" onclick="mostrarPantalla('pantalla-productos'); actualizarNavActivo('pantalla-productos')">
+                🛒<br>Productos
+            </button>
+            <button class="nav-btn" onclick="mostrarListaPrecios(); actualizarNavActivo('pantalla-precios')">
+                💰<br>Precios
+            </button>
+            <button class="nav-btn" onclick="mostrarPantalla('pantalla-historial'); actualizarNavActivo('pantalla-historial')">
+                📜<br>Historial
+            </button>
+        </nav>
+
         <!-- PANTALLA PRINCIPAL: PRODUCTOS -->
         <div id="pantalla-productos" class="pantalla activa">
             <header class="header">
@@ -102,15 +115,23 @@
             </main>
         </div>
 
-        <!-- FOOTER CON BOTONES -->
-        <footer class="footer">
-            <button class="btn-footer activo" onclick="mostrarPantalla('pantalla-productos')">
-                🛒 Productos
-            </button>
-            <button class="btn-footer" onclick="mostrarPantalla('pantalla-historial')">
-                📜 Historial
-            </button>
-        </footer>
+        <!-- PANTALLA LISTA DE PRECIOS -->
+        <div id="pantalla-precios" class="pantalla">
+            <header class="header">
+                <button class="btn-volver" onclick="volverAProductos()">← Volver</button>
+                <h1>Lista de Precios</h1>
+                <button class="btn-exportar-precios" onclick="exportarListaPrecios()" title="Exportar como JPG">
+                    📥 Exportar
+                </button>
+            </header>
+
+            <main class="contenedor">
+                <div id="precios-grid" class="precios-grid">
+                    <!-- Los productos se listan aquí -->
+                </div>
+            </main>
+        </div>
+
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

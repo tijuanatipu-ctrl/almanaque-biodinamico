@@ -748,3 +748,38 @@ body {
         border-right: 1px solid var(--gris-medio);
     }
 }
+
+/* NAVEGACIÓN GLOBAL */
+.nav-global {
+    display: flex;
+    background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
+    border-bottom: 3px solid var(--naranja);
+    gap: 0;
+    padding: 0;
+    box-shadow: var(--sombra-md);
+}
+
+.nav-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 1.2rem 1rem;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.nav-btn:active {
+    background: rgba(0, 0, 0, 0.15);
+    transform: scale(0.98);
+}
+
+.nav-btn.activo {
+    color: var(--blanco);
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 4px solid var(--naranja);
+}
