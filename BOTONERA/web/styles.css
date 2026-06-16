@@ -757,6 +757,38 @@ body {
     }
 }
 
+/* BOTONES DE RESUMEN */
+.resumen-btn-menos, .resumen-btn-mas, .carrito-eliminar {
+    background: var(--naranja);
+    color: var(--blanco);
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.4rem 0.6rem;
+    transition: all 0.2s;
+    min-width: 36px;
+    min-height: 36px;
+}
+
+.resumen-btn-menos:hover, .resumen-btn-mas:hover, .carrito-eliminar:hover {
+    background: #c4620f;
+    transform: scale(1.1);
+}
+
+.resumen-btn-menos:active, .resumen-btn-mas:active, .carrito-eliminar:active {
+    transform: scale(0.95);
+}
+
+.carrito-eliminar {
+    background: #ef4444;
+}
+
+.carrito-eliminar:hover {
+    background: #dc2626;
+}
+
 /* NAVEGACIÓN GLOBAL */
 .nav-global {
     display: flex;
