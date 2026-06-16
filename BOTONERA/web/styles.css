@@ -467,8 +467,12 @@ body {
     transform: scale(0.98);
 }
 
-.btn-whatsapp, .btn-limpiar {
+.btn-whatsapp {
     background: linear-gradient(135deg, var(--naranja) 0%, #dc7a0f 100%);
+}
+
+.btn-limpiar {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
 }
 
 /* MODAL */
