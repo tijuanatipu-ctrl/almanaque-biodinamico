@@ -23,7 +23,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const day = $node['Datos del día'].json.day;\nconst htmlUrl = `https://raw.githubusercontent.com/tijuanatipu-ctrl/almanaque-biodinamico/main/BIODINAMICO%20WEB/almanaque_biodinamico.html?ig=1&day=${day}`;\n\ntry {\n  const html = await fetch(htmlUrl).then(r => r.text());\n  const tipMatch = html.match(/<div class=\"tip-body\"[^>]*>([^<]+)<\\/div>/);\n  \n  if (tipMatch && tipMatch[1]) {\n    const consejo = tipMatch[1].trim();\n    let caption = $node['Datos del día'].json.caption;\n    caption += `\\n\\n💡 CONSEJO AGRÍCOLA\\n${consejo}`;\n    caption += `\\n\\n🌿 Almanaque biodinámico para el Hemisferio Sur.\\nAplicación desarrollada por @tijuanatipu\\n\\n#biodinamica #huertobiodinamico #luna #lunabiodinamica #almanaque`;\n    \n    return [{ json: { ...($node['Datos del día'].json), caption } }];\n  }\n} catch (e) {\n  console.log('No se pudo obtener el consejo del HTML:', e.message);\n}\n\nlet caption = $node['Datos del día'].json.caption;\ncaption += `\\n\\n🌿 Almanaque biodinámico para el Hemisferio Sur.\\nAplicación desarrollada por @tijuanatipu\\n\\n#biodinamica #huertobiodinamico #luna #lunabiodinamica #almanaque`;\nreturn [{ json: { ...($node['Datos del día'].json), caption } }];"
+        "jsCode": "const day = $node['Datos del día'].json.day;\nconst htmlUrl = `https://raw.githubusercontent.com/tijuanatipu-ctrl/almanaque-biodinamico/main/BIODINAMICO%20WEB/almanaque_biodinamico.html?ig=1&day=${day}`;\n\ntry {\n  const html = await fetch(htmlUrl).then(r => r.text());\n  const tipMatch = html.match(/<div class=\"tip-body\"[^>]*>([^<]+)<\\/div>/);\n  \n  if (tipMatch && tipMatch[1]) {\n    const consejo = tipMatch[1].trim();\n    let caption = $node['Datos del día'].json.caption;\n    caption += `\\n\\n💡 CONSEJO AGRÍCOLA\\n${consejo}`;\n    caption += `\\n\\n🌿 Almanaque biodinámico para el Hemisferio Sur.\\nAplicación desarrollada por @tijuanatipu\\n\\n#biodinamica #huertobiodinamico #luna #lunabiodinamica #almanaque`;\n    return [{ json: { ...($node['Datos del día'].json), caption } }];\n  }\n} catch (e) {\n  console.log('No se pudo obtener el consejo del HTML:', e.message);\n}\n\nlet caption = $node['Datos del día'].json.caption;\ncaption += `\\n\\n🌿 Almanaque biodinámico para el Hemisferio Sur.\\nAplicación desarrollada por @tijuanatipu\\n\\n#biodinamica #huertobiodinamico #luna #lunabiodinamica #almanaque`;\nreturn [{ json: { ...($node['Datos del día'].json), caption } }];"
       },
       "id": "node-consejo-010",
       "name": "Obtener Consejo Agrícola",
@@ -117,6 +117,30 @@
       "typeVersion": 2,
       "position": [1640, 300]
     },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hcti.io/v1/convert",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { html: $json.preview_html, viewport_width: 480, viewport_height: 600 } }}",
+        "authentication": "basicAuth",
+        "login": "01KT9J8Q746SENAM8W2T90Q1C7",
+        "password": "019e9324-5ce4-7aca-8449-756f05ec55ef",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "node-hcti-convert",
+      "name": "Convertir HTML a JPG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1880, 300]
+    }
   ],
   "connections": {
     "Trigger: Diario 9am": { "main": [[{ "node": "Datos del día", "type": "main", "index": 0 }]] },
@@ -125,6 +149,7 @@
     "Guard: ya publicado hoy": { "main": [[{ "node": "Screenshot", "type": "main", "index": 0 }]] },
     "Screenshot": { "main": [[{ "node": "Subir a Cloudinary", "type": "main", "index": 0 }]] },
     "Subir a Cloudinary": { "main": [[{ "node": "Generar HTML Preview", "type": "main", "index": 0 }]] },
+    "Generar HTML Preview": { "main": [[{ "node": "Convertir HTML a JPG", "type": "main", "index": 0 }]] }
   },
   "active": false,
   "settings": { "executionOrder": "v1" },

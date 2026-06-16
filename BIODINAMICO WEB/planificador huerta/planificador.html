@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#ec008c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<title>Planificador de Huerto Agroecológico</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* ── COLOR SYSTEM ── */
+:root {
+  --bg-page:    #ebebeb;
+  --bg-card:    #ffffff;
+  --bd-card:    #1a1a1a;
+  --bg-hdr:     #1a1a1a;
+  --bg-nav:     #ec008c;
+  --bg-moon:    #faf5f8;
+  --bd-moon:    rgba(236,0,140,.12);
+  --bg-cal:     #faf5f8;
+  --bd-cal:     rgba(236,0,140,.1);
+  --bg-ftr:     #1a1a1a;
+  --c-primary:  #1a1a1a;
+  --c-secondary:#444444;
+  --c-muted:    #999999;
+  --c-dim:      #cccccc;
+  --c-accent:   #ec008c;
+  --c-divider:  rgba(0,0,0,.12);
+  --c-tip:      #2a2a2a;
+  --c-tipline:  #e8e0e5;
+  --shadow:     0 8px 48px rgba(0,0,0,.18);
+}
+body.dark {
+  --bg-page:    #111111;
+  --bg-card:    #1c1c1e;
+  --bd-card:    #3a3a3a;
+  --bg-hdr:     #0d0d0d;
+  --bg-nav:     #970060;
+  --bg-moon:    #26202a;
+  --bd-moon:    rgba(236,0,140,.15);
+  --bg-cal:     #211e24;
+  --bd-cal:     rgba(255,255,255,.08);
+  --bg-ftr:     #0d0d0d;
+  --c-primary:  #e8e8e8;
+  --c-secondary:#aaaaaa;
+  --c-muted:    #555555;
+  --c-dim:      #3a3a3a;
+  --c-accent:   #ec008c;
+  --c-divider:  rgba(255,255,255,.1);
+  --c-tip:      #c0b0ba;
+  --c-tipline:  #2e222a;
+  --shadow:     0 8px 40px rgba(0,0,0,.6);
+}
+
+body {
+  min-height:100vh;
+  background:var(--bg-page);
+  display:flex; flex-direction:column; align-items:center;
+  padding:20px 0 36px;
+  font-family:'Josefin Sans', 'Georgia', sans-serif;
+  user-select:none;
+  transition:background .3s;
+}
+
+#app {
+  width:min(100vw, 960px);
+  background:var(--bg-card);
+  display:flex; flex-direction:column;
+  box-shadow:var(--shadow);
+  overflow:hidden; position:relative;
+  border-left:1.5px solid var(--bd-card);
+  border-right:1.5px solid var(--bd-card);
+  border-bottom:1.5px solid var(--bd-card);
+  transition:background .3s, border-color .3s;
+}
+#app::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:3px;
+  background:var(--c-accent); z-index:10;
+}
+
+/* HEADER */
+.hdr {
+  background:var(--bg-hdr);
+  padding:12px 18px 11px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0; margin-top:3px;
+  transition:background .3s;
+}
+.hdr-left { display:flex; flex-direction:column; gap:2px; }
+.hdr-name { color:#fff; font-size:clamp(11px,2.5vw,13px); font-weight:400; letter-spacing:2px; text-transform:uppercase; font-family:'Oswald', sans-serif; }
+.hdr-sub { color:rgba(255,255,255,.38); font-size:clamp(8px,1.8vw,9px); letter-spacing:1.5px; font-family:'Josefin Sans', sans-serif; font-weight:300; }
+.hdr-right { display:flex; align-items:center; gap:12px; }
+.btn-theme { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.24); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; cursor:pointer; transition:background .2s; }
+.btn-theme:active { background:rgba(255,255,255,.24); }
+
+/* TABS */
+.tab-nav {
+  display:flex; gap:0; background:var(--bg-nav);
+  flex-shrink:0; overflow-x:auto;
+}
+.tab-btn {
+  flex:1; min-width:120px; padding:10px 8px;
+  background:none; border:none; color:#fff;
+  font-size:clamp(10px,2vw,11px); font-weight:600;
+  letter-spacing:1px; text-transform:uppercase;
+  font-family:'Oswald', sans-serif;
+  cursor:pointer; opacity:.6; transition:opacity .2s;
+  border-bottom:3px solid transparent;
+}
+.tab-btn.active { opacity:1; border-bottom-color:#fff; }
+
+.tab-content {
+  display:none; flex:1; flex-direction:column;
+  overflow:hidden;
+}
+.tab-content.active {
+  display:flex;
+}
+
+/* ── TAB 1: DISEÑADOR ── */
+.designer-wrap {
+  display:flex; flex:1; gap:0; overflow:hidden;
+}
+.designer-canvas {
+  flex:1; display:flex; flex-direction:column;
+  overflow:hidden; position:relative;
+}
+.canvas-toolbar {
+  padding:8px 12px; background:var(--bg-cal); border-bottom:1px solid var(--bd-cal);
+  display:flex; gap:6px; flex-wrap:wrap; flex-shrink:0;
+  transition:background .3s, border-color .3s;
+}
+.btn-small {
+  padding:6px 10px; font-size:11px; border:1px solid var(--c-accent);
+  background:none; color:var(--c-accent); border-radius:4px;
+  cursor:pointer; font-weight:600; letter-spacing:.5px;
+  font-family:'Oswald', sans-serif; transition:all .2s;
+}
+.btn-small:active { background:var(--c-accent); color:#fff; }
+
+#svg-canvas {
+  flex:1; background:linear-gradient(135deg, var(--bg-page) 0%, rgba(236,0,140,.02) 100%);
+  overflow:auto; position:relative;
+}
+svg {
+  display:block; cursor:grab; user-select:none;
+}
+svg.grabbing { cursor:grabbing; }
+
+.designer-panel {
+  width:240px; background:var(--bg-card); border-left:1px solid var(--bd-card);
+  display:flex; flex-direction:column; overflow-y:auto;
+  transition:border-color .3s;
+}
+
+.panel-section { padding:10px 12px; border-bottom:1px solid var(--bd-cal); }
+.panel-title { font-size:9px; color:var(--c-muted); letter-spacing:1.5px; text-transform:uppercase;
+  font-family:'Oswald', sans-serif; font-weight:600; margin-bottom:6px; }
+
+.palette-item {
+  padding:6px 8px; background:rgba(236,0,140,.05); border:1px solid rgba(236,0,140,.15);
+  border-radius:4px; cursor:grab; margin-bottom:4px; font-size:11px;
+  color:var(--c-primary); font-weight:500; transition:all .2s;
+}
+.palette-item:active { cursor:grabbing; opacity:.7; }
+.palette-item:hover { background:rgba(236,0,140,.12); }
+
+.bed-info {
+  padding:8px; background:var(--bg-cal); border-radius:4px; margin-bottom:4px;
+}
+.bed-info-row { font-size:10px; color:var(--c-muted); margin-bottom:3px; }
+.bed-info-label { font-weight:600; color:var(--c-primary); }
+
+/* ── TAB 2: SIEMBRAS ── */
+.planner-wrap {
+  display:flex; flex-direction:column; flex:1; overflow:hidden; padding:10px;
+}
+.planner-filters {
+  display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;
+  padding-bottom:8px; border-bottom:1px solid var(--bd-cal);
+}
+.filter-btn {
+  padding:4px 8px; font-size:9px; border:1px solid var(--c-dim);
+  background:none; color:var(--c-muted); border-radius:4px; cursor:pointer;
+  font-family:'Josefin Sans', sans-serif; transition:all .2s;
+}
+.filter-btn.active {
+  background:var(--c-accent); color:#fff; border-color:var(--c-accent);
+}
+
+.planner-table {
+  flex:1; overflow:auto; font-size:11px;
+}
+table {
+  width:100%; border-collapse:collapse;
+}
+table th, table td {
+  padding:6px 4px; text-align:center; border:1px solid var(--bd-cal);
+}
+table th {
+  background:var(--bg-cal); font-weight:600; font-family:'Oswald', sans-serif;
+  color:var(--c-muted); font-size:9px;
+}
+table td { background:var(--bg-page); }
+table td.crop-name {
+  text-align:left; background:var(--bg-card); font-weight:500; color:var(--c-primary);
+  min-width:100px;
+}
+table td.sow { background:rgba(255,180,0,.15); }
+table td.transplant { background:rgba(100,200,0,.15); }
+table td.harvest { background:rgba(100,200,0,.3); }
+
+/* ── TAB 3: ROTACIÓN ── */
+.rotation-wrap {
+  display:flex; flex-direction:column; flex:1; padding:10px;
+  overflow:hidden;
+}
+.year-selector {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--bd-cal);
+}
+.year-btn { padding:4px 8px; background:none; border:1px solid var(--c-accent);
+  color:var(--c-accent); border-radius:4px; cursor:pointer; font-size:10px;
+  font-weight:600; font-family:'Oswald', sans-serif; }
+.year-display { font-size:14px; font-weight:700; color:var(--c-accent);
+  font-family:'Oswald', sans-serif; min-width:60px; text-align:center; }
+
+.rotation-canvas { flex:1; display:flex; flex-direction:column; overflow:auto;
+  border:1px solid var(--bd-cal); border-radius:4px; }
+
+.rotation-alerts { margin-top:8px; }
+.alert-item { padding:6px 8px; background:rgba(255,180,0,.08); border-left:3px solid #ff9800;
+  margin-bottom:4px; border-radius:2px; font-size:10px; color:var(--c-primary); }
+.alert-item.error { background:rgba(255,50,50,.08); border-left-color:#ff3333; }
+
+/* ── TAB 4: ASOCIACIÓN ── */
+.assoc-wrap {
+  display:flex; flex-direction:column; flex:1; padding:10px; overflow:hidden;
+}
+.assoc-search {
+  margin-bottom:10px;
+}
+.assoc-search input {
+  width:100%; padding:6px 8px; border:1px solid var(--bd-cal);
+  background:var(--bg-page); color:var(--c-primary); border-radius:4px;
+  font-size:11px; font-family:'Josefin Sans', sans-serif;
+}
+
+.assoc-matrix-wrap { flex:1; overflow:auto; }
+.assoc-matrix {
+  width:100%; border-collapse:collapse; font-size:9px;
+}
+.assoc-matrix th, .assoc-matrix td {
+  width:24px; height:24px; padding:0; border:1px solid var(--bd-cal);
+  text-align:center; vertical-align:middle;
+}
+.assoc-matrix th { background:var(--bg-cal); color:var(--c-muted); font-size:7px;
+  writing-mode:vertical-rl; transform:rotate(180deg); overflow:hidden; }
+.assoc-cell-friend { background:#3a7a50; }
+.assoc-cell-enemy { background:#cc4444; }
+.assoc-cell-neutral { background:transparent; }
+
+.assoc-detail { margin-top:10px; padding:8px; background:var(--bg-cal);
+  border-radius:4px; border:1px solid var(--bd-cal); max-height:120px; overflow-y:auto; }
+.assoc-detail-title { font-size:12px; font-weight:700; color:var(--c-primary);
+  margin-bottom:4px; font-family:'Oswald', sans-serif; }
+.assoc-detail-row { font-size:10px; margin-bottom:3px; }
+.assoc-detail-label { color:var(--c-muted); display:inline-block; width:70px; }
+.assoc-detail-value { color:var(--c-primary); font-weight:500; }
+
+/* FOOTER */
+.ftr { background:var(--bg-ftr); padding:10px 18px; border-top:2px solid var(--c-accent);
+  text-align:center; color:rgba(255,255,255,.5); font-size:9px;
+  font-family:'Josefin Sans', sans-serif; flex-shrink:0; }
+
+/* SVG STYLES */
+.bed-rect { stroke:#1a1a1a; stroke-width:2; fill:none; cursor:move; }
+.bed-rect.selected { stroke:var(--c-accent); stroke-width:2.5; }
+.bed-label-rect { fill:#fff; }
+.bed-label-text { font-size:12px; font-family:'Oswald', sans-serif; font-weight:600;
+  fill:#1a1a1a; text-anchor:middle; pointer-events:none; }
+.bed-label-name { font-size:11px; font-family:'Oswald', sans-serif; font-weight:700;
+  fill:#ec008c; text-anchor:middle; pointer-events:none; }
+.bed-label-dims { font-size:9px; font-family:'Josefin Sans', sans-serif; font-weight:400;
+  fill:#666666; text-anchor:middle; pointer-events:none; }
+.bed-handle { fill:#ec008c; stroke:#fff; stroke-width:1; opacity:0; transition:opacity .2s; }
+.bed-handle.visible { opacity:1; }
+.bed-handle:hover { opacity:1 !important; fill:#ff1493; stroke-width:1.5; }
+.plant-icon { font-size:20px; cursor:move; filter:drop-shadow(1px 1px 2px rgba(0,0,0,.2)); }
+.plant-icon.friend-near { filter:drop-shadow(0 0 8px #3a7a50); }
+.plant-icon.enemy-near { filter:drop-shadow(0 0 8px #cc4444); }
+
+/* LOGIN STYLES */
+.login-overlay {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center;
+  z-index:9999; font-family:'Josefin Sans', sans-serif;
+}
+.login-overlay.hidden { display:none; }
+.login-card {
+  background:var(--bg-card); padding:30px; border-radius:12px;
+  box-shadow:var(--shadow); max-width:360px; width:90%;
+  border:1px solid var(--bd-card);
+}
+.login-header {
+  font-size:20px; font-weight:700; color:var(--c-accent);
+  font-family:'Oswald', sans-serif; text-align:center; margin-bottom:4px;
+  letter-spacing:1px;
+}
+.login-subtitle {
+  font-size:11px; color:var(--c-muted); text-align:center;
+  margin-bottom:16px; letter-spacing:.5px;
+}
+.login-section { margin-bottom:12px; }
+.login-label {
+  display:block; font-size:10px; color:var(--c-muted);
+  text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px;
+  font-weight:600; font-family:'Oswald', sans-serif;
+}
+.btn-login, .btn-cancel, .btn-new-project {
+  width:100%; padding:8px; border:none; border-radius:4px;
+  font-size:11px; font-weight:600; letter-spacing:.5px;
+  cursor:pointer; transition:all .2s; font-family:'Oswald', sans-serif;
+  text-transform:uppercase;
+}
+.btn-login {
+  background:var(--c-accent); color:#fff; margin-bottom:6px;
+}
+.btn-login:active { opacity:.8; }
+.btn-cancel {
+  background:var(--bg-cal); color:var(--c-muted); border:1px solid var(--bd-cal);
+}
+.btn-cancel:active { opacity:.7; }
+.btn-new-project {
+  background:rgba(236,0,140,.1); color:var(--c-accent); border:1px solid var(--c-accent);
+}
+.btn-new-project:active { background:rgba(236,0,140,.2); }
+
+/* DISTRIBUTION STYLES */
+.distribution-line {
+  background:var(--bg-page); border:1px solid var(--bd-cal); border-radius:4px;
+  padding:8px; margin-bottom:6px;
+  display:flex; gap:8px; align-items:center;
+}
+.line-number {
+  font-weight:700; color:var(--c-accent); min-width:30px;
+  font-family:'Oswald', sans-serif;
+}
+.line-crop-select {
+  flex:1; padding:6px; border:1px solid var(--bd-cal); background:var(--bg-page);
+  color:var(--c-primary); border-radius:3px; font-size:11px;
+  font-family:'Josefin Sans', sans-serif;
+}
+.line-count {
+  background:rgba(236,0,140,.1); color:var(--c-accent); padding:4px 8px;
+  border-radius:3px; font-size:10px; font-weight:700; min-width:50px;
+  text-align:center;
+}
+
+/* TABLE STYLES */
+.table-wrap {
+  display:flex; flex-direction:column; flex:1; padding:10px;
+  overflow:hidden;
+}
+.table-toolbar {
+  display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;
+  padding-bottom:8px; border-bottom:1px solid var(--bd-cal);
+}
+.table-container {
+  flex:1; overflow:auto; border:1px solid var(--bd-cal);
+  border-radius:4px; background:var(--bg-page);
+}
+.beds-table {
+  width:100%; border-collapse:collapse; font-size:11px;
+}
+.beds-table th {
+  background:var(--bg-cal); padding:8px; border:1px solid var(--bd-cal);
+  font-weight:700; color:var(--c-primary); text-align:center;
+  font-family:'Oswald', sans-serif; text-transform:uppercase; font-size:9px;
+  letter-spacing:.5px; position:sticky; top:0; z-index:10;
+}
+.beds-table td {
+  padding:6px; border:1px solid var(--bd-cal); background:var(--bg-card);
+  color:var(--c-primary);
+}
+.beds-table tr:hover { background:rgba(236,0,140,.05); }
+.table-input {
+  width:100%; padding:4px; border:1px solid var(--bd-cal);
+  background:var(--bg-page); color:var(--c-primary);
+  border-radius:3px; font-size:11px; font-family:'Josefin Sans', sans-serif;
+}
+.table-input:focus {
+  outline:none; border-color:var(--c-accent); background:var(--bg-card);
+}
+.table-select {
+  width:100%; padding:4px; border:1px solid var(--bd-cal);
+  background:var(--bg-page); color:var(--c-primary);
+  border-radius:3px; font-size:10px; font-family:'Josefin Sans', sans-serif;
+}
+.table-cell-num {
+  background:var(--bg-cal); text-align:center; font-weight:600;
+  color:var(--c-muted); width:35px; min-width:35px;
+}
+.table-cell-calc {
+  background:rgba(236,0,140,.05); text-align:center; font-weight:600;
+  color:var(--c-accent);
+}
+.table-btn-small {
+  padding:3px 6px; font-size:9px; border:1px solid var(--c-accent);
+  background:none; color:var(--c-accent); border-radius:3px;
+  cursor:pointer; transition:all .15s;
+}
+.table-btn-small:hover { background:rgba(236,0,140,.1); }
+.table-btn-small.delete { color:#cc4444; border-color:#cc4444; }
+.table-btn-small.delete:hover { background:rgba(204,68,68,.1); }
+
+/* RIEGO BUTTONS */
+.btn-riego {
+  cursor:pointer; transition:all .2s;
+}
+.btn-riego:active { opacity:.7; }
+.btn-riego-active {
+  cursor:pointer; transition:all .2s;
+  border-color:var(--c-accent) !important;
+  background:rgba(236,0,140,.15) !important;
+  color:var(--c-accent) !important;
+}
+
+@media (max-width:600px) {
+  #app { width:100vw; border-radius:0; }
+  .designer-panel { width:100%; border-left:none; border-top:1px solid var(--bd-card);
+    max-height:180px; }
+  .designer-wrap { flex-direction:column; }
+  .tab-btn { min-width:80px; font-size:9px; }
+  .login-card { padding:20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- MODAL DE CREACIÓN DE BANCAL -->
+<div id="create-bed-modal" class="login-overlay hidden">
+  <div class="login-card" style="max-width:420px;">
+    <div class="login-header">🌱 Crear Bancal</div>
+    <div class="login-subtitle">Configura los parámetros del bancal</div>
+
+    <div style="max-height:500px; overflow-y:auto;">
+      <!-- Nombre -->
+      <div class="login-section">
+        <label class="login-label">Nombre del bancal:</label>
+        <input type="text" id="bed-name-input" placeholder="ej. BANCAL A" style="width:100%; padding:8px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px;">
+      </div>
+
+      <!-- Dimensiones -->
+      <div style="display:flex; gap:8px;">
+        <div class="login-section" style="flex:1;">
+          <label class="login-label">Largo (metros):</label>
+          <input type="number" id="bed-length-input" placeholder="4" value="4" step="0.1" min="0.5" style="width:100%; padding:8px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px;">
+        </div>
+        <div class="login-section" style="flex:1;">
+          <label class="login-label">Ancho (metros):</label>
+          <input type="number" id="bed-width-input" placeholder="3" value="3" step="0.1" min="0.5" style="width:100%; padding:8px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px;">
+        </div>
+      </div>
+
+      <!-- Marco de plantación -->
+      <div class="login-section">
+        <label class="login-label">Marco de plantación (espaciado en metros):</label>
+        <input type="number" id="bed-spacing-input" placeholder="0.3" value="0.3" step="0.05" min="0.1" style="width:100%; padding:8px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px;" onchange="calcularPlantas()">
+        <div style="font-size:9px; color:var(--c-muted); margin-top:3px;">Distancia entre plantas en ambas direcciones</div>
+      </div>
+
+      <!-- Riego por goteo -->
+      <div class="login-section">
+        <label class="login-label">¿Tiene riego por goteo?</label>
+        <div style="display:flex; gap:8px;">
+          <button onclick="setRiego(true)" id="riego-si" class="btn-riego-active" style="flex:1; padding:8px; border:1px solid var(--c-accent); background:rgba(236,0,140,.15); color:var(--c-accent); border-radius:4px; cursor:pointer; font-weight:600;">SÍ</button>
+          <button onclick="setRiego(false)" id="riego-no" class="btn-riego" style="flex:1; padding:8px; border:1px solid var(--bd-cal); background:transparent; color:var(--c-muted); border-radius:4px; cursor:pointer; font-weight:600;">NO</button>
+        </div>
+      </div>
+
+      <!-- Espaciado de mangueras (solo si tiene riego) -->
+      <div id="manguera-section" class="login-section">
+        <label class="login-label">Espaciado entre mangueras de goteo (metros):</label>
+        <input type="number" id="bed-manguera-input" placeholder="0.5" value="0.5" step="0.05" min="0.1" style="width:100%; padding:8px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px;" onchange="calcularPlantas()">
+        <div style="font-size:9px; color:var(--c-muted); margin-top:3px;">Distancia entre las líneas de goteo (usar para calcular filas)</div>
+      </div>
+
+      <!-- Distribución de cultivos por línea -->
+      <div class="login-section" id="distribution-section" style="display:none;">
+        <label class="login-label">Asignar cultivos a cada línea:</label>
+        <div id="distribution-lines"></div>
+      </div>
+
+      <!-- Resultado del cálculo -->
+      <div id="bed-calc-result" style="padding:12px; background:rgba(236,0,140,.08); border:1px solid rgba(236,0,140,.2); border-radius:4px; margin-top:12px; display:none;">
+        <div style="font-size:10px; color:var(--c-muted); text-transform:uppercase; font-weight:600; letter-spacing:.5px; margin-bottom:6px;">Capacidad del bancal:</div>
+        <div style="font-size:12px; color:var(--c-accent); font-weight:700; margin-bottom:2px;">
+          <span id="calc-filas">—</span> filas × <span id="calc-plants-row">—</span> plantas
+        </div>
+        <div style="font-size:12px; color:var(--c-primary); font-weight:700;">
+          Total: <span id="calc-total">0</span> plantas
+        </div>
+        <div style="font-size:9px; color:var(--c-muted); margin-top:4px;" id="calc-detail"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px; display:flex; gap:8px;">
+      <button onclick="createBedFromForm()" class="btn-login" style="flex:1;">Crear bancal</button>
+      <button onclick="closeCreateBedModal()" class="btn-cancel" style="flex:1;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE LOGIN -->
+<div id="login-modal" class="login-overlay">
+  <div class="login-card">
+    <div class="login-header">🌱 Planificador de Huertos</div>
+    <div class="login-subtitle">Acceso seguro por proyecto</div>
+
+    <div id="login-content">
+      <!-- Selector de proyecto -->
+      <div class="login-section">
+        <label class="login-label">Seleccionar o crear proyecto:</label>
+        <select id="project-select" onchange="selectProjectForLogin()" style="width:100%; padding:8px; margin-bottom:8px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px; font-family:'Josefin Sans', sans-serif;">
+          <option value="">-- Selecciona un proyecto --</option>
+        </select>
+      </div>
+
+      <!-- Nuevos proyectos -->
+      <div class="login-section" style="display:none;" id="new-project-form">
+        <label class="login-label">Nuevo proyecto:</label>
+        <input type="text" id="new-project-name" placeholder="Nombre del huerto" style="width:100%; padding:8px; margin-bottom:6px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px;">
+        <input type="password" id="new-project-pass" placeholder="Clave (4+ caracteres)" style="width:100%; padding:8px; margin-bottom:6px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px;">
+
+        <label class="login-label" style="margin-top:8px;">¿Cuántos bancales tendrá?</label>
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+          <input type="number" id="new-project-beds" placeholder="Cantidad" value="3" step="1" min="1" max="50" style="flex:1; padding:8px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px;">
+          <button onclick="testBedCount()" class="btn-new-project" style="flex:0; padding:8px 12px;">Info</button>
+        </div>
+        <div id="bed-count-info" style="font-size:9px; color:var(--c-muted); margin-bottom:8px; display:none;"></div>
+
+        <button onclick="createNewProject()" class="btn-login">Crear proyecto</button>
+        <button onclick="toggleNewProjectForm()" class="btn-cancel">Cancelar</button>
+      </div>
+
+      <!-- Login con clave -->
+      <div class="login-section" id="login-form" style="display:none;">
+        <label class="login-label">Clave del proyecto:</label>
+        <input type="password" id="login-password" placeholder="Ingresa tu clave" style="width:100%; padding:8px; margin-bottom:8px; border:1px solid var(--bd-cal); border-radius:4px; background:var(--bg-page); color:var(--c-primary); font-size:11px;" onkeypress="if(event.key==='Enter') loginProject()">
+        <button onclick="loginProject()" class="btn-login">Acceder</button>
+      </div>
+
+      <!-- Botones -->
+      <div class="login-section" style="border-top:1px solid var(--bd-cal); padding-top:8px; margin-top:8px;">
+        <button onclick="toggleNewProjectForm()" class="btn-new-project">+ Nuevo proyecto</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-name">Planificador de Huerto</div>
+      <div class="hdr-sub" id="project-name-header">Agroecológico</div>
+    </div>
+    <div class="hdr-right">
+      <button class="btn-theme" onclick="toggleTheme()" title="Toggle dark/light">🌙</button>
+      <button class="btn-theme" onclick="showLoginModal()" title="Cambiar proyecto" style="font-size:16px;">🚪</button>
+    </div>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="selectTab(0)">Diseñador</button>
+    <button class="tab-btn" onclick="selectTab(1)">Tabla</button>
+    <button class="tab-btn" onclick="selectTab(2)">Siembras</button>
+    <button class="tab-btn" onclick="selectTab(3)">Rotación</button>
+    <button class="tab-btn" onclick="selectTab(4)">Asociación</button>
+  </div>
+
+  <!-- TAB 1: DISEÑADOR -->
+  <div class="tab-content active">
+    <div class="designer-wrap">
+      <div class="designer-canvas">
+        <div class="canvas-toolbar">
+          <button class="btn-small" onclick="addBed()">+ Bancal</button>
+          <button class="btn-small" onclick="deleteBed()" id="btn-delete" style="display:none;">Eliminar</button>
+          <button class="btn-small" onclick="alignBeds('left')" id="btn-align-left" title="Alinear izquierda" style="display:none;">⬅️</button>
+          <button class="btn-small" onclick="alignBeds('top')" id="btn-align-top" title="Alinear arriba" style="display:none;">⬆️</button>
+          <button class="btn-small" onclick="alignBeds('distribute-h')" id="btn-distribute-h" title="Distribuir horizontalmente" style="display:none;">↔️</button>
+          <button class="btn-small" onclick="alignBeds('distribute-v')" id="btn-distribute-v" title="Distribuir verticalmente" style="display:none;">⬍</button>
+          <button class="btn-small" onclick="zoomIn()">🔍+</button>
+          <button class="btn-small" onclick="zoomOut()">🔍-</button>
+          <button class="btn-small" onclick="resetZoom()">Reset</button>
+          <button class="btn-small" onclick="fitToView()" title="Ajustar vista">Ajustar</button>
+          <button class="btn-small" style="background:#ffcccc; color:#cc0000; border-color:#cc0000;" onclick="clearAllBeds()" title="Eliminar todos los bancales">❌ Blanquear</button>
+        </div>
+        <div id="svg-canvas" style="min-height:600px;"></div>
+      </div>
+      <div class="designer-panel">
+        <div class="panel-section">
+          <div class="panel-title">Plantas disponibles</div>
+          <div id="palette"></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-title">Bancal seleccionado</div>
+          <div id="bed-detail"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 1: TABLA DE BANCALES -->
+  <div class="tab-content">
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <button class="btn-small" onclick="addBedToTable()">+ Agregar fila</button>
+        <button class="btn-small" onclick="exportTableCSV()">📥 Exportar CSV</button>
+      </div>
+      <div class="table-container" id="beds-table-container"></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: SIEMBRAS -->
+  <div class="tab-content">
+    <div class="planner-wrap">
+      <div class="planner-filters">
+        <button class="filter-btn active" onclick="filterByType('all')">Todos</button>
+        <button class="filter-btn" onclick="filterByType('fruto')" style="border-color:#cc0000; color:#cc0000;">Frutos</button>
+        <button class="filter-btn" onclick="filterByType('raiz')" style="border-color:#7a5c3a; color:#7a5c3a;">Raíces</button>
+        <button class="filter-btn" onclick="filterByType('flor')" style="border-color:#8a70a0; color:#8a70a0;">Flores</button>
+        <button class="filter-btn" onclick="filterByType('hoja')" style="border-color:#3a7a50; color:#3a7a50;">Hojas</button>
+      </div>
+      <div class="planner-table" id="planner-table"></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: ROTACIÓN -->
+  <div class="tab-content">
+    <div class="rotation-wrap">
+      <div class="year-selector">
+        <button class="year-btn" onclick="prevYear()">← Año</button>
+        <div class="year-display" id="year-display">2026</div>
+        <button class="year-btn" onclick="nextYear()">Año →</button>
+      </div>
+      <div class="rotation-canvas" id="rotation-canvas"></div>
+      <div class="rotation-alerts" id="rotation-alerts"></div>
+    </div>
+  </div>
+
+  <!-- TAB 4: ASOCIACIÓN -->
+  <div class="tab-content">
+    <div class="assoc-wrap">
+      <div class="assoc-search">
+        <input type="text" id="assoc-search" placeholder="Buscar planta..." onkeyup="filterAssoc()">
+      </div>
+      <div class="assoc-matrix-wrap">
+        <table class="assoc-matrix" id="assoc-matrix"></table>
+      </div>
+      <div class="assoc-detail" id="assoc-detail"></div>
+    </div>
+  </div>
+
+  <div class="ftr">Planificador Agroecológico • Datos locales • Sincronización automática</div>
+</div>
+
+<script>
+// ── DATOS (copiados del almanaque) ──
+const FICHAS = {
+  arvejas:{n:'Arveja', c:'Pisum sativum', f:'Fabaceae · Leguminosas', bio:'fruto', siembra:'Abr–Jul · siembra directa', temp:'7–18°C (cultivo frío)', dp:'5–8 cm', df:'30–40 cm', prof:'3–5 cm', dc:'70–90 días', asoc:'Zanahorias, rábanos, lechugas, espinacas, menta, remolacha', evitar:'Cebollas, ajos, puerros (aliáceas inhiben la nodulación)', rotacion:'Seguir con crucíferas (kale, rúcula) o solanáceas. Precede bien al tomate.', nota:'Fija nitrógeno atmosférico — mejora el suelo para el cultivo siguiente. Necesita soporte (red o estacas). Sembrar en días de Frutos.'},
+  habas:{n:'Haba', c:'Vicia faba', f:'Fabaceae · Leguminosas', bio:'fruto', siembra:'Abr–Jun · siembra directa', temp:'5–15°C (muy frío, tolera heladas)', dp:'15–20 cm', df:'40–50 cm', prof:'5–8 cm', dc:'90–150 días', asoc:'Zanahorias, espinacas, papas, remolachas, borraja', evitar:'Cebollas, ajos, hinojo', rotacion:'Excelente precultivo para cualquier hortaliza. Picar la planta como abono verde.', nota:'El mejor cultivo de invierno. Picar la planta al finalizar como abono verde enriquece mucho el suelo.'},
+  tomates:{n:'Tomate', c:'Solanum lycopersicum', f:'Solanaceae', bio:'fruto', siembra:'Ago–Oct almácigo interior · trasplante Sep–Nov', temp:'15–30°C (sensible al frío)', dp:'50–70 cm', df:'80–100 cm', prof:'0.5 cm (almácigo)', dc:'70–120 días desde trasplante', asoc:'Albahaca, zanahoria, perejil, caléndula, ortiga, espárragos', evitar:'Hinojo, repollo, berenjenas y pimientos (misma familia, no rotar seguido)', rotacion:'No repetir Solanáceas en el mismo lugar por al menos 3 años. Seguir con leguminosas o cucurbitáceas.', nota:'Podar brotes laterales en variedades indeterminadas para concentrar producción. Necesita tutor.'},
+  zapallos:{n:'Zapallo', c:'Cucurbita maxima', f:'Cucurbitaceae', bio:'fruto', siembra:'Sep–Nov · directo o almácigo', temp:'18–30°C (calor)', dp:'80–120 cm', df:'150–200 cm', prof:'2–3 cm', dc:'90–120 días', asoc:'Maíz, porotos, caléndula, rábanos, orégano', evitar:'Pepinos y zapallitos (misma familia, comparten plagas)', rotacion:'Rotación con leguminosas (arvejas, porotos). Ocupa mucho espacio — planificar bien.', nota:'"Las tres hermanas": maíz + porotos + zapallo en el mismo cantero, sistema indígena muy eficiente.'},
+  zapallitos:{n:'Zapallito redondo', c:'Cucurbita pepo', f:'Cucurbitaceae', bio:'fruto', siembra:'Sep–Nov · siembra directa', temp:'18–28°C', dp:'60–80 cm', df:'80–100 cm', prof:'2–3 cm', dc:'50–65 días', asoc:'Maíz, porotos, caléndula, rábanos', evitar:'Pepinos, zapallos (misma familia)', rotacion:'Seguir con leguminosas o raíces. No repetir cucurbitáceas en el mismo cantero.', nota:'Cosechar pequeños (8–10 cm) para sabor y producción continua. Planta muy productiva en verano.'},
+  pepinos:{n:'Pepino', c:'Cucumis sativus', f:'Cucurbitaceae', bio:'fruto', siembra:'Oct–Nov · directa o almácigo', temp:'20–30°C', dp:'30–50 cm', df:'80–100 cm', prof:'1–2 cm', dc:'50–70 días', asoc:'Porotos, maíz, caléndula, rábanos, eneldo', evitar:'Zapallos, zapallitos (comparten oídio y mosca del zapallo)', rotacion:'Rotar con raíces o leguminosas al año siguiente.', nota:'Se cultiva vertical (soporte) para ahorrar espacio. Cosechar antes de amarillar.'},
+  maiz:{n:'Maíz', c:'Zea mays', f:'Poaceae · Gramíneas', bio:'fruto', siembra:'Oct–Nov · siembra directa', temp:'18–35°C', dp:'20–30 cm', df:'60–80 cm', prof:'3–5 cm', dc:'80–120 días', asoc:'Zapallos, porotos, girasol, pepinos, calabaza', evitar:'Tomates (compiten por recursos), remolacha', rotacion:'Seguir con leguminosas (porotos, arvejas) para reponer nitrógeno. No repetir más de 2 años.', nota:'Planta en bloques de al menos 4×4 plantas para asegurar polinización cruzada por viento.'},
+  porotos:{n:'Poroto / Chaucha', c:'Phaseolus vulgaris', f:'Fabaceae', bio:'fruto', siembra:'Oct–Dic · siembra directa', temp:'18–30°C', dp:'10–15 cm', df:'40–50 cm', prof:'3–5 cm', dc:'55–80 días (chaucha) / 90–110 días (grano)', asoc:'Zapallos, maíz, zanahorias, pepinos, caléndula', evitar:'Cebollas, ajos, hinojo, remolacha', rotacion:'Excelente precultivo — fija nitrógeno. Seguir con maíz, zapallos o crucíferas.', nota:'"Las tres hermanas" con maíz y zapallo. Variedades enanas (mata) no necesitan soporte.'},
+  zanahorias:{n:'Zanahoria', c:'Daucus carota', f:'Apiaceae', bio:'raiz', siembra:'Todo el año · mejor Abr–Sep en General Pinto', temp:'10–24°C', dp:'5–8 cm', df:'20–30 cm', prof:'0.5–1 cm', dc:'80–100 días', asoc:'Lechugas, cebollas, puerros, tomates, romero, salvia, arvejas', evitar:'Anís, hinojo (compiten por espacio radicular)', rotacion:'Rotar con hoja (acelgas, lechugas) o leguminosas. No repetir umbelíferas seguido.', nota:'Suelo muy suelto y profundo — sin piedras ni piedrecitas. Ralear a 5 cm cuando tengan 10 cm altura.'},
+  remolachas:{n:'Remolacha', c:'Beta vulgaris', f:'Amaranthaceae', bio:'raiz', siembra:'Todo el año · mejor Mar–Oct en Buenos Aires', temp:'10–24°C', dp:'8–10 cm', df:'25–30 cm', prof:'2–3 cm', dc:'60–90 días', asoc:'Cebollas, ajos, lechugas, repollos, zanahorias', evitar:'Espinacas (misma familia, enfermedades comunes), choclos', rotacion:'Seguir con leguminosas o cucurbitáceas. Parte de la familia Amaranthaceae como la acelga.', nota:'La semilla de remolacha es multigerminativa (sale más de una planta). Ralear a 8 cm.'},
+  rabanos:{n:'Rábano', c:'Raphanus sativus', f:'Brassicaceae', bio:'raiz', siembra:'Todo el año · más lento en verano', temp:'7–20°C', dp:'5 cm', df:'20 cm', prof:'1–2 cm', dc:'25–40 días', asoc:'Zanahorias, lechugas, espinacas, pepinos, arvejas', evitar:'Ninguna conocida', rotacion:'Excelente cultivo rápido entre hileras. Puede preceder a cualquier cultivo.', nota:'Ideal para marcar hileras de siembra lenta (zanahoria) y aprovechar espacios vacíos.'},
+  papas:{n:'Papa', c:'Solanum tuberosum', f:'Solanaceae', bio:'raiz', siembra:'Jun–Ago para cosecha primaveral · Sep–Oct para estival', temp:'10–22°C', dp:'25–35 cm', df:'60–80 cm', prof:'8–15 cm', dc:'75–120 días', asoc:'Maíz, rábanos, caléndula, cilantro, espinacas', evitar:'Tomates, berenjenas, pimientos (misma familia Solanaceae)', rotacion:'No repetir Solanáceas en el mismo lugar por 3–4 años. Seguir con leguminosas.', nota:'Aporcar (cubrir el tallo emergente) 2–3 veces para aumentar producción. Cosechar cuando la planta se seca.'},
+  cebollas:{n:'Cebolla', c:'Allium cepa', f:'Amaryllidaceae · Aliáceas', bio:'raiz', siembra:'Abr–Jun almácigo · trasplante Jun–Ago', temp:'10–24°C', dp:'10–15 cm', df:'20–25 cm', prof:'1 cm (almácigo)', dc:'150–180 días', asoc:'Zanahorias, lechugas, remolachas, tomates, fresas', evitar:'Porotos, habas, arvejas, salvia (inhibe leguminosas cercanas)', rotacion:'Seguir con cucurbitáceas o solanáceas. Evitar aliáceas por 2–3 años.', nota:'Trasplantar cuando tienen el grosor de un lápiz. El cuello se seca cuando están listas.'},
+  ajos:{n:'Ajo', c:'Allium sativum', f:'Amaryllidaceae · Aliáceas', bio:'raiz', siembra:'Abr–Jun · siembra directa (dientes)', temp:'5–20°C', dp:'10–15 cm', df:'20–30 cm', prof:'3–5 cm', dc:'150–210 días', asoc:'Tomates, rosas, zanahorias, lechugas, remolachas (repele plagas)', evitar:'Leguminosas (arvejas, porotos, habas) — inhibe la nodulación de raíces', rotacion:'Excelente después de cereales o cucurbitáceas. Evitar aliáceas por 3 años.', nota:'Plantar el diente con la punta hacia arriba. Cortar el "escapo" (flor) para concentrar energía en el bulbo.'},
+  puerros:{n:'Puerro', c:'Allium ampeloprasum', f:'Amaryllidaceae · Aliáceas', bio:'raiz', siembra:'Abr–Jul almácigo · trasplante Jun–Sep', temp:'7–24°C', dp:'15–20 cm', df:'25–30 cm', prof:'1 cm (almácigo)', dc:'120–180 días', asoc:'Zanahorias, apio, lechugas, tomates', evitar:'Leguminosas, ajo (compite con bulbos)', rotacion:'Seguir con cucurbitáceas o solanáceas. Rotar con hoja o fruto.', nota:'Trasplantar profundo (10–15 cm) para blanquear el tallo. Muy resistente al frío inviernal.'},
+  lechugas:{n:'Lechuga', c:'Lactuca sativa', f:'Asteraceae', bio:'hoja', siembra:'Todo el año · almácigo + trasplante (evitar pleno verano)', temp:'10–22°C (espigazca con calor sostenido)', dp:'20–25 cm', df:'25–30 cm', prof:'0.3 cm (superficie)', dc:'45–70 días', asoc:'Zanahorias, rábanos, fresas, cebollas, espinacas', evitar:'Apio (compite), perejil (altera el sabor según algunos)', rotacion:'Muy versátil. Puede seguir a cualquier cultivo. Buena entre trasplantes de verano.', nota:'En verano elegir variedades tolerantes al calor (batavia, lollo). Sembrar en semisombra.'},
+  acelgas:{n:'Acelga', c:'Beta vulgaris var. cicla', f:'Amaranthaceae', bio:'hoja', siembra:'Todo el año · mejor Ene–Mar y Jul–Sep', temp:'10–28°C', dp:'20–25 cm', df:'30–40 cm', prof:'2 cm', dc:'50–70 días', asoc:'Lechugas, zanahorias, cebollas, rábanos', evitar:'Remolacha (misma especie, comparte enfermedades)', rotacion:'Seguir con leguminosas o cucurbitáceas. Muy adaptable.', nota:'Cosechar hojas externas dejando el cogollo — planta productiva durante muchos meses. Tolera heladas leves.'},
+  espinacas:{n:'Espinaca', c:'Spinacia oleracea', f:'Amaranthaceae', bio:'hoja', siembra:'Mar–May y Jul–Sep', temp:'7–18°C (no tolera calor — espigazca)', dp:'8–10 cm', df:'20–25 cm', prof:'1–2 cm', dc:'40–55 días', asoc:'Lechugas, rábanos, fresas, arvejas', evitar:'Ninguna conocida', rotacion:'Cultivo de ciclo corto. Seguir con cucurbitáceas de verano.', nota:'Muy sensible al calor: espigazca y amarga. Cultivo ideal de otoño-invierno en General Pinto.'},
+  kale:{n:'Kale / Col rizada', c:'Brassica oleracea var. sabellica', f:'Brassicaceae', bio:'hoja', siembra:'Feb–May y Ago–Sep', temp:'5–24°C (heladas mejoran el sabor)', dp:'40–50 cm', df:'50–60 cm', prof:'0.5 cm', dc:'60–80 días', asoc:'Cebollas, remolacha, apio, eneldo', evitar:'Tomates, fresas (evitar misma rotación), otras crucíferas seguidas', rotacion:'No repetir Brassicaceae (kale, rúcula, rábanos) en el mismo lugar por 2 años.', nota:'Muy nutritivo. Las heladas concentran azúcares y mejoran el sabor. Cosechar hojas basales.'},
+  rucula:{n:'Rúcula', c:'Eruca sativa', f:'Brassicaceae', bio:'hoja', siembra:'Todo el año · siembra directa (evitar pleno verano)', temp:'10–22°C', dp:'5–10 cm', df:'20 cm', prof:'0.5 cm', dc:'30–45 días', asoc:'Lechugas, espinacas, rábanos', evitar:'Otras crucíferas seguidas (misma familia)', rotacion:'Rotar con raíces o leguminosas. Ciclo muy corto.', nota:'Sabor más intenso con frío. Espigazca con calor sostenido (hojas amargas). Siembra escalonada.'},
+  perejil:{n:'Perejil', c:'Petroselinum crispum', f:'Apiaceae', bio:'hoja', siembra:'Todo el año · mejor Ago–Mar', temp:'10–24°C', dp:'15 cm', df:'20–25 cm', prof:'0.5 cm', dc:'70–90 días', asoc:'Zanahorias, tomates, espárragos, rosas', evitar:'Lechuga (puede inhibir según algunos agricultores)', rotacion:'Bianual — florece en el año 2. Muy durable en el cantero.', nota:'Germinación lenta (20–30 días). Remojar semillas 24 h antes para acelerar. Trasplantar con cuidado.'},
+  albahaca:{n:'Albahaca', c:'Ocimum basilicum', f:'Lamiaceae', bio:'hoja', siembra:'Oct–Dic · almácigo interior o exterior cálido', temp:'18–32°C (muy sensible al frío — muere con heladas)', dp:'20–25 cm', df:'25–30 cm', prof:'0.3 cm', dc:'30–45 días', asoc:'Tomates, pimientos, pepinos (repele pulgones y mosca blanca)', evitar:'Salvia, romero (competencia de recursos)', rotacion:'Cultivo anual de temporada cálida. Seguir con leguminosas en otoño.', nota:'Pellizcar flores para alargar producción de hojas. La albahaca al lado del tomate mejora el sabor del fruto.'},
+  manzanilla:{n:'Manzanilla', c:'Matricaria chamomilla', f:'Asteraceae', bio:'flor', siembra:'Mar–May y Sep–Oct · siembra en superficie', temp:'10–22°C', dp:'15–20 cm', df:'20–25 cm', prof:'Superficie (luz para germinar)', dc:'60–90 días', asoc:'Repollos, cebollas, zanahorias, pepinos (mejora sabor y vigor)', evitar:'Ninguna conocida — planta benéfica universal', rotacion:'Autosembra naturalmente. Se puede dejar florecer y dispersar semilla.', nota:'Semilla muy fina: mezclar con arena para dispersar. Planta acumuladora de calcio. Té de manzanilla activa el compost.'},
+  calendula:{n:'Caléndula', c:'Calendula officinalis', f:'Asteraceae', bio:'flor', siembra:'Mar–May y Sep–Oct', temp:'7–22°C', dp:'20–25 cm', df:'25–30 cm', prof:'0.5–1 cm', dc:'50–70 días', asoc:'Tomates, zanahorias, espárragos, rosas (repele nematodos y pulgones)', evitar:'Ninguna conocida', rotacion:'Anual autosembrante. Dejar algunos ejemplares para semilla. Muy versátil.', nota:'Excelente planta compañera universal. Repele nematodos del suelo. Pétalos comestibles y medicinales.'},
+  lavanda:{n:'Lavanda', c:'Lavandula angustifolia', f:'Lamiaceae', bio:'flor', siembra:'Ago–Oct · esquejes semileñosos (mucho más rápido que semilla)', temp:'10–30°C (tolera heladas moderadas)', dp:'40–60 cm', df:'50–70 cm', prof:'0.3 cm (semilla)', dc:'12–18 meses hasta plena floración', asoc:'Rosas, repollos, zanahorias, tomates (repele polillas y pulgones)', evitar:'Ninguna conocida', rotacion:'Perenne — permanece en el mismo lugar años. Renovar cada 5–7 años.', nota:'Propagación por esquejes es lo más práctico. Poda fuerte post-floración para renovar. Atrae polinizadores.'},
+  romero:{n:'Romero', c:'Salvia rosmarinus', f:'Lamiaceae', bio:'flor', siembra:'Todo el año · esquejes semileñosos', temp:'10–35°C (resistente a sequía y heladas)', dp:'50–60 cm', df:'60–80 cm', prof:'—', dc:'1–2 años hasta planta establecida', asoc:'Repollos, porotos, zanahorias, salvia, berenjenas', evitar:'Pepinos, calabazas', rotacion:'Perenne. No requiere rotación. Podar para mantener forma y estimular brotación.', nota:'Propagación por esquejes semileñosos (casi siempre funciona). Muy poco riego una vez establecido.'},
+  oregano:{n:'Orégano', c:'Origanum vulgare', f:'Lamiaceae', bio:'flor', siembra:'Sep–Nov · siembra o división de matas', temp:'12–28°C', dp:'20–30 cm', df:'30–40 cm', prof:'Superficie', dc:'60–90 días', asoc:'Tomates, pimientos, repollos, berenjenas', evitar:'Ninguna conocida', rotacion:'Perenne. Se divide la mata cada 3–4 años para rejuvenecer.', nota:'Cosechar antes o durante la floración para mayor concentración de aceites esenciales. Seco tiene más sabor.'},
+  tomillo:{n:'Tomillo', c:'Thymus vulgaris', f:'Lamiaceae', bio:'flor', siembra:'Todo el año · esquejes o división de mata', temp:'10–30°C', dp:'20–25 cm', df:'25–30 cm', prof:'0.2 cm', dc:'60–90 días', asoc:'Repollos, tomates, berenjenas, patatas', evitar:'Ninguna conocida', rotacion:'Perenne semi-leñosa. División de mata cada 3 años.', nota:'Muy resistente a la sequía. Cosechar en floración. Excelente para borduras y entre piedras.'},
+  berenjenas:{n:'Berenjena', c:'Solanum melongena', f:'Solanaceae', bio:'fruto', siembra:'Jul–Sep almácigo · trasplante Oct–Nov', temp:'20–35°C (la que más calor necesita)', dp:'40–50 cm', df:'70–80 cm', prof:'0.5 cm (almácigo)', dc:'80–100 días desde trasplante', asoc:'Porotos, caléndula, orégano, tomillo', evitar:'Tomates, pimientos (misma familia, rotar largo)', rotacion:'No repetir Solanáceas en el mismo lugar por 3–4 años.', nota:'Necesita calor para producir bien. Almácigo largo: 10–12 semanas antes del trasplante.'},
+  pimientos:{n:'Pimiento / Morrón', c:'Capsicum annuum', f:'Solanaceae', bio:'fruto', siembra:'Jul–Sep almácigo · trasplante Oct–Nov', temp:'18–32°C', dp:'40–50 cm', df:'60–70 cm', prof:'0.5 cm (almácigo)', dc:'75–110 días desde trasplante', asoc:'Albahaca, zanahoria, caléndula, perejil', evitar:'Tomates, berenjenas (rotación — misma familia)', rotacion:'No repetir Solanáceas por 3 años. Seguir con leguminosas.', nota:'Almácigo muy largo: iniciar en julio para tener trasplante vigoroso en noviembre.'},
+  girasol:{n:'Girasol', c:'Helianthus annuus', f:'Asteraceae', bio:'flor', siembra:'Oct–Dic · siembra directa', temp:'18–32°C', dp:'30–50 cm', df:'60–90 cm', prof:'2–3 cm', dc:'70–90 días', asoc:'Pepinos, maíz, melones', evitar:'Papas, porotos (produce sustancias alelopáticas)', rotacion:'Anual. Seguir con leguminosas o raíces. Los restos mejoran el suelo.', nota:'El agua acumulada en la "corona" floral atrae insectos benéficos. Sirve de tutor para trepadoras.'},
+};
+
+const TC_COL={fruto:'#cc0000',raiz:'#7a5c3a',flor:'#8a70a0',hoja:'#3a7a50'};
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const SEASONAL = {
+  1: {fruto:{p:['porotos','maiz','pepinos'],        h:['tomates','zapallos','pepinos','maiz']},
+      raiz: {p:['rabanos','remolachas','zanahorias'],h:['cebollas','puerros','zanahorias']},
+      hoja: {p:['lechugas','rucula'],                h:['lechugas','rucula','albahaca','perejil']},
+      flor: {p:[],                                   h:['oregano','calendula','girasol']}},
+  2: {fruto:{p:['arvejas'],                          h:['tomates','zapallos','pepinos','maiz','porotos']},
+      raiz: {p:['rabanos','remolachas','zanahorias'],h:['zanahorias','remolachas','cebollas']},
+      hoja: {p:['lechugas','espinacas','rucula'],    h:['lechugas','rucula','albahaca','perejil']},
+      flor: {p:['manzanilla','calendula'],           h:['oregano','calendula']}},
+  3: {fruto:{p:['arvejas','habas'],                  h:['tomates','zapallos']},
+      raiz: {p:['zanahorias','remolachas','cebollas','ajos','puerros','rabanos'],h:['zanahorias','remolachas']},
+      hoja: {p:['lechugas','acelgas','espinacas','kale','rucula','perejil'],h:['lechugas','acelgas','perejil']},
+      flor: {p:['manzanilla','calendula','lavanda'], h:['oregano','manzanilla']}},
+  4: {fruto:{p:['arvejas','habas'],                  h:[]},
+      raiz: {p:['zanahorias','remolachas','cebollas','ajos','puerros','rabanos'],h:['remolachas','zanahorias','cebollas']},
+      hoja: {p:['lechugas','acelgas','espinacas','kale','rucula'],h:['lechugas','acelgas','espinacas']},
+      flor: {p:['manzanilla','calendula','lavanda','romero'],h:['oregano','manzanilla','calendula']}},
+  5: {fruto:{p:['arvejas','habas'],                  h:[]},
+      raiz: {p:['zanahorias','remolachas','cebollas','ajos','puerros'],h:['remolachas','zanahorias','puerros','cebollas']},
+      hoja: {p:['lechugas','acelgas','espinacas','kale','rucula'],h:['acelgas','espinacas','lechugas','kale']},
+      flor: {p:['manzanilla','calendula','lavanda','romero'],h:['oregano','manzanilla','calendula']}},
+  6: {fruto:{p:['habas'],                            h:[]},
+      raiz: {p:['ajos','cebollas','puerros'],        h:['zanahorias','remolachas','ajos']},
+      hoja: {p:['acelgas','espinacas','kale'],       h:['kale','espinacas','acelgas']},
+      flor: {p:['lavanda','romero'],                 h:['lavanda','romero','tomillo']}},
+  7: {fruto:{p:['habas'],                            h:[]},
+      raiz: {p:['papas','ajos','cebollas'],          h:['ajos','puerros','zanahorias']},
+      hoja: {p:['espinacas','kale','acelgas'],       h:['kale','espinacas']},
+      flor: {p:['lavanda','romero'],                 h:['lavanda','tomillo']}},
+  8: {fruto:{p:['tomates','pimientos'],              h:['habas']},
+      raiz: {p:['papas','rabanos','remolachas'],     h:['puerros','ajos','zanahorias']},
+      hoja: {p:['lechugas','rucula','espinacas','acelgas'],h:['kale','espinacas','acelgas']},
+      flor: {p:['manzanilla','calendula'],           h:['lavanda','romero']}},
+  9: {fruto:{p:['tomates','pimientos','berenjenas','zapallos'],h:[]},
+      raiz: {p:['papas','rabanos','remolachas','zanahorias'],h:['rabanos','ajos']},
+      hoja: {p:['lechugas','rucula','espinacas','albahaca'],h:['lechugas','rucula','espinacas']},
+      flor: {p:['manzanilla','calendula','albahaca','lavanda'],h:['manzanilla','romero','oregano']}},
+  10:{fruto:{p:['tomates','zapallos','zapallitos','pepinos','porotos','maiz'],h:[]},
+      raiz: {p:['rabanos','remolachas','zanahorias','cebollas'],h:['rabanos']},
+      hoja: {p:['lechugas','rucula','albahaca','perejil'],h:['lechugas','rucula','espinacas']},
+      flor: {p:['albahaca','calendula','lavanda'],   h:['manzanilla','calendula']}},
+  11:{fruto:{p:['tomates','zapallos','pepinos','porotos','maiz'],h:[]},
+      raiz: {p:['rabanos','remolachas','cebollas'],  h:['rabanos','remolachas']},
+      hoja: {p:['lechugas','rucula','albahaca'],     h:['lechugas','rucula','albahaca']},
+      flor: {p:['albahaca','calendula'],             h:['calendula','manzanilla','lavanda']}},
+  12:{fruto:{p:['porotos','maiz'],                   h:['tomates','zapallos','pepinos','maiz']},
+      raiz: {p:['rabanos','cebollas'],               h:['cebollas','remolachas','zanahorias']},
+      hoja: {p:['lechugas','rucula'],                h:['lechugas','rucula','albahaca']},
+      flor: {p:[],                                   h:['calendula','lavanda']}},
+};
+
+// ── STATE ──
+let state = {version:1, currentYear:2026, gardens:[{
+  id:'g1',
+  name:'Mi Huerto',
+  width:15,
+  height:8,
+  beds:[
+    {id:'bed-1', label:'BANCAL 1', x:0.5, y:0.5, width:1, height:10, marcoPlantacion:0.3, tieneRiego:true, espaciadoMangueras:0.5, assignments:[]},
+    {id:'bed-2', label:'BANCAL 2', x:2, y:0.5, width:1, height:10, marcoPlantacion:0.3, tieneRiego:true, espaciadoMangueras:0.5, assignments:[]},
+    {id:'bed-3', label:'BANCAL 3', x:3.5, y:0.5, width:1, height:10, marcoPlantacion:0.3, tieneRiego:true, espaciadoMangueras:0.5, assignments:[]},
+    {id:'bed-4', label:'BANCAL 4', x:5, y:0.5, width:1, height:10, marcoPlantacion:0.3, tieneRiego:true, espaciadoMangueras:0.5, assignments:[]}
+  ],
+  rotationHistory:{},
+  password:hashPassword('1234')
+}]};
+let currentGarden = null;
+let currentGardenId = null;
+let selectedBed = null;
+let currentTab = 0;
+let viewBox = {x:0, y:0, scale:1};
+let filterType = 'all';
+
+// ── SIMPLE HASH FUNCTION ──
+function hashPassword(str){
+  let hash = 0;
+  for(let i=0; i<str.length; i++){
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString();
+}
+
+// ── LOAD / SAVE ──
+function loadState(){
+  const saved = localStorage.getItem('huerto_v1');
+  if(saved) {
+    try {
+      state = JSON.parse(saved);
+    } catch(e) {
+      console.error('Error loading state:', e);
+    }
+  }
+  if(!state.gardens || state.gardens.length === 0) {
+    state.gardens = [{id:'g1', name:'Mi Huerto', width:10, height:8, beds:[], rotationHistory:{}, password:hashPassword('1234')}];
+  }
+}
+
+function saveState(){
+  localStorage.setItem('huerto_v1', JSON.stringify(state));
+}
+
+function saveCurrentGarden(){
+  saveState();
+}
+
+// ── AUTHENTICATION ──
+function initLogin(){
+  loadState();
+  renderProjectList();
+  if(state.gardens.length > 0) {
+    showLoginModal();
+  }
+}
+
+function renderProjectList(){
+  const select = document.getElementById('project-select');
+  select.innerHTML = '<option value="">-- Selecciona un proyecto --</option>';
+  state.gardens.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g.id;
+    opt.textContent = g.name;
+    select.appendChild(opt);
+  });
+}
+
+function selectProjectForLogin(){
+  const id = document.getElementById('project-select').value;
+  const form = document.getElementById('login-form');
+  const input = document.getElementById('login-password');
+
+  if(!id) {
+    form.style.display = 'none';
+    return;
+  }
+
+  form.style.display = 'block';
+  input.value = '';
+  input.focus();
+}
+
+function loginProject(){
+  const id = document.getElementById('project-select').value;
+  const pass = document.getElementById('login-password').value;
+
+  if(!id || !pass) {
+    alert('Selecciona proyecto e ingresa clave');
+    return;
+  }
+
+  const garden = state.gardens.find(g => g.id === id);
+  if(!garden) {
+    alert('Proyecto no encontrado');
+    return;
+  }
+
+  if(hashPassword(pass) !== garden.password) {
+    alert('Clave incorrecta');
+    document.getElementById('login-password').value = '';
+    return;
+  }
+
+  currentGardenId = id;
+  currentGarden = garden;
+  hideLoginModal();
+  initUI();
+}
+
+function toggleNewProjectForm(){
+  const form = document.getElementById('new-project-form');
+  const loginForm = document.getElementById('login-form');
+
+  if(form.style.display === 'none') {
+    form.style.display = 'block';
+    loginForm.style.display = 'none';
+    document.getElementById('project-select').value = '';
+    document.getElementById('new-project-name').focus();
+  } else {
+    form.style.display = 'none';
+    document.getElementById('new-project-name').value = '';
+    document.getElementById('new-project-pass').value = '';
+  }
+}
+
+function testBedCount(){
+  const count = parseInt(document.getElementById('new-project-beds').value) || 0;
+  const info = document.getElementById('bed-count-info');
+  if(count > 0 && count <= 50) {
+    info.textContent = `Se crearán ${count} bancal${count!==1?'es':''} vacíos que podrás configurar después.`;
+    info.style.display = 'block';
+  } else {
+    info.style.display = 'none';
+  }
+}
+
+function createNewProject(){
+  const name = document.getElementById('new-project-name').value.trim();
+  const pass = document.getElementById('new-project-pass').value;
+  const bedCount = parseInt(document.getElementById('new-project-beds').value) || 3;
+
+  if(!name || name.length < 3) {
+    alert('Nombre del proyecto: mínimo 3 caracteres');
+    return;
+  }
+
+  if(!pass || pass.length < 4) {
+    alert('Clave: mínimo 4 caracteres');
+    return;
+  }
+
+  if(bedCount < 1 || bedCount > 50) {
+    alert('Cantidad de bancales: entre 1 y 50');
+    return;
+  }
+
+  // Crear bancales vacíos
+  const beds = [];
+  for(let i = 1; i <= bedCount; i++){
+    beds.push({
+      id: 'bed-' + (Date.now() + i),
+      label: `BANCAL ${i}`,
+      x: (i - 1) * 2.5 + 0.5,
+      y: 0.5,
+      width: 2,
+      height: 3,
+      marcoPlantacion: null,
+      tieneRiego: null,
+      espaciadoMangueras: null,
+      assignments: []
+    });
+  }
+
+  const newGarden = {
+    id: 'g' + Date.now(),
+    name: name,
+    width: 10,
+    height: 8,
+    beds: beds,
+    rotationHistory: {},
+    password: hashPassword(pass),
+    nextBedToSetup: 0  // Índice del próximo bancal a configurar
+  };
+
+  state.gardens.push(newGarden);
+  saveState();
+
+  renderProjectList();
+  toggleNewProjectForm();
+
+  document.getElementById('project-select').value = newGarden.id;
+  currentGardenId = newGarden.id;
+  currentGarden = newGarden;
+  hideLoginModal();
+  initUI();
+
+  // Mostrar asistente para configurar primer bancal
+  setTimeout(()=>{
+    showSetupBedWizard(0);
+  }, 500);
+}
+
+function showSetupBedWizard(bedIndex){
+  if(bedIndex >= currentGarden.beds.length) {
+    alert('¡Todos los bancales configurados! Puedes comenzar a planificar.');
+    return;
+  }
+
+  selectedBed = currentGarden.beds[bedIndex];
+  currentGarden.nextBedToSetup = bedIndex + 1;
+  saveState();
+
+  // Precargar datos en el modal de creación
+  document.getElementById('bed-name-input').value = selectedBed.label;
+  document.getElementById('bed-length-input').value = selectedBed.height;
+  document.getElementById('bed-width-input').value = selectedBed.width;
+  document.getElementById('bed-spacing-input').value = '0.3';
+  document.getElementById('bed-manguera-input').value = '0.5';
+  setRiego(true);
+
+  // Cambiar el título y comportamiento del modal
+  const modal = document.getElementById('create-bed-modal');
+  const closeBtn = modal.querySelector('button');
+  const createBtn = modal.querySelector('.btn-login');
+
+  const oldCreateBtn = createBtn.innerHTML;
+  createBtn.innerHTML = `Configurar bancal (${bedIndex + 1}/${currentGarden.beds.length})`;
+  createBtn.onclick = ()=>setupBedFromWizard(bedIndex);
+
+  const subtitle = modal.querySelector('.login-subtitle');
+  subtitle.textContent = `Configurando: ${selectedBed.label} (${bedIndex + 1} de ${currentGarden.beds.length})`;
+
+  modal.classList.remove('hidden');
+  document.getElementById('bed-name-input').focus();
+}
+
+function setupBedFromWizard(bedIndex){
+  const name = document.getElementById('bed-name-input').value.trim() || 'BANCAL ' + (bedIndex + 1);
+  const largo = parseFloat(document.getElementById('bed-length-input').value) || 3;
+  const ancho = parseFloat(document.getElementById('bed-width-input').value) || 2;
+  const spacing = parseFloat(document.getElementById('bed-spacing-input').value) || 0.3;
+  const manguera = parseFloat(document.getElementById('bed-manguera-input').value) || 0.5;
+  const tieneRiego = window.bedHasRiego !== false;
+
+  const bed = currentGarden.beds[bedIndex];
+  bed.label = name;
+  bed.width = ancho;
+  bed.height = largo;
+  bed.marcoPlantacion = spacing;
+  bed.tieneRiego = tieneRiego;
+  bed.espaciadoMangueras = tieneRiego ? manguera : null;
+
+  saveState();
+  renderCanvas();
+
+  closeCreateBedModal();
+
+  // Preguntar si configurar el siguiente bancal
+  const nextIndex = bedIndex + 1;
+  if(nextIndex < currentGarden.beds.length){
+    setTimeout(()=>{
+      if(confirm(`¿Configurar el siguiente bancal?\n\n${currentGarden.beds[nextIndex].label}`)){
+        showSetupBedWizard(nextIndex);
+      }
+    }, 300);
+  } else {
+    alert('✅ ¡Todos los bancales configurados!\n\nAhora puedes comenzar a planificar.');
+  }
+}
+
+function showLoginModal(){
+  document.getElementById('login-modal').classList.remove('hidden');
+}
+
+function hideLoginModal(){
+  document.getElementById('login-modal').classList.add('hidden');
+}
+
+initLogin();
+
+// ── UI INITIALIZATION ──
+function initUI(){
+  if(!currentGarden) return;
+
+  document.getElementById('project-name-header').textContent = currentGarden.name;
+  renderPalette();
+  selectTab(0);
+}
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('huerto-theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+const theme = localStorage.getItem('huerto-theme');
+if(theme === 'dark') document.body.classList.add('dark');
+
+// Agregar clase hidden al modal de login por defecto
+setTimeout(()=>{ document.getElementById('login-modal').classList.add('hidden'); }, 0);
+
+// ── TAB NAVIGATION ──
+function selectTab(idx){
+  currentTab = idx;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tab-content').forEach((c,i)=>c.classList.toggle('active',i===idx));
+  if(idx===0) renderCanvas();
+  if(idx===1) renderBedsTable();
+  if(idx===2) renderPlanner();
+  if(idx===3) renderRotation();
+  if(idx===4) renderAssoc();
+}
+
+// ── TABLA DE BANCALES ──
+function renderBedsTable(){
+  const container = document.getElementById('beds-table-container');
+  if(!currentGarden || !currentGarden.beds) {
+    container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--c-muted);">No hay bancales</div>';
+    return;
+  }
+
+  let html = `<table class="beds-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nombre</th>
+        <th>Largo (m)</th>
+        <th>Ancho (m)</th>
+        <th>Área (m²)</th>
+        <th>Marco (m)</th>
+        <th>Riego</th>
+        <th>Espaciado Mangueras (m)</th>
+        <th>Filas</th>
+        <th>Plantas</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  currentGarden.beds.forEach((bed, idx) => {
+    const area = (bed.width * bed.height).toFixed(2);
+    const spacing = bed.marcoPlantacion || 0.3;
+    const manguera = bed.espaciadoMangueras || 0.5;
+    const tieneRiego = bed.tieneRiego;
+
+    let filas, plantas;
+    if(tieneRiego) {
+      filas = Math.floor(bed.width / manguera);
+      plantas = filas * Math.floor(bed.height / spacing);
+    } else {
+      filas = Math.floor(bed.width / spacing);
+      plantas = filas * Math.floor(bed.height / spacing);
+    }
+
+    html += `<tr>
+      <td class="table-cell-num">${idx + 1}</td>
+      <td><input type="text" class="table-input" value="${bed.label}"
+        onchange="currentGarden.beds[${idx}].label=this.value; saveState(); renderCanvas();"></td>
+      <td><input type="number" class="table-input" value="${bed.height}" step="0.1" min="0.5"
+        onchange="currentGarden.beds[${idx}].height=parseFloat(this.value); saveState(); renderCanvas(); renderBedsTable();"></td>
+      <td><input type="number" class="table-input" value="${bed.width}" step="0.1" min="0.5"
+        onchange="currentGarden.beds[${idx}].width=parseFloat(this.value); saveState(); renderCanvas(); renderBedsTable();"></td>
+      <td class="table-cell-calc">${area}</td>
+      <td><input type="number" class="table-input" value="${spacing}" step="0.05" min="0.1"
+        onchange="currentGarden.beds[${idx}].marcoPlantacion=parseFloat(this.value); saveState(); renderCanvas(); renderBedsTable();"></td>
+      <td><select class="table-select" onchange="currentGarden.beds[${idx}].tieneRiego=(this.value==='true'); saveState(); renderCanvas(); renderBedsTable();">
+        <option value="null">—</option>
+        <option value="true" ${tieneRiego === true ? 'selected' : ''}>Sí</option>
+        <option value="false" ${tieneRiego === false ? 'selected' : ''}>No</option>
+      </select></td>
+      <td><input type="number" class="table-input" value="${manguera}" step="0.05" min="0.1" ${tieneRiego ? '' : 'disabled'}
+        onchange="currentGarden.beds[${idx}].espaciadoMangueras=parseFloat(this.value); saveState(); renderCanvas(); renderBedsTable();"></td>
+      <td class="table-cell-calc">${tieneRiego ? filas : filas}</td>
+      <td class="table-cell-calc">${plantas}</td>
+      <td style="text-align:center; width:70px;">
+        <button class="table-btn-small" onclick="editBedFromTable(${idx})">✏️ Editar</button>
+        <button class="table-btn-small delete" onclick="deleteBedFromTable(${idx})">🗑️</button>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+}
+
+function addBedToTable(){
+  const bedNum = currentGarden.beds.length + 1;
+  const bed = {
+    id: 'bed-'+(Date.now()),
+    label: 'BANCAL '+bedNum,
+    x: (bedNum - 1) * 2.5 + 0.5,
+    y: 0.5,
+    width: 3,
+    height: 4,
+    marcoPlantacion: 0.3,
+    tieneRiego: true,
+    espaciadoMangueras: 0.5,
+    assignments: []
+  };
+  currentGarden.beds.push(bed);
+  saveState();
+  renderBedsTable();
+  renderCanvas();
+}
+
+function editBedFromTable(idx){
+  const bed = currentGarden.beds[idx];
+  selectBedUI(bed);
+  selectTab(0);
+  renderCanvas();
+}
+
+function deleteBedFromTable(idx){
+  if(confirm(`¿Eliminar ${currentGarden.beds[idx].label}?`)){
+    currentGarden.beds.splice(idx, 1);
+    saveState();
+    renderBedsTable();
+    renderCanvas();
+  }
+}
+
+function exportTableCSV(){
+  let csv = 'Nombre,Largo (m),Ancho (m),Área (m²),Marco (m),Riego,Espaciado Mangueras (m),Filas,Plantas\n';
+
+  currentGarden.beds.forEach(bed => {
+    const area = (bed.width * bed.height).toFixed(2);
+    const spacing = bed.marcoPlantacion || 0.3;
+    const manguera = bed.espaciadoMangueras || 0.5;
+    const tieneRiego = bed.tieneRiego ? 'Sí' : (bed.tieneRiego === false ? 'No' : '—');
+
+    let filas, plantas;
+    if(bed.tieneRiego) {
+      filas = Math.floor(bed.width / manguera);
+      plantas = filas * Math.floor(bed.height / spacing);
+    } else {
+      filas = Math.floor(bed.width / spacing);
+      plantas = filas * Math.floor(bed.height / spacing);
+    }
+
+    csv += `"${bed.label}",${bed.height.toFixed(2)},${bed.width.toFixed(2)},${area},${spacing.toFixed(2)},${tieneRiego},${manguera.toFixed(2)},${filas},${plantas}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `bancales_${currentGarden.name}_${new Date().toISOString().slice(0,10)}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// ── PALETTE ──
+function renderPalette(){
+  const pal = document.getElementById('palette');
+  const crops = Object.keys(FICHAS).sort((a,b)=>FICHAS[a].n.localeCompare(FICHAS[b].n));
+  pal.innerHTML = crops.map(k=>`<div class="palette-item" draggable="true" ondragstart="dragPlant(event,'${k}')">${FICHAS[k].n}</div>`).join('');
+}
+
+// ── CANVAS ──
+function renderCanvas(){
+  const canvas = document.getElementById('svg-canvas');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const scale = viewBox.scale;
+  svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${20/scale} ${15/scale}`);
+  svg.setAttribute('style', `width:100%; height:100%; background:#fafafa;`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+  // Grid de fondo (patrón 1m)
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+  pattern.setAttribute('id', 'grid');
+  pattern.setAttribute('width', '1');
+  pattern.setAttribute('height', '1');
+  pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+
+  const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line1.setAttribute('x1', '1');
+  line1.setAttribute('y1', '0');
+  line1.setAttribute('x2', '1');
+  line1.setAttribute('y2', '1');
+  line1.setAttribute('stroke', '#e0e0e0');
+  line1.setAttribute('stroke-width', '0.02');
+  pattern.appendChild(line1);
+
+  const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line2.setAttribute('x1', '0');
+  line2.setAttribute('y1', '1');
+  line2.setAttribute('x2', '1');
+  line2.setAttribute('y2', '1');
+  line2.setAttribute('stroke', '#e0e0e0');
+  line2.setAttribute('stroke-width', '0.02');
+  pattern.appendChild(line2);
+
+  defs.appendChild(pattern);
+  svg.appendChild(defs);
+
+  // Fondo con grid
+  const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bgRect.setAttribute('x', '-100');
+  bgRect.setAttribute('y', '-100');
+  bgRect.setAttribute('width', '200');
+  bgRect.setAttribute('height', '200');
+  bgRect.setAttribute('fill', 'url(#grid)');
+  svg.appendChild(bgRect);
+
+  currentGarden.beds.forEach(bed=>{
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', bed.x);
+    rect.setAttribute('y', bed.y);
+    rect.setAttribute('width', bed.width);
+    rect.setAttribute('height', bed.height);
+    rect.setAttribute('class', `bed-rect ${selectedBed?.id===bed.id?'selected':''}`);
+    rect.setAttribute('data-bed-id', bed.id);
+    rect.addEventListener('click', ()=>selectBedUI(bed));
+    rect.addEventListener('dblclick', ()=>editBedFromCanvas(bed));
+    rect.addEventListener('mousedown', e=>startDragBed(e, bed));
+
+    g.appendChild(rect);
+
+    // Calcular parámetros de plantación
+    const spacing = bed.marcoPlantacion || 0.3;
+    const manguera = bed.espaciadoMangueras || 0.5;
+    const tieneRiego = bed.tieneRiego;
+
+    // Crear grupo para líneas y plantas
+    const contentGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    contentGroup.setAttribute('pointer-events', 'none');
+
+    // LÍNEAS DE GOTEO (AZULES) - claras pero finas
+    if(tieneRiego) {
+      for(let y = bed.y + manguera; y < bed.y + bed.height; y += manguera) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', bed.x + 0.05);
+        line.setAttribute('y1', y);
+        line.setAttribute('x2', bed.x + bed.width - 0.05);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', '#0099ff');
+        line.setAttribute('stroke-width', '0.005');
+        line.setAttribute('opacity', '0.8');
+        contentGroup.appendChild(line);
+      }
+    }
+
+    // LÍNEAS DE PLANTACIÓN (ROJAS) - claras pero finas
+    for(let x = bed.x + spacing; x < bed.x + bed.width; x += spacing) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x);
+      line.setAttribute('y1', bed.y + 0.05);
+      line.setAttribute('x2', x);
+      line.setAttribute('y2', bed.y + bed.height - 0.05);
+      line.setAttribute('stroke', '#ff3333');
+      line.setAttribute('stroke-width', '0.004');
+      line.setAttribute('opacity', '0.8');
+      contentGroup.appendChild(line);
+    }
+
+    // PLANTAS (PUNTOS MARRONES) - GRANDES Y CLAROS
+    for(let x = bed.x + spacing/2; x < bed.x + bed.width; x += spacing) {
+      for(let y = bed.y + spacing/2; y < bed.y + bed.height; y += spacing) {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', x);
+        circle.setAttribute('cy', y);
+        circle.setAttribute('r', spacing * 0.35);
+        circle.setAttribute('fill', '#a0522d');
+        circle.setAttribute('stroke', '#6b3410');
+        circle.setAttribute('stroke-width', '0.008');
+        circle.setAttribute('opacity', '0.95');
+        contentGroup.appendChild(circle);
+      }
+    }
+
+    g.appendChild(contentGroup);
+
+    // NOMBRE DEL BANCAL - solo cuando amplías (etiqueta mínima)
+    const nameLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    const abbrev = bed.label.replace(/BANCAL /i, 'B°');
+    nameLabel.setAttribute('x', bed.x + 0.05);
+    nameLabel.setAttribute('y', bed.y + 0.08);
+    nameLabel.setAttribute('class', 'bed-label-name');
+    nameLabel.setAttribute('text-anchor', 'start');
+    nameLabel.setAttribute('dominant-baseline', 'middle');
+    const nameFontSize = Math.max(0.015, Math.min(0.025, viewBox.scale * 0.015));
+    nameLabel.setAttribute('font-size', nameFontSize);
+    nameLabel.setAttribute('font-weight', 'bold');
+    nameLabel.setAttribute('fill', '#ec008c');
+    nameLabel.setAttribute('pointer-events', 'none');
+    nameLabel.setAttribute('opacity', '0.4');
+    nameLabel.textContent = abbrev;
+    g.appendChild(nameLabel);
+
+    // DIMENSIONES - minúscula y casi invisible
+    const dimLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    dimLabel.setAttribute('x', bed.x + bed.width - 0.05);
+    dimLabel.setAttribute('y', bed.y + bed.height - 0.08);
+    dimLabel.setAttribute('class', 'bed-label-dims');
+    dimLabel.setAttribute('text-anchor', 'end');
+    dimLabel.setAttribute('dominant-baseline', 'middle');
+    const dimFontSize = Math.max(0.01, Math.min(0.015, viewBox.scale * 0.01));
+    dimLabel.setAttribute('font-size', dimFontSize);
+    dimLabel.setAttribute('fill', '#999999');
+    dimLabel.setAttribute('pointer-events', 'none');
+    dimLabel.setAttribute('opacity', '0.3');
+    const area = (bed.width * bed.height).toFixed(1);
+    dimLabel.textContent = `${bed.width}×${bed.height}`;
+    g.appendChild(dimLabel);
+
+    // Resize handles si está seleccionado
+    if(selectedBed?.id === bed.id){
+      const handles = [
+        {x:bed.x-0.15, y:bed.y-0.15, cursor:'nwse-resize', edge:'nw'},
+        {x:bed.x+bed.width/2-0.075, y:bed.y-0.15, cursor:'ns-resize', edge:'n'},
+        {x:bed.x+bed.width-0.075, y:bed.y-0.15, cursor:'nesw-resize', edge:'ne'},
+        {x:bed.x+bed.width-0.075, y:bed.y+bed.height/2-0.075, cursor:'ew-resize', edge:'e'},
+        {x:bed.x+bed.width-0.075, y:bed.y+bed.height-0.075, cursor:'nwse-resize', edge:'se'},
+        {x:bed.x+bed.width/2-0.075, y:bed.y+bed.height-0.075, cursor:'ns-resize', edge:'s'},
+        {x:bed.x-0.15, y:bed.y+bed.height-0.075, cursor:'nesw-resize', edge:'sw'},
+        {x:bed.x-0.15, y:bed.y+bed.height/2-0.075, cursor:'ew-resize', edge:'w'},
+      ];
+
+      const handlesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      handles.forEach(h=>{
+        const handle = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        handle.setAttribute('x', h.x);
+        handle.setAttribute('y', h.y);
+        handle.setAttribute('width', '0.3');
+        handle.setAttribute('height', '0.3');
+        handle.setAttribute('class', 'bed-handle visible');
+        handle.setAttribute('data-edge', h.edge);
+        handle.style.pointerEvents = 'all';
+        handle.addEventListener('mousedown', e=>startResizeBed(e, bed, h.edge));
+        handlesGroup.appendChild(handle);
+      });
+      g.appendChild(handlesGroup);
+    }
+
+    bed.assignments?.forEach(assign=>{
+      const fiche = FICHAS[assign.cropKey];
+      if(!fiche) return;
+
+      const plant = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const bioType = fiche.bio;
+      const emoji = bioType==='fruto'?'🍅':bioType==='raiz'?'🥕':bioType==='hoja'?'🥬':'🌻';
+
+      // Círculo de fondo (invisible, para hit detection)
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', bed.x + assign.x);
+      circle.setAttribute('cy', bed.y + assign.y);
+      circle.setAttribute('r', '0.3');
+      circle.setAttribute('fill', 'transparent');
+      circle.setAttribute('stroke', 'transparent');
+      circle.setAttribute('data-assign-id', assign.id);
+      circle.setAttribute('data-bed-id', bed.id);
+      circle.style.cursor = 'grab';
+
+      // Icono de la planta
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', bed.x + assign.x);
+      text.setAttribute('y', bed.y + assign.y);
+      text.setAttribute('font-size', '0.6');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('class', 'plant-icon');
+      text.setAttribute('pointer-events', 'none');
+      text.textContent = emoji;
+
+      // Label pequeño (nombre abreviado)
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', bed.x + assign.x);
+      label.setAttribute('y', bed.y + assign.y + 0.25);
+      label.setAttribute('font-size', '0.08');
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('fill', 'var(--c-muted)');
+      label.setAttribute('pointer-events', 'none');
+      label.textContent = fiche.n.substring(0,4);
+
+      plant.appendChild(circle);
+      plant.appendChild(text);
+      plant.appendChild(label);
+
+      // Eventos
+      circle.addEventListener('mousedown', (e)=>startDragPlant(e, bed, assign));
+      circle.addEventListener('contextmenu', (e)=>deleteAssignment(e, bed, assign));
+      circle.addEventListener('mouseover', ()=>{
+        circle.setAttribute('stroke', 'var(--c-accent)');
+        circle.setAttribute('stroke-width', '0.05');
+      });
+      circle.addEventListener('mouseout', ()=>{
+        circle.setAttribute('stroke', 'transparent');
+      });
+
+      g.appendChild(plant);
+    });
+
+    svg.appendChild(g);
+  });
+
+  canvas.innerHTML = '';
+  canvas.appendChild(svg);
+  svg.addEventListener('wheel', e=>zoomCanvas(e), {passive:false});
+
+  // Inicializar drop zone
+  setTimeout(()=>setupCanvasDropZone(), 0);
+}
+
+function addBed(){
+  // Resetear formulario
+  const bedNum = currentGarden.beds.length + 1;
+  document.getElementById('bed-name-input').value = 'BANCAL nº '+bedNum;
+  document.getElementById('bed-length-input').value = '4';
+  document.getElementById('bed-width-input').value = '3';
+  document.getElementById('bed-spacing-input').value = '0.3';
+  document.getElementById('bed-manguera-input').value = '0.5';
+  setRiego(true);
+
+  document.getElementById('create-bed-modal').classList.remove('hidden');
+  document.getElementById('bed-name-input').focus();
+}
+
+function closeCreateBedModal(){
+  document.getElementById('create-bed-modal').classList.add('hidden');
+}
+
+function setRiego(value){
+  const si = document.getElementById('riego-si');
+  const no = document.getElementById('riego-no');
+  const section = document.getElementById('manguera-section');
+
+  if(value) {
+    si.classList.add('btn-riego-active');
+    si.classList.remove('btn-riego');
+    no.classList.remove('btn-riego-active');
+    no.classList.add('btn-riego');
+    section.style.display = 'block';
+  } else {
+    no.classList.add('btn-riego-active');
+    no.classList.remove('btn-riego');
+    si.classList.remove('btn-riego-active');
+    si.classList.add('btn-riego');
+    section.style.display = 'none';
+  }
+
+  window.bedHasRiego = value;
+  calcularPlantas();
+}
+
+function calcularPlantas(){
+  const largo = parseFloat(document.getElementById('bed-length-input').value) || 0;
+  const ancho = parseFloat(document.getElementById('bed-width-input').value) || 0;
+  const spacing = parseFloat(document.getElementById('bed-spacing-input').value) || 0.3;
+  const manguera = parseFloat(document.getElementById('bed-manguera-input').value) || 0.5;
+  const tieneRiego = window.bedHasRiego !== false;
+
+  if(largo <= 0 || ancho <= 0 || spacing <= 0) {
+    document.getElementById('bed-calc-result').style.display = 'none';
+    document.getElementById('distribution-section').style.display = 'none';
+    return;
+  }
+
+  let filas, plantasxFila, total;
+
+  if(tieneRiego) {
+    // Con riego: las filas están separadas por el espaciado de mangueras
+    filas = Math.floor(ancho / manguera);
+    plantasxFila = Math.floor(largo / spacing);
+    total = filas * plantasxFila;
+  } else {
+    // Sin riego: usa marco de plantación en ambas direcciones
+    filas = Math.floor(ancho / spacing);
+    plantasxFila = Math.floor(largo / spacing);
+    total = filas * plantasxFila;
+  }
+
+  document.getElementById('calc-filas').textContent = filas;
+  document.getElementById('calc-plants-row').textContent = plantasxFila;
+  document.getElementById('calc-total').textContent = total;
+
+  let detalleHtml = '';
+  if(tieneRiego) {
+    detalleHtml = `${ancho}m ÷ ${manguera}m = ${filas} líneas de goteo • ${largo}m ÷ ${spacing}m = ${plantasxFila} plantas/línea`;
+  } else {
+    detalleHtml = `${ancho}m ÷ ${spacing}m = ${filas} filas • ${largo}m ÷ ${spacing}m = ${plantasxFila} plantas/fila`;
+  }
+  document.getElementById('calc-detail').textContent = detalleHtml;
+
+  document.getElementById('bed-calc-result').style.display = 'block';
+
+  // Mostrar sección de distribución si tiene riego
+  if(tieneRiego && filas > 0) {
+    renderDistributionLines(filas, largo, spacing);
+    document.getElementById('distribution-section').style.display = 'block';
+  } else {
+    document.getElementById('distribution-section').style.display = 'none';
+  }
+
+  // Guardar en variable global para usar en saveBedFromCanvas
+  window.bedDistribution = window.bedDistribution || {};
+}
+
+function renderDistributionLines(numLines, largo, spacing){
+  const container = document.getElementById('distribution-lines');
+  let html = '';
+
+  // Calcular plantas por línea (línea 1 es impar, línea 2 es par, para tresbolillo)
+  for(let i = 1; i <= numLines; i++){
+    const isOddLine = i % 2 === 1;
+    const offset = isOddLine ? 0 : spacing / 2; // Tresbolillo: desplaza filas pares
+    const plantasEnLaLinea = Math.floor((largo - offset) / spacing) + (offset === 0 ? 1 : 0);
+
+    html += `<div class="distribution-line">
+      <div class="line-number">L${i}</div>
+      <select class="line-crop-select" onchange="updateLineCount(${i})">
+        <option value="">-- Selecciona cultivo --</option>
+        ${Object.keys(FICHAS).map(k => `<option value="${k}">${FICHAS[k].n}</option>`).join('')}
+      </select>
+      <div class="line-count" id="count-line-${i}">${plantasEnLaLinea} plantas</div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function updateLineCount(lineNum){
+  const select = document.querySelector(`.distribution-line:nth-child(${lineNum}) .line-crop-select`);
+  const cropKey = select.value;
+
+  if(!cropKey || !FICHAS[cropKey]) {
+    return;
+  }
+
+  const largo = parseFloat(document.getElementById('bed-length-input').value) || 0;
+  const spacing = parseFloat(document.getElementById('bed-spacing-input').value) || 0.3;
+  const cropSpacing = FICHAS[cropKey].dp ? parseFloat(FICHAS[cropKey].dp.split('–')[0]) : spacing;
+
+  const isOddLine = lineNum % 2 === 1;
+  const offset = isOddLine ? 0 : spacing / 2;
+  const plantasEnLaLinea = Math.floor((largo - offset) / cropSpacing) + (offset === 0 ? 1 : 0);
+
+  document.getElementById(`count-line-${lineNum}`).textContent = `${Math.max(1, plantasEnLaLinea)} ${FICHAS[cropKey].n}`;
+}
+
+function createBedFromForm(){
+  const name = document.getElementById('bed-name-input').value.trim() || 'BANCAL sin nombre';
+  const largo = parseFloat(document.getElementById('bed-length-input').value) || 4;
+  const ancho = parseFloat(document.getElementById('bed-width-input').value) || 3;
+  const spacing = parseFloat(document.getElementById('bed-spacing-input').value) || 0.3;
+  const manguera = parseFloat(document.getElementById('bed-manguera-input').value) || 0.5;
+  const tieneRiego = window.bedHasRiego !== false;
+
+  const bed = {
+    id: 'bed-'+(Date.now()),
+    label: name,
+    x: 1,
+    y: 1,
+    width: ancho,
+    height: largo,
+    marcoPlantacion: spacing,
+    tieneRiego: tieneRiego,
+    espaciadoMangueras: tieneRiego ? manguera : null,
+    assignments: []
+  };
+
+  currentGarden.beds.push(bed);
+  saveState();
+  renderCanvas();
+  closeCreateBedModal();
+}
+
+function deleteBed(){
+  if(!selectedBed) return;
+  currentGarden.beds = currentGarden.beds.filter(b=>b.id!==selectedBed.id);
+  selectedBed = null;
+  document.getElementById('btn-delete').style.display='none';
+  document.getElementById('btn-align-left').style.display='none';
+  document.getElementById('btn-align-top').style.display='none';
+  document.getElementById('btn-distribute-h').style.display='none';
+  document.getElementById('btn-distribute-v').style.display='none';
+  saveState();
+  renderCanvas();
+}
+
+function alignBeds(type){
+  if(!currentGarden.beds || currentGarden.beds.length < 2) {
+    alert('Necesitas al menos 2 bancales para alinear');
+    return;
+  }
+
+  const beds = currentGarden.beds;
+
+  if(type === 'left'){
+    const minX = Math.min(...beds.map(b => b.x));
+    beds.forEach(b => b.x = minX);
+  }
+  else if(type === 'top'){
+    const minY = Math.min(...beds.map(b => b.y));
+    beds.forEach(b => b.y = minY);
+  }
+  else if(type === 'distribute-h'){
+    const sorted = [...beds].sort((a, b) => a.x - b.x);
+    const minX = sorted[0].x;
+    const maxX = Math.max(...beds.map(b => b.x + b.width));
+    const totalWidth = maxX - minX;
+    const spacingX = (totalWidth - sorted.reduce((sum, b) => sum + b.width, 0)) / (beds.length - 1);
+
+    let currentX = minX;
+    sorted.forEach(bed => {
+      bed.x = currentX;
+      currentX += bed.width + spacingX;
+    });
+  }
+  else if(type === 'distribute-v'){
+    const sorted = [...beds].sort((a, b) => a.y - b.y);
+    const minY = sorted[0].y;
+    const maxY = Math.max(...beds.map(b => b.y + b.height));
+    const totalHeight = maxY - minY;
+    const spacingY = (totalHeight - sorted.reduce((sum, b) => sum + b.height, 0)) / (beds.length - 1);
+
+    let currentY = minY;
+    sorted.forEach(bed => {
+      bed.y = currentY;
+      currentY += bed.height + spacingY;
+    });
+  }
+
+  saveState();
+  renderCanvas();
+  alert(`✓ Bancales alineados: ${type}`);
+}
+
+function selectBedUI(bed){
+  selectedBed = bed;
+  document.getElementById('btn-delete').style.display='block';
+  document.getElementById('btn-align-left').style.display='block';
+  document.getElementById('btn-align-top').style.display='block';
+  document.getElementById('btn-distribute-h').style.display='block';
+  document.getElementById('btn-distribute-v').style.display='block';
+  renderBedDetail();
+  renderCanvas();
+}
+
+function editBedFromCanvas(bed){
+  selectBedUI(bed);
+  // Precargar el modal de edición
+  document.getElementById('bed-name-input').value = bed.label;
+  document.getElementById('bed-length-input').value = bed.height || 4;
+  document.getElementById('bed-width-input').value = bed.width || 3;
+  document.getElementById('bed-spacing-input').value = bed.marcoPlantacion || 0.3;
+  document.getElementById('bed-manguera-input').value = bed.espaciadoMangueras || 0.5;
+  setRiego(bed.tieneRiego !== null ? bed.tieneRiego : true);
+
+  // Cambiar el título y comportamiento del modal
+  const modal = document.getElementById('create-bed-modal');
+  const subtitle = modal.querySelector('.login-subtitle');
+  subtitle.textContent = `Editando: ${bed.label}`;
+
+  const createBtn = modal.querySelector('.btn-login');
+  createBtn.innerHTML = 'Guardar cambios';
+  createBtn.onclick = ()=>saveBedFromCanvas(bed);
+
+  modal.classList.remove('hidden');
+  document.getElementById('bed-name-input').focus();
+}
+
+function saveBedFromCanvas(bed){
+  const name = document.getElementById('bed-name-input').value.trim() || bed.label;
+  const largo = parseFloat(document.getElementById('bed-length-input').value) || 3;
+  const ancho = parseFloat(document.getElementById('bed-width-input').value) || 2;
+  const spacing = parseFloat(document.getElementById('bed-spacing-input').value) || 0.3;
+  const manguera = parseFloat(document.getElementById('bed-manguera-input').value) || 0.5;
+  const tieneRiego = window.bedHasRiego !== false;
+
+  bed.label = name;
+  bed.width = ancho;
+  bed.height = largo;
+  bed.marcoPlantacion = spacing;
+  bed.tieneRiego = tieneRiego;
+  bed.espaciadoMangueras = tieneRiego ? manguera : null;
+
+  saveState();
+  renderCanvas();
+  renderBedDetail();
+  closeCreateBedModal();
+}
+
+function renderBedDetail(){
+  const detail = document.getElementById('bed-detail');
+  if(!selectedBed) {
+    detail.innerHTML = '<div style="color:var(--c-muted); font-size:10px;">Haz clic en un bancal</div>';
+    return;
+  }
+  const area = (selectedBed.width * selectedBed.height).toFixed(2);
+  const crops = selectedBed.assignments || [];
+  const spacing = selectedBed.marcoPlantacion || 0.3;
+  const tieneRiego = selectedBed.tieneRiego;
+  const manguera = selectedBed.espaciadoMangueras || 0.5;
+
+  // Calcular capacidad
+  let filas, plantasxFila, totalPlantas;
+  if(tieneRiego) {
+    filas = Math.floor(selectedBed.width / manguera);
+    plantasxFila = Math.floor(selectedBed.height / spacing);
+    totalPlantas = filas * plantasxFila;
+  } else {
+    filas = Math.floor(selectedBed.width / spacing);
+    plantasxFila = Math.floor(selectedBed.height / spacing);
+    totalPlantas = filas * plantasxFila;
+  }
+
+  detail.innerHTML = `
+    <div class="bed-info">
+      <div class="bed-info-row">
+        <label style="font-size:9px; color:var(--c-muted); display:block; margin-bottom:4px;">Nombre del bancal:</label>
+        <input type="text" value="${selectedBed.label}"
+          onchange="selectedBed.label=this.value; saveState(); renderCanvas(); renderBedDetail();"
+          style="width:100%; padding:4px 6px; border:1px solid var(--bd-cal); background:var(--bg-page);
+                  color:var(--c-primary); border-radius:3px; font-size:11px; font-family:'Oswald', sans-serif;">
+      </div>
+      <div style="margin-top:8px; padding:8px; background:var(--bg-page); border-radius:3px; border:1px solid var(--bd-cal);">
+        <div class="bed-info-row" style="margin-bottom:4px;">
+          <strong style="color:var(--c-accent);">📏 Medidas:</strong>
+        </div>
+        <div class="bed-info-row" style="font-size:11px;">
+          <span style="display:inline-block; width:100%; margin-bottom:2px;">Largo: <strong>${selectedBed.height.toFixed(2)}m</strong></span>
+          <span style="display:inline-block; width:100%; margin-bottom:2px;">Ancho: <strong>${selectedBed.width.toFixed(2)}m</strong></span>
+          <span style="display:inline-block; width:100%;">Área: <strong>${area}m²</strong></span>
+        </div>
+      </div>
+      <div style="margin-top:8px; padding:8px; background:rgba(236,0,140,.08); border-radius:3px; border:1px solid rgba(236,0,140,.15);">
+        <div class="bed-info-row" style="margin-bottom:4px;">
+          <strong style="color:var(--c-accent);">🌱 Plantación:</strong>
+        </div>
+        <div class="bed-info-row" style="font-size:10px;">
+          <span style="display:inline-block; width:100%; margin-bottom:2px;">Marco: <strong>${spacing}m</strong></span>
+          ${tieneRiego ? `<span style="display:inline-block; width:100%; margin-bottom:2px;">💧 Riego por goteo</span>` : `<span style="display:inline-block; width:100%; margin-bottom:2px;">Riego: Sin goteo</span>`}
+          ${tieneRiego ? `<span style="display:inline-block; width:100%; margin-bottom:2px;">Espaciado mangueras: <strong>${manguera}m</strong></span>` : ''}
+          <span style="display:inline-block; width:100%; margin-top:4px; padding-top:4px; border-top:1px solid rgba(236,0,140,.1); font-weight:700; color:var(--c-accent);">
+            Capacidad: ${filas} filas × ${plantasxFila} plantas = ${totalPlantas}
+          </span>
+        </div>
+      </div>
+      <div style="margin-top:8px; padding:8px; background:rgba(58,122,80,.08); border-radius:3px; border:1px solid rgba(58,122,80,.15);">
+        <div class="bed-info-row" style="margin-bottom:4px;">
+          <strong style="color:#3a7a50;">🌱 Plantas (${crops.length}):</strong>
+        </div>
+        ${crops.length === 0 ? '<div style="font-size:9px; color:var(--c-muted);">Arrastra plantas desde el panel</div>' : crops.map(a=>{
+          const fiche = FICHAS[a.cropKey];
+          return `<div style="font-size:9px; margin-top:4px; padding:4px; background:var(--bg-page); border-radius:2px; display:flex; justify-content:space-between; align-items:center;">
+            <span>${fiche?.n} <small style="color:var(--c-muted);">(${a.dateAdded})</small></span>
+            <button class="table-btn-small delete" onclick="deletePlantFromPanel('${selectedBed.id}', '${a.id}')" style="padding:2px 4px; font-size:8px;">✕</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function dragPlant(e, cropKey){
+  e.dataTransfer.effectAllowed = 'copy';
+  e.dataTransfer.setData('cropKey', cropKey);
+  e.dataTransfer.setData('type', 'plant');
+}
+
+function setupCanvasDropZone(){
+  const svg = document.querySelector('#svg-canvas svg');
+  if(!svg) return;
+
+  svg.addEventListener('dragover', (e)=>{
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  });
+
+  svg.addEventListener('drop', (e)=>{
+    e.preventDefault();
+    const cropKey = e.dataTransfer.getData('cropKey');
+    const type = e.dataTransfer.getData('type');
+
+    if(type !== 'plant' || !cropKey) return;
+
+    const svg = e.target.closest('svg');
+    if(!svg) return;
+
+    // Convertir coordenadas del mouse a SVG
+    const rect = svg.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const pt = svg.createSVGPoint();
+    pt.x = x;
+    pt.y = y;
+    const svgCoords = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+    // Encontrar bancal bajo el cursor
+    const bed = currentGarden.beds.find(b=>
+      svgCoords.x >= b.x && svgCoords.x <= b.x + b.width &&
+      svgCoords.y >= b.y && svgCoords.y <= b.y + b.height
+    );
+
+    if(!bed) {
+      alert('⚠️ Suelta la planta dentro de un bancal');
+      return;
+    }
+
+    // Ajustar coordenadas relativas al bancal
+    const relX = svgCoords.x - bed.x;
+    const relY = svgCoords.y - bed.y;
+
+    addPlantToBed(bed, cropKey, relX, relY);
+  });
+}
+
+function addPlantToBed(bed, cropKey, relX, relY){
+  const fiche = FICHAS[cropKey];
+  if(!fiche) return;
+
+  const spacing = bed.marcoPlantacion || 0.3;
+  const manguera = bed.espaciadoMangueras || 0.5;
+  const tieneRiego = bed.tieneRiego;
+
+  // Calcular máximo de plantas que caben
+  let maxPlants;
+  if(tieneRiego) {
+    const filas = Math.floor(bed.width / manguera);
+    const plantasxFila = Math.floor(bed.height / spacing);
+    maxPlants = filas * plantasxFila;
+  } else {
+    const filas = Math.floor(bed.width / spacing);
+    const plantasxFila = Math.floor(bed.height / spacing);
+    maxPlants = filas * plantasxFila;
+  }
+
+  // Contar plantas existentes
+  const existingCount = (bed.assignments || []).length;
+  if(existingCount >= maxPlants) {
+    alert(`⚠️ Bancal lleno: máximo ${maxPlants} plantas. Capacidad actual: ${existingCount}`);
+    return;
+  }
+
+  // Validar companion planting
+  let warnings = [];
+  (bed.assignments || []).forEach(existing => {
+    const existingFiche = FICHAS[existing.cropKey];
+    if(!existingFiche) return;
+
+    const rel = assocMatrix[cropKey]?.[existing.cropKey];
+    if(rel === 'enemy') {
+      warnings.push(`⚠️ ${fiche.n} y ${existingFiche.n} son incompatibles (enemigos)`);
+    }
+  });
+
+  // Mostrar advertencias si hay
+  if(warnings.length > 0) {
+    const msg = warnings.join('\n') + '\n\n¿Deseas agregar la planta de todas formas?';
+    if(!confirm(msg)) return;
+  }
+
+  // Crear assignment
+  const assignment = {
+    id: 'assign-' + Date.now(),
+    cropKey: cropKey,
+    x: Math.max(spacing/2, Math.min(bed.width - spacing/2, relX)),
+    y: Math.max(spacing/2, Math.min(bed.height - spacing/2, relY)),
+    dateAdded: new Date().toISOString().slice(0,10)
+  };
+
+  if(!bed.assignments) bed.assignments = [];
+  bed.assignments.push(assignment);
+
+  saveState();
+  renderCanvas();
+  selectedBed = bed;
+  renderBedDetail();
+
+  // Mostrar aviso positivo si hay amigas
+  const friends = (bed.assignments || []).filter(a => {
+    const rel = assocMatrix[cropKey]?.[a.cropKey];
+    return rel === 'friendly' && a.id !== assignment.id;
+  });
+
+  if(friends.length > 0) {
+    const friendNames = friends.map(a => FICHAS[a.cropKey]?.n).join(', ');
+    console.log(`✓ ${fiche.n} se lleva bien con: ${friendNames}`);
+  }
+}
+
+function startDragBed(e, bed){
+  if(e.button!==0) return;
+  if(e.target.classList.contains('bed-handle')) return;
+  selectedBed = bed;
+  let start = {x:e.clientX, y:e.clientY};
+  const move = (ev)=>{
+    const dx = (ev.clientX - start.x) * 0.01;
+    const dy = (ev.clientY - start.y) * 0.01;
+    bed.x += dx;
+    bed.y += dy;
+    start = {x:ev.clientX, y:ev.clientY};
+    renderCanvas();
+    renderBedDetail();
+  };
+  const up = ()=>{
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', up);
+    saveState();
+  };
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup', up);
+}
+
+function startResizeBed(e, bed, edge){
+  if(e.button!==0) return;
+  e.stopPropagation();
+  let start = {x:e.clientX, y:e.clientY};
+  const orig = {x:bed.x, y:bed.y, w:bed.width, h:bed.height};
+
+  const move = (ev)=>{
+    const dx = (ev.clientX - start.x) * 0.01;
+    const dy = (ev.clientY - start.y) * 0.01;
+
+    if(edge.includes('n')) bed.y = orig.y + dy;
+    if(edge.includes('s')) bed.height = Math.max(1, orig.h + dy);
+    if(edge.includes('w')) bed.x = orig.x + dx;
+    if(edge.includes('e')) bed.width = Math.max(1, orig.w + dx);
+
+    renderCanvas();
+    renderBedDetail();
+  };
+
+  const up = ()=>{
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', up);
+    saveState();
+  };
+
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup', up);
+}
+
+function startDragPlant(e, bed, assign){
+  if(e.button !== 0) return;
+  e.stopPropagation();
+
+  const svg = e.target.closest('svg');
+  if(!svg) return;
+
+  let start = {x: e.clientX, y: e.clientY};
+  const orig = {x: assign.x, y: assign.y};
+
+  const move = (ev)=>{
+    const rect = svg.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const y = ev.clientY - rect.top;
+
+    const pt = svg.createSVGPoint();
+    pt.x = x;
+    pt.y = y;
+    const svgCoords = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+    // Restringir a los límites del bancal
+    const spacing = bed.marcoPlantacion || 0.3;
+    assign.x = Math.max(spacing/2, Math.min(bed.width - spacing/2, svgCoords.x - bed.x));
+    assign.y = Math.max(spacing/2, Math.min(bed.height - spacing/2, svgCoords.y - bed.y));
+
+    renderCanvas();
+  };
+
+  const up = ()=>{
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', up);
+    saveState();
+    renderCanvas();
+  };
+
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup', up);
+}
+
+function deleteAssignment(e, bed, assign){
+  e.preventDefault();
+  e.stopPropagation();
+
+  const fiche = FICHAS[assign.cropKey];
+  if(confirm(`¿Eliminar ${fiche?.n}?`)){
+    bed.assignments = (bed.assignments || []).filter(a => a.id !== assign.id);
+    saveState();
+    renderCanvas();
+    renderBedDetail();
+  }
+}
+
+function deletePlantFromPanel(bedId, assignId){
+  const bed = currentGarden.beds.find(b => b.id === bedId);
+  if(!bed) return;
+
+  const assign = (bed.assignments || []).find(a => a.id === assignId);
+  if(!assign) return;
+
+  bed.assignments = bed.assignments.filter(a => a.id !== assignId);
+  saveState();
+  renderCanvas();
+  renderBedDetail();
+}
+
+function zoomCanvas(e){
+  e.preventDefault();
+  const oldScale = viewBox.scale;
+  viewBox.scale += e.deltaY > 0 ? -0.05 : 0.05;
+  viewBox.scale = Math.max(0.3, Math.min(3, viewBox.scale));
+
+  // Actualizar posición para mantener zoom centrado en cursor
+  const deltaScale = viewBox.scale - oldScale;
+  if(deltaScale !== 0) {
+    renderCanvas();
+  }
+}
+
+function zoomIn(){
+  viewBox.scale = Math.min(3, viewBox.scale * 1.15);
+  renderCanvas();
+}
+
+function zoomOut(){
+  viewBox.scale = Math.max(0.3, viewBox.scale / 1.15);
+  renderCanvas();
+}
+
+function resetZoom(){
+  viewBox = {x:0, y:0, scale:1.2};
+  renderCanvas();
+}
+
+function fitToView(){
+  if(!currentGarden.beds || currentGarden.beds.length === 0) {
+    resetZoom();
+    return;
+  }
+
+  // Calcular bounds de todos los bancales
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  currentGarden.beds.forEach(bed => {
+    minX = Math.min(minX, bed.x);
+    minY = Math.min(minY, bed.y);
+    maxX = Math.max(maxX, bed.x + bed.width);
+    maxY = Math.max(maxY, bed.y + bed.height);
+  });
+
+  const width = maxX - minX + 1; // Agregar margen
+  const height = maxY - minY + 1;
+  const scale = Math.min(20 / width, 15 / height) * 0.9;
+
+  viewBox = {
+    x: minX - 0.5,
+    y: minY - 0.5,
+    scale: Math.max(0.3, Math.min(3, scale))
+  };
+
+  renderCanvas();
+}
+
+function clearAllBeds(){
+  if(!currentGarden.beds || currentGarden.beds.length === 0) {
+    alert('No hay bancales para eliminar');
+    return;
+  }
+
+  if(confirm(`⚠️ ¿Está seguro que desea eliminar TODOS los ${currentGarden.beds.length} bancales?\n\nEsta acción no se puede deshacer.`)){
+    currentGarden.beds = [];
+    selectedBed = null;
+    document.getElementById('btn-delete').style.display = 'none';
+    document.getElementById('btn-align-left').style.display = 'none';
+    document.getElementById('btn-align-top').style.display = 'none';
+    document.getElementById('btn-distribute-h').style.display = 'none';
+    document.getElementById('btn-distribute-v').style.display = 'none';
+    saveState();
+    renderCanvas();
+    renderBedsTable();
+    alert('✓ Grilla blanqueada');
+  }
+}
+
+// ── TAB 2: PLANNER ──
+function renderPlanner(){
+  const tab = document.getElementById('planner-table');
+  const types = filterType==='all' ? ['fruto','raiz','hoja','flor'] : [filterType];
+  let html = '<table><thead><tr><th style="text-align:left; min-width:100px;">Cultivo</th>';
+  for(let m=1;m<=12;m++) html += `<th>${MESES[m-1].substring(0,3)}</th>`;
+  html += '</tr></thead><tbody>';
+
+  Object.keys(FICHAS).sort((a,b)=>FICHAS[a].n.localeCompare(FICHAS[b].n)).forEach(key=>{
+    const f = FICHAS[key];
+    if(!types.includes(f.bio)) return;
+    html += `<tr><td class="crop-name">${f.n}</td>`;
+    for(let m=1;m<=12;m++){
+      const season = SEASONAL[m];
+      let type = '';
+      if(season[f.bio].p?.includes(key)) type = 'sow';
+      else if(season[f.bio].h?.includes(key)) type = 'harvest';
+      html += `<td class="${type}" title="${f.n} — ${MESES[m-1]}"></td>`;
+    }
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  tab.innerHTML = html;
+}
+
+function filterByType(tipo){
+  filterType = tipo;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderPlanner();
+}
+
+// ── TAB 3: ROTATION ──
+let rotationYear = 2026;
+function renderRotation(){
+  document.getElementById('year-display').textContent = rotationYear;
+  const canvas = document.getElementById('rotation-canvas');
+  canvas.innerHTML = `<div style="padding:10px; font-size:12px; color:var(--c-muted); text-align:center;">Canvas de rotación — Vista para ${rotationYear}</div>`;
+
+  const alerts = document.getElementById('rotation-alerts');
+  alerts.innerHTML = '<div style="font-size:10px; color:var(--c-muted);">Sin alertas de rotación este año</div>';
+}
+
+function prevYear(){ rotationYear--; renderRotation(); }
+function nextYear(){ rotationYear++; renderRotation(); }
+
+// ── TAB 4: ASOCIACIÓN ──
+function buildAssocMatrix(){
+  const matrix = {};
+  Object.keys(FICHAS).forEach(k=>{
+    matrix[k] = {};
+    Object.keys(FICHAS).forEach(k2=>{
+      matrix[k][k2] = 'neutral';
+    });
+  });
+
+  Object.keys(FICHAS).forEach(k=>{
+    const f = FICHAS[k];
+    if(f.asoc) {
+      f.asoc.split(',').forEach(name=>{
+        const trimmed = name.trim();
+        Object.keys(FICHAS).forEach(k2=>{
+          if(FICHAS[k2].n.includes(trimmed) || trimmed.includes(FICHAS[k2].n)) {
+            matrix[k][k2] = 'friendly';
+          }
+        });
+      });
+    }
+    if(f.evitar) {
+      f.evitar.split(',').forEach(name=>{
+        const trimmed = name.trim();
+        Object.keys(FICHAS).forEach(k2=>{
+          if(FICHAS[k2].n.includes(trimmed) || trimmed.includes(FICHAS[k2].n)) {
+            matrix[k][k2] = 'enemy';
+          }
+        });
+      });
+    }
+  });
+  return matrix;
+}
+
+let assocMatrix = buildAssocMatrix();
+let selectedCropAssoc = null;
+
+function renderAssoc(){
+  const search = document.getElementById('assoc-search');
+  const matrixTable = document.getElementById('assoc-matrix');
+  const crops = Object.keys(FICHAS).sort((a,b)=>FICHAS[a].n.localeCompare(FICHAS[b].n));
+
+  let html = '<thead><tr><th></th>';
+  crops.forEach(k=>html += `<th>${FICHAS[k].n.substring(0,1)}</th>`);
+  html += '</tr></thead><tbody>';
+
+  crops.forEach(k=>{
+    html += `<th style="writing-mode:horizontal-tb; transform:none;">${FICHAS[k].n.substring(0,3)}</th>`;
+    crops.forEach(k2=>{
+      const rel = assocMatrix[k][k2];
+      const cls = rel==='friendly'?'assoc-cell-friend':rel==='enemy'?'assoc-cell-enemy':'assoc-cell-neutral';
+      html += `<td class="${cls}" onclick="selectAssocCrop('${k}')"></td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  matrixTable.innerHTML = html;
+}
+
+function selectAssocCrop(key){
+  selectedCropAssoc = key;
+  const f = FICHAS[key];
+  const detail = document.getElementById('assoc-detail');
+  if(!f) return;
+
+  let html = `<div class="assoc-detail-title">${f.n}</div>`;
+  html += `<div class="assoc-detail-row"><span class="assoc-detail-label">Familia:</span> <span class="assoc-detail-value">${f.f}</span></div>`;
+  html += `<div class="assoc-detail-row"><span class="assoc-detail-label">Tipo:</span> <span class="assoc-detail-value">${f.bio}</span></div>`;
+  html += `<div style="margin-top:6px; font-weight:700; color:var(--c-primary); font-size:10px;">Amigas:</div>`;
+  html += `<div style="font-size:9px; color:var(--c-secondary);">${f.asoc}</div>`;
+  html += `<div style="margin-top:6px; font-weight:700; color:#cc4444; font-size:10px;">Evitar:</div>`;
+  html += `<div style="font-size:9px; color:var(--c-secondary);">${f.evitar}</div>`;
+
+  detail.innerHTML = html;
+}
+
+function filterAssoc(){
+  const search = document.getElementById('assoc-search').value.toLowerCase();
+  document.querySelectorAll('.assoc-matrix th, .assoc-matrix td').forEach(el=>{
+    const isVisible = !search || el.textContent.toLowerCase().includes(search);
+    el.style.opacity = isVisible ? '1' : '0.3';
+  });
+}
+</script>
+
+</body>
+</html>
