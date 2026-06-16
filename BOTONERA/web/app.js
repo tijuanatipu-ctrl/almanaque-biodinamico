@@ -278,7 +278,7 @@ function renderizarResumen() {
     // Mostrar cliente en header
     const clienteHeaderDiv = document.getElementById('resumen-cliente-header');
     if (clienteSeleccionado) {
-        clienteHeaderDiv.textContent = `👤 ${clienteSeleccionado.nombre}`;
+        clienteHeaderDiv.textContent = `Pedido de: ${clienteSeleccionado.nombre}`;
     } else {
         clienteHeaderDiv.textContent = '';
     }
