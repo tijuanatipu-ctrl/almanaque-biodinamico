@@ -806,6 +806,13 @@ body {
     transform: scale(0.92);
 }
 
+.resumen-item-precio {
+    text-align: right;
+    min-width: 70px;
+    font-weight: 600;
+    color: var(--naranja);
+}
+
 /* NAVEGACIÓN GLOBAL */
 .nav-global {
     display: flex;
