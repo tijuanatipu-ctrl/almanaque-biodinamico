@@ -372,6 +372,17 @@ function renderizarResumen() {
         contenedor.appendChild(div);
     });
 
+    // Botón para agregar otro producto
+    const btnAgregarOtro = document.createElement('div');
+    btnAgregarOtro.className = 'resumen-item';
+    btnAgregarOtro.style.cssText = 'background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%); border: none;';
+    btnAgregarOtro.innerHTML = `
+        <button onclick="volverAProductos()" style="width: 100%; padding: 1rem; background: transparent; border: none; cursor: pointer; color: white; font-weight: bold; font-size: 1rem; text-align: center;">
+            + Agregar otro producto
+        </button>
+    `;
+    contenedor.appendChild(btnAgregarOtro);
+
     document.getElementById('subtotal').textContent = `$${subtotal.toLocaleString()}`;
 
     // Si es Cuenta DNI, mostrar total completo (sin descuento - lo devuelve CuentaDNI)
