@@ -457,11 +457,13 @@ function confirmarPedido() {
     renderizarProductos();
 }
 
-// MOSTRAR MODAL DE CONFIRMACIÓN CON OPCIÓN DE ENVIAR COMPROBANTE
+// MOSTRAR MODAL DE CONFIRMACIÓN PARA EMITIR COMPROBANTE
 async function mostrarModalConfirmacionPedido(pedido, total) {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.style.zIndex = '10000';
+
+    const pedidoJson = JSON.stringify(pedido).replace(/"/g, '&quot;');
 
     modal.innerHTML = `
         <div class="modal-content">
@@ -469,22 +471,56 @@ async function mostrarModalConfirmacionPedido(pedido, total) {
                 <h2>✓ Pedido Guardado</h2>
             </div>
             <div class="modal-body" style="text-align: center; padding: 2rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
                 <p style="font-size: 1.1rem; margin: 1rem 0;">
                     <strong>${pedido.cliente}</strong><br>
                     Total: <span style="color: var(--naranja); font-weight: bold; font-size: 1.3rem;">$${total.toLocaleString()}</span>
                 </p>
-                <p style="color: var(--texto-secundario);">¿Deseas enviar el comprobante?</p>
+                <p style="color: var(--texto-secundario); margin-top: 1rem;">¿Deseas emitir el comprobante?</p>
             </div>
             <div class="modal-footer" style="flex-wrap: wrap; gap: 0.5rem;">
                 <button class="btn-modal-cancelar" onclick="this.closest('.modal-overlay').remove(); mostrarPantalla('pantalla-productos');" style="flex: 1; min-width: 100px;">
-                    🛒 OTRA VENTA
+                    No
                 </button>
-                <button class="btn-modal-agregar" onclick="descargarTicket('${JSON.stringify(pedido).replace(/"/g, '&quot;')}');" style="background: #4f46e5; flex: 1; min-width: 100px;">
-                    📥 DESCARGAR TICKET
+                <button class="btn-modal-agregar" onclick="mostrarModalComprobante('${pedidoJson}', '${total.toLocaleString()}'); this.closest('.modal-overlay').remove();" style="background: var(--verde); flex: 1; min-width: 100px;">
+                    Sí, Emitir
                 </button>
-                <button class="btn-modal-agregar" onclick="enviarTicketWhatsApp('${JSON.stringify(pedido).replace(/"/g, '&quot;')}'); this.closest('.modal-overlay').remove();" style="background: #25d366; flex: 1; min-width: 100px;">
-                    💬 ENVIAR POR WHATSAP
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+}
+
+// MOSTRAR MODAL CON COMPROBANTE Y OPCIONES DE DESCARGA/ENVÍO
+function mostrarModalComprobante(pedidoJson, total) {
+    const pedido = JSON.parse(pedidoJson.replace(/&quot;/g, '"'));
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.zIndex = '10000';
+
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✓ Comprobante Emitido</h2>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                <p style="font-size: 1.1rem; margin: 1rem 0;">
+                    <strong>${pedido.cliente}</strong><br>
+                    Total: <span style="color: var(--naranja); font-weight: bold; font-size: 1.3rem;">$${total}</span>
+                </p>
+                <p style="color: var(--texto-secundario);">¿Qué deseas hacer?</p>
+            </div>
+            <div class="modal-footer" style="flex-wrap: wrap; gap: 0.5rem;">
+                <button class="btn-modal-agregar" onclick="descargarTicket('${pedidoJson}'); this.closest('.modal-overlay').remove();" style="background: #3b82f6; flex: 1; min-width: 100px;">
+                    <span class="material-icons" style="font-size: 1rem;">download</span> Descargar
+                </button>
+                <button class="btn-modal-agregar" onclick="enviarTicketWhatsApp('${pedidoJson}'); this.closest('.modal-overlay').remove();" style="background: #10B981; flex: 1; min-width: 100px;">
+                    <span class="material-icons" style="font-size: 1rem;">send</span> WhatsApp
+                </button>
+                <button class="btn-modal-cancelar" onclick="this.closest('.modal-overlay').remove(); mostrarPantalla('pantalla-productos');" style="flex: 1; min-width: 100px;">
+                    Otra Venta
                 </button>
             </div>
         </div>
