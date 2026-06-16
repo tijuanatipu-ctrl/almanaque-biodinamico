@@ -75,7 +75,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: var(--sombra-md);
+    
     z-index: 100;
 }
 
@@ -96,10 +96,10 @@ body {
     background: var(--naranja);
     color: var(--blanco);
     padding: 0.25rem 0.75rem;
-    border-radius: 20px;
+    
     font-size: 0.875rem;
     font-weight: 600;
-    box-shadow: var(--sombra);
+    
 }
 
 .btn-tema, .btn-resetear {
@@ -108,7 +108,7 @@ body {
     padding: 0.5rem;
     cursor: pointer;
     font-size: 1rem;
-    border-radius: 8px;
+    
     color: var(--blanco);
     transition: all 0.2s;
     backdrop-filter: blur(10px);
@@ -125,7 +125,7 @@ body {
     padding: 0.5rem 1rem;
     cursor: pointer;
     font-size: 0.9rem;
-    border-radius: 8px;
+    
     color: var(--blanco);
     font-weight: 500;
     transition: all 0.2s;
@@ -157,7 +157,7 @@ body {
     background: var(--blanco);
     border: 2px solid var(--gris-medio);
     padding: 0.75rem;
-    border-radius: 16px;
+    
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -168,7 +168,7 @@ body {
     position: relative;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     min-height: 140px;
-    box-shadow: var(--sombra);
+    
 }
 
 .producto-btn:active {
@@ -176,14 +176,14 @@ body {
 }
 
 .producto-btn:hover {
-    box-shadow: var(--sombra-md);
+    
     border-color: var(--verde);
 }
 
 .producto-btn.seleccionado {
     background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
     border: 3px solid var(--verde);
-    box-shadow: var(--sombra-md);
+    
 }
 
 .producto-emoji {
@@ -225,14 +225,14 @@ body {
     color: var(--blanco);
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
     font-weight: 700;
     border: 3px solid var(--blanco);
-    box-shadow: var(--sombra-md);
+    
 }
 
 .btn-menos, .btn-mas {
@@ -243,10 +243,10 @@ body {
     font-size: 18px;
     padding: 4px 8px;
     color: var(--blanco);
-    border-radius: 8px;
+    
     font-weight: bold;
     transition: all 0.2s;
-    box-shadow: var(--sombra);
+    
 }
 
 .btn-menos:active, .btn-mas:active {
@@ -277,10 +277,10 @@ body {
     font-size: 1.2rem;
     font-weight: 700;
     cursor: pointer;
-    border-radius: 12px;
+    
     margin-top: 1rem;
     transition: all 0.2s;
-    box-shadow: var(--sombra-md);
+    
     position: sticky;
     bottom: 0;
     width: 100%;
@@ -289,7 +289,7 @@ body {
 
 .btn-total:active {
     transform: scale(0.98);
-    box-shadow: var(--sombra);
+    
 }
 
 /* FOOTER */
@@ -298,7 +298,7 @@ body {
     border-top: 2px solid var(--gris-medio);
     background: var(--blanco);
     gap: 0;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+    
 }
 
 .btn-footer {
@@ -334,9 +334,9 @@ body {
     padding: 1rem;
     margin-bottom: 1rem;
     border: none;
-    border-radius: 12px;
+    
     font-size: 13px;
-    box-shadow: var(--sombra);
+    
 }
 
 .resumen-metodo-pago {
@@ -347,8 +347,8 @@ body {
     padding: 0.75rem;
     background: var(--blanco);
     border: 2px solid var(--gris-medio);
-    border-radius: 12px;
-    box-shadow: var(--sombra);
+    
+    
 }
 
 .resumen-metodo-pago label {
@@ -360,7 +360,7 @@ body {
     flex: 1;
     padding: 0.75rem;
     border: 2px solid var(--gris-medio);
-    border-radius: 8px;
+    
     background: var(--blanco);
     color: var(--texto-primario);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
@@ -379,8 +379,8 @@ body {
     margin-bottom: 1rem;
     background: var(--blanco);
     border: 2px solid var(--gris-medio);
-    border-radius: 12px;
-    box-shadow: var(--sombra);
+    
+    
 }
 
 .resumen-item {
@@ -416,11 +416,11 @@ body {
 
 .resumen-totales {
     background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
-    border-radius: 12px;
+    
     padding: 0.75rem;
     margin-bottom: 0.5rem;
     color: var(--blanco);
-    box-shadow: var(--sombra-md);
+    
 }
 
 .total-linea {
@@ -446,11 +446,11 @@ body {
     padding: 0.75rem 1rem;
     font-weight: 700;
     cursor: pointer;
-    border-radius: 12px;
+    
     font-size: 12px;
     margin-bottom: 0.5rem;
     transition: all 0.2s;
-    box-shadow: var(--sombra-md);
+    
     width: 100%;
 }
 
@@ -493,14 +493,14 @@ body {
 .modal-content {
     background: var(--blanco);
     border: none;
-    border-radius: 20px;
+    
     width: 90%;
     max-width: 400px;
     max-height: 90vh;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--sombra-lg);
+    
 }
 
 .modal-header {
@@ -511,7 +511,7 @@ body {
     border-bottom: 1px solid var(--gris-claro);
     font-weight: 700;
     background: linear-gradient(135deg, rgba(45, 80, 22, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%);
-    border-radius: 20px 20px 0 0;
+    
 }
 
 .modal-header h2 {
@@ -565,11 +565,11 @@ body {
     border: none;
     padding: 0.75rem 1.25rem;
     cursor: pointer;
-    border-radius: 8px;
+    
     font-weight: 700;
     color: var(--blanco);
     transition: all 0.2s;
-    box-shadow: var(--sombra);
+    
 }
 
 .cantidad-control button:active {
@@ -580,7 +580,7 @@ body {
     flex: 1;
     padding: 0.75rem;
     border: 2px solid var(--gris-medio);
-    border-radius: 8px;
+    
     background: var(--blanco);
     color: var(--texto-primario);
     font-size: 13px;
@@ -600,7 +600,7 @@ body {
     padding: 1rem;
     background: linear-gradient(135deg, rgba(45, 80, 22, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%);
     border: 2px solid var(--gris-medio);
-    border-radius: 12px;
+    
     font-weight: 700;
     margin-bottom: 1rem;
 }
@@ -621,7 +621,7 @@ body {
     flex: 1;
     padding: 0.75rem;
     border: none;
-    border-radius: 8px;
+    
     cursor: pointer;
     font-weight: 700;
     font-size: 13px;
@@ -640,7 +640,7 @@ body {
 .btn-modal-agregar {
     background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
     color: var(--blanco);
-    box-shadow: var(--sombra-md);
+    
 }
 
 .btn-modal-agregar:active {
@@ -673,16 +673,16 @@ body {
 
 .historial-item {
     border: none;
-    border-radius: 12px;
+    
     padding: 1rem;
     background: var(--blanco);
-    box-shadow: var(--sombra);
+    
     transition: all 0.2s;
 }
 
 .historial-item:active {
     transform: translateY(-2px);
-    box-shadow: var(--sombra-md);
+    
 }
 
 .historial-header {
@@ -720,11 +720,11 @@ body {
     background: linear-gradient(135deg, var(--naranja) 0%, #dc7a0f 100%);
     color: var(--blanco);
     cursor: pointer;
-    border-radius: 8px;
+    
     font-size: 11px;
     font-weight: 700;
     transition: all 0.2s;
-    box-shadow: var(--sombra);
+    
 }
 
 .historial-botones button:active {
@@ -765,7 +765,7 @@ body {
 .resumen-btn-menos, .resumen-btn-mas, .carrito-eliminar {
     color: var(--blanco);
     border: none;
-    border-radius: 4px;
+    
     font-weight: bold;
     font-size: 0.95rem;
     cursor: pointer;
@@ -820,7 +820,7 @@ body {
     border-bottom: 3px solid var(--naranja);
     gap: 0;
     padding: 0;
-    box-shadow: var(--sombra-md);
+    
 }
 
 .nav-btn {
