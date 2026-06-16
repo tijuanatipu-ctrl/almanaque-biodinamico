@@ -321,6 +321,10 @@ function renderizarResumen() {
 
         div.appendChild(controles);
 
+        // Contenedor de botones
+        const btnContainer = document.createElement('div');
+        btnContainer.style.cssText = 'display: flex; gap: 0.5rem; align-items: center;';
+
         // Botón menos
         const btnMenos = document.createElement('button');
         btnMenos.className = 'resumen-btn-menos';
@@ -339,7 +343,7 @@ function renderizarResumen() {
                 renderizarResumen();
             }
         };
-        div.appendChild(btnMenos);
+        btnContainer.appendChild(btnMenos);
 
         // Botón más
         const btnMas = document.createElement('button');
@@ -356,7 +360,7 @@ function renderizarResumen() {
                 renderizarResumen();
             }
         };
-        div.appendChild(btnMas);
+        btnContainer.appendChild(btnMas);
 
         // Botón eliminar
         const btnEliminar = document.createElement('button');
@@ -367,7 +371,9 @@ function renderizarResumen() {
             e.stopPropagation();
             eliminarDelCarrito(index);
         };
-        div.appendChild(btnEliminar);
+        btnContainer.appendChild(btnEliminar);
+
+        div.appendChild(btnContainer);
 
         contenedor.appendChild(div);
     });
