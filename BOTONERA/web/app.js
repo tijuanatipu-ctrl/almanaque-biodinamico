@@ -1174,11 +1174,11 @@ function cambiarTema() {
     if (html.classList.contains('dark-mode')) {
         html.classList.remove('dark-mode');
         localStorage.setItem('tema', 'claro');
-        icono.textContent = '🌙';
+        icono.textContent = 'dark_mode';
     } else {
         html.classList.add('dark-mode');
         localStorage.setItem('tema', 'oscuro');
-        icono.textContent = '☀️';
+        icono.textContent = 'light_mode';
     }
 }
 
@@ -1189,7 +1189,7 @@ function restaurarTema() {
 
     if (temGuardado === 'oscuro') {
         html.classList.add('dark-mode');
-        icono.textContent = '☀️';
+        icono.textContent = 'light_mode';
     } else {
         html.classList.remove('dark-mode');
         icono.textContent = '🌙';

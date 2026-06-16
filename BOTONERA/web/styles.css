@@ -813,6 +813,27 @@ body {
     color: var(--naranja);
 }
 
+/* MATERIAL ICONS */
+.material-icons {
+    font-size: 1.5rem;
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-cliente .material-icons,
+.btn-tema .material-icons,
+.btn-resetear .material-icons {
+    font-size: 1.2rem;
+}
+
+.nav-btn .material-icons {
+    font-size: 1.8rem;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
 /* NAVEGACIÓN GLOBAL */
 .nav-global {
     display: flex;

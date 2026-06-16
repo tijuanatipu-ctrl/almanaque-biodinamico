@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>Botonera Ventas - El Huerto</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,13 +12,13 @@
         <!-- NAVEGACIÓN GLOBAL -->
         <nav class="nav-global">
             <button class="nav-btn activo" onclick="mostrarPantalla('pantalla-productos'); actualizarNavActivo('pantalla-productos')">
-                🛒<br>Cobrar
+                <span class="material-icons">shopping_cart</span><br>Cobrar
             </button>
             <button class="nav-btn" onclick="mostrarListaPrecios(); actualizarNavActivo('pantalla-precios')">
-                💰<br>Precios
+                <span class="material-icons">price_check</span><br>Precios
             </button>
             <button class="nav-btn" onclick="mostrarPantalla('pantalla-historial'); actualizarNavActivo('pantalla-historial')">
-                📜<br>Historial
+                <span class="material-icons">history</span><br>Historial
             </button>
         </nav>
 
@@ -27,14 +28,14 @@
                 <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
                     <h1 style="margin: 0; font-size: 1.1rem; letter-spacing: 0.5px;">el Huerto de Lucas</h1>
                     <button class="btn-cliente" onclick="abrirSelectorCliente()" title="Cambiar cliente">
-                        👤 <span id="cliente-nombre">Seleccionar</span>
+                        <span class="material-icons">person</span> <span id="cliente-nombre">Seleccionar</span>
                     </button>
                 </div>
                 <div class="header-info">
                     <button class="btn-tema" onclick="cambiarTema()" title="Cambiar tema">
-                        <span id="icono-tema">🌙</span>
+                        <span id="icono-tema" class="material-icons">dark_mode</span>
                     </button>
-                    <button class="btn-resetear" onclick="limpiarCarrito(); renderizarProductos();" title="Limpiar carrito">🔄</button>
+                    <button class="btn-resetear" onclick="limpiarCarrito(); renderizarProductos();" title="Limpiar carrito"><span class="material-icons">refresh</span></button>
                     <span id="total-items" class="badge">0</span>
                 </div>
             </header>
@@ -45,7 +46,7 @@
                 </div>
 
                 <button id="btn-total" class="btn-total" onclick="irAResumen()">
-                    💰 COBRAR
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 0.5rem;">payment</span> COBRAR
                 </button>
             </main>
         </div>
@@ -53,7 +54,7 @@
         <!-- PANTALLA RESUMEN -->
         <div id="pantalla-resumen" class="pantalla">
             <header class="header">
-                <button class="btn-volver" onclick="volverAProductos()">← Volver</button>
+                <button class="btn-volver" onclick="volverAProductos()"><span class="material-icons">arrow_back</span> Volver</button>
                 <div style="text-align: right; flex: 1;">
                     <h1 style="margin: 0; font-size: 1rem;">Resumen Pedido</h1>
                     <div id="resumen-cliente-header" style="font-size: 0.85rem; color: var(--texto-secundario);"></div>
@@ -64,7 +65,7 @@
                 <div id="resumen-cliente" class="resumen-cliente"></div>
 
                 <div class="resumen-metodo-pago">
-                    <label for="metodo-pago">💳 Método de Pago:</label>
+                    <label for="metodo-pago"><span class="material-icons">credit_card</span> Método de Pago:</label>
                     <select id="metodo-pago" class="select-metodo-pago" onchange="actualizarMetodoPago(this.value)">
                         <option value="efectivo">Efectivo</option>
                         <option value="cuenta-dni">Cuenta DNI</option>
@@ -90,10 +91,10 @@
 
                 <div style="display: flex; gap: 0.5rem;">
                     <button class="btn-limpiar" onclick="limpiarCarrito()" style="flex: 1;">
-                        🗑️ Limpiar Carrito
+                        <span class="material-icons">delete</span> Limpiar Carrito
                     </button>
                     <button id="btn-confirmar" class="btn-confirmar" onclick="confirmarPedido()" style="flex: 1;">
-                        📄 EMITIR TICKET
+                        <span class="material-icons">description</span> EMITIR TICKET
                     </button>
                 </div>
             </main>
@@ -102,7 +103,7 @@
         <!-- PANTALLA HISTORIAL -->
         <div id="pantalla-historial" class="pantalla">
             <header class="header">
-                <button class="btn-volver" onclick="volverAProductos()">← Volver</button>
+                <button class="btn-volver" onclick="volverAProductos()"><span class="material-icons">arrow_back</span> Volver</button>
                 <h1>Historial</h1>
                 <div style="width: 40px;"></div>
             </header>
@@ -117,7 +118,7 @@
         <!-- PANTALLA LISTA DE PRECIOS -->
         <div id="pantalla-precios" class="pantalla">
             <header class="header">
-                <button class="btn-volver" onclick="volverAProductos()">← Volver</button>
+                <button class="btn-volver" onclick="volverAProductos()"><span class="material-icons">arrow_back</span> Volver</button>
                 <h1>Lista de Precios</h1>
                 <button class="btn-exportar-precios" onclick="exportarListaPrecios()" title="Exportar como JPG">
                     📥 Exportar
