@@ -443,12 +443,12 @@ body {
     background: linear-gradient(135deg, var(--verde) 0%, var(--verde-oscuro) 100%);
     color: var(--blanco);
     border: none;
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     font-weight: 700;
     cursor: pointer;
     border-radius: 12px;
-    font-size: 13px;
-    margin-bottom: 0.75rem;
+    font-size: 12px;
+    margin-bottom: 0.5rem;
     transition: all 0.2s;
     box-shadow: var(--sombra-md);
     width: 100%;
