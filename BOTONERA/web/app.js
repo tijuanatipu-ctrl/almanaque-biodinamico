@@ -470,18 +470,65 @@ async function mostrarModalConfirmacionPedido(pedido, total) {
                 </p>
                 <p style="color: var(--texto-secundario);">¿Deseas enviar el comprobante?</p>
             </div>
-            <div class="modal-footer">
-                <button class="btn-modal-cancelar" onclick="this.closest('.modal-overlay').remove(); mostrarPantalla('pantalla-productos');">
-                    Siguiente Venta
+            <div class="modal-footer" style="flex-wrap: wrap; gap: 0.5rem;">
+                <button class="btn-modal-cancelar" onclick="this.closest('.modal-overlay').remove(); mostrarPantalla('pantalla-productos');" style="flex: 1; min-width: 100px;">
+                    🛒 OTRA VENTA
                 </button>
-                <button class="btn-modal-agregar" onclick="generarComprobantePedido('${JSON.stringify(pedido).replace(/"/g, '&quot;')}'); this.closest('.modal-overlay').remove();" style="background: #25d366;">
-                    💬 Enviar Comprobante
+                <button class="btn-modal-agregar" onclick="descargarTicket('${JSON.stringify(pedido).replace(/"/g, '&quot;')}');" style="background: #4f46e5; flex: 1; min-width: 100px;">
+                    📥 DESCARGAR TICKET
+                </button>
+                <button class="btn-modal-agregar" onclick="enviarTicketWhatsApp('${JSON.stringify(pedido).replace(/"/g, '&quot;')}'); this.closest('.modal-overlay').remove();" style="background: #25d366; flex: 1; min-width: 100px;">
+                    💬 ENVIAR POR WHATSAP
                 </button>
             </div>
         </div>
     `;
 
     document.body.appendChild(modal);
+}
+
+// DESCARGAR TICKET
+async function descargarTicket(pedidoJson) {
+    const pedido = JSON.parse(pedidoJson.replace(/&quot;/g, '"'));
+    await generarComprobantePedido(pedidoJson);
+}
+
+// ENVIAR TICKET POR WHATSAPP
+function enviarTicketWhatsApp(pedidoJson) {
+    const pedido = JSON.parse(pedidoJson.replace(/&quot;/g, '"'));
+
+    let detallesTexto = pedido.items.map(item => {
+        return `- ${item.nombre} × ${item.cantidad} = $${item.total.toLocaleString()} ${item.unidad}`;
+    }).join('\n');
+
+    let mensaje = `El Huerto de Lucas
+
+Cliente: ${pedido.cliente}
+Fecha: ${pedido.fecha}
+
+${detallesTexto}
+
+TOTAL: $${pedido.items.reduce((sum, item) => sum + item.total, 0).toLocaleString()}`;
+
+    if (pedido.metodoPago === 'cuenta-dni') {
+        const total = pedido.items.reduce((sum, item) => sum + item.total, 0);
+        mensaje += `
+
+Método: Cuenta DNI
+Total a pagar: $${total.toLocaleString()}
+(CuentaDNI devolverá 40%)`;
+    }
+
+    mensaje += `
+
+📍 Los Sauces 264 - General Pinto
+📱 +54 9 1125328861`;
+
+    const mensajeEncoded = encodeURIComponent(mensaje);
+    const numeroWhatsapp = '5491125328861';
+    const urlWhatsapp = `https://wa.me/${numeroWhatsapp}?text=${mensajeEncoded}`;
+
+    window.open(urlWhatsapp, '_blank');
 }
 
 // GENERAR Y MOSTRAR COMPROBANTE DEL PEDIDO CONFIRMADO
