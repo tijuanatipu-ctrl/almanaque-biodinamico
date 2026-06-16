@@ -754,43 +754,43 @@ function abrirWhatsappConMensaje(total, fecha, cliente) {
     // Si viene del carrito actual, usar clienteSeleccionado
     const clienteNombre = cliente || (clienteSeleccionado ? clienteSeleccionado.nombre : 'Sin especificar');
 
-    // Generar mensaje
+    // Generar mensaje simple
     let detallesTexto;
 
     // Si hay carrito actual, usar eso
     if (carrito.length > 0) {
         detallesTexto = carrito.map(item => {
             const subtotal = item.precio * item.cantidad;
-            return `• ${item.nombre}: ${item.cantidad} ${item.unidad} = $${subtotal.toLocaleString()}`;
+            return `- ${item.nombre} × ${item.cantidad} = $${subtotal.toLocaleString()} ${item.unidad}`;
         }).join('\n');
     } else {
         // Si no hay carrito (viene del historial), mostrar mensaje genérico
         detallesTexto = '(Ver detalles en la imagen adjunta)';
     }
 
-    let mensaje = `🌱 *El Huerto de Lucas*
+    let mensaje = `El Huerto de Lucas
 
-👤 *Cliente:* ${clienteNombre}
-📅 *Pedido del:* ${fecha}
+Cliente: ${clienteNombre}
+Fecha: ${fecha}
 
-🛒 *Productos:*
 ${detallesTexto}
 
-💰 *Total: $${total}*`;
+TOTAL: $${total}`;
 
     // Si es Cuenta DNI, agregar descuento
     if (metodoPago === 'cuenta-dni') {
         const totalNum = parseInt(total.replace(/\./g, ''));
         mensaje += `
 
-💳 *Pago: Cuenta DNI*
-💰 Total a pagar: $${totalNum.toLocaleString('es-AR')}
-ℹ️ CuentaDNI devolverá 40%`;
+Método: Cuenta DNI
+Total a pagar: $${totalNum.toLocaleString('es-AR')}
+(CuentaDNI devolverá 40%)`;
     }
 
     mensaje += `
 
-Comprobante enviado en imagen 📸`;
+📍 Los Sauces 264 - General Pinto
+📱 +54 9 1125328861`;
 
     const mensajeEncoded = encodeURIComponent(mensaje);
     const numeroWhatsapp = '5491125328861';
