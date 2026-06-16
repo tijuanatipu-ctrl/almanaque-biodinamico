@@ -457,6 +457,10 @@ body {
 .btn-volver {
     background: var(--gris-medio);
     color: var(--texto-primario);
+    padding: 0.5rem 0.75rem;
+    font-size: 11px;
+    width: auto;
+    margin-bottom: 0;
 }
 
 .btn-confirmar:active {

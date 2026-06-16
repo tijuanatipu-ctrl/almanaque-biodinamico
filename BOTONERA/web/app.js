@@ -275,17 +275,17 @@ function irAResumen() {
 
 // RENDERIZAR RESUMEN
 function renderizarResumen() {
-    // Mostrar cliente
-    const clienteDiv = document.getElementById('resumen-cliente');
+    // Mostrar cliente en header
+    const clienteHeaderDiv = document.getElementById('resumen-cliente-header');
     if (clienteSeleccionado) {
-        clienteDiv.innerHTML = `
-            <div style="background: var(--gris-claro); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid var(--verde);">
-                <strong>👤 Cliente:</strong> ${clienteSeleccionado.nombre}
-            </div>
-        `;
+        clienteHeaderDiv.textContent = `👤 ${clienteSeleccionado.nombre}`;
     } else {
-        clienteDiv.innerHTML = '';
+        clienteHeaderDiv.textContent = '';
     }
+
+    // Mostrar cliente (removido de acá ya que ahora está en el header)
+    const clienteDiv = document.getElementById('resumen-cliente');
+    clienteDiv.innerHTML = '';
 
     const contenedor = document.getElementById('resumen-items');
     contenedor.innerHTML = '';
